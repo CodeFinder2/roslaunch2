@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#  Author: Adrian Böckenkamp
+# License: BSD (https://opensource.org/licenses/BSD-3-Clause)
+#    Date: 31/01/2017
+
+# import roslaunch_meta
+# import importlib.util  # Python 3.5x
+# from importlib.machinery import SourceFileLoader  # Python 3.3 and 3.4
+import imp  # Python 2.x
+import argparse
+import sys
+import os
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='roslaunch2 - Python based launch files for ROS')
+    parser.add_argument('-p', '--package', default=str(), help='ROS package name to search for <launchfile>')
+    parser.add_argument('launchfile', help='Python based launch file')
+    args, unknown = parser.parse_known_args()
+    # Remove our arguments (defined above) so that both the launch module as well as roslaunch
+    # don't bother about it:
+    for arg in vars(args):
+        # TODO also remove flags (e.g. -p or --package) from sys.argv
+        v = getattr(args, arg)
+        if v in sys.argv:
+            sys.argv.remove(v)
+
+    # ROS package name given? Try to resolve path to package and update <launchfile>
+    # path appropriately:
+    if args.package:
+        import roslaunch2.package as rl2p
+        args.launchfile = rl2p.Package(args.package).find(args.launchfile)
+
+    # Import and execute the launch module:
+    module_name = os.path.splitext(args.launchfile)[0]
+    sys.path.append(os.path.dirname(os.path.abspath(module_name)))  # patch PYTHONPATH to find . imports
+    # m = importlib.import_module(args.launchfile)
+    # Python 3.3 and 3.4:
+    # m = SourceFileLoader(module_name, args.launchfile).load_module()
+    # Python 3.5x
+    # spec = importlib.util.spec_from_file_location(module_name, args.launchfile)
+    # m = importlib.util.module_from_spec(args.launchfile)
+    # Python 2.x
+    m = imp.load_source(module_name, args.launchfile)
+    content = m.main()
+    print(content.generate())
+    # write "launch" content to file
+    # roslaunch_meta.main()

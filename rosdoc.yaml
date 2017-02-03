@@ -1,0 +1,3 @@
+- builder: sphinx
+  sphinx_root_dir: docs
+  output_dir: roslaunch2

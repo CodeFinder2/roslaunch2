@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package format="2">
+  <name>roslaunch2</name>
+  <version>0.0.1</version>
+  <description>
+    This package provides the roslaunch2 tool and its Python API which allows dynamic ROS launch
+    files written in Python.
+  </description>
+
+  <maintainer email="adrian.boeckenkamp@tu-dortmund.de">Adrian Böckenkamp, TU Dortmund University</maintainer>
+  <author email="adrian.boeckenkamp@tu-dortmund.de">Adrian Böckenkamp, TU Dortmund University</author>
+
+  <license>BSD</license>
+
+  <url type="website">http://smartfactoryplanning.de/</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>python-catkin-pkg</build_depend>
+
+  <depend>rospy</depend>
+  <depend>roslaunch</depend>
+</package>
