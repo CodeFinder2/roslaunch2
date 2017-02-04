@@ -7,3 +7,4 @@ from machine import *
 from environment import *
 from test import *
 from package import *
+from logging import *

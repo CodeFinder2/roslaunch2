@@ -13,11 +13,15 @@ import argparse
 import sys
 import os
 
+import roslaunch2.logging
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='roslaunch2 - Python based launch files for ROS')
     parser.add_argument('-p', '--package', default=str(), help='ROS package name to search for <launchfile>')
+    parser.add_argument('--no-colors', default=False, help='Do not use colored output during processing')
     parser.add_argument('launchfile', help='Python based launch file')
     args, unknown = parser.parse_known_args()
+    roslaunch2.logging.init_logger(not args.no_colors)
     # Remove our arguments (defined above) so that both the launch module as well as roslaunch
     # don't bother about it:
     for arg in vars(args):
