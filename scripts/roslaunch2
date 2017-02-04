@@ -3,12 +3,12 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 31/01/2017
+#    Date: 04/02/2017
 
 # import roslaunch_meta
 # import importlib.util  # Python 3.5x
 # from importlib.machinery import SourceFileLoader  # Python 3.3 and 3.4
-import imp  # Python 2.x
+import imp  # Python 2.x (and 3.x)
 import argparse
 import sys
 import os
@@ -29,8 +29,9 @@ if __name__ == '__main__':
     # ROS package name given? Try to resolve path to package and update <launchfile>
     # path appropriately:
     if args.package:
-        import roslaunch2.package as rl2p
-        args.launchfile = rl2p.Package(args.package).find(args.launchfile)
+        sys.path.append(os.path.abspath('../src/roslaunch2/'))
+        import roslaunch2.package
+        args.launchfile = roslaunch2.package.Package(args.package).find(args.launchfile)
 
     # Import and execute the launch module:
     module_name = os.path.splitext(args.launchfile)[0]

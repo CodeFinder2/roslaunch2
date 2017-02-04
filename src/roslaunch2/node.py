@@ -20,7 +20,7 @@ class Output(enum.IntEnum):
             return 'log'
 
 
-class Node(interfaces.GeneratorBase, remapable.Remapable):
+class Node(remapable.Remapable):
     """
     For starting ROS nodes, equals <node>.
     """

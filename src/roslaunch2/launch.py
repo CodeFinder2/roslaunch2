@@ -6,7 +6,7 @@ import machine
 import remapable
 
 
-class Launch(object, remapable.Remapable, interfaces.Composable, interfaces.GeneratorBase):
+class Launch(interfaces.Composable, remapable.Remapable):
     def __init__(self, deprecation_message=None):
         remapable.Remapable.__init__(self)
         interfaces.Composable.__init__(self)
@@ -40,4 +40,4 @@ class Launch(object, remapable.Remapable, interfaces.Composable, interfaces.Gene
             for m in machines:
                 m.generate(root, None)
             return lxml.etree.tostring(root, pretty_print=True, xml_declaration=True,
-                                       encoding='UTF-8', standalone='yes')
+                                       encoding='UTF-8', standalone='yes').decode("utf-8")
