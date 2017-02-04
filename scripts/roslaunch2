@@ -22,13 +22,10 @@ if __name__ == '__main__':
     parser.add_argument('launchfile', help='Python based launch file')
     args, unknown = parser.parse_known_args()
     roslaunch2.logging.init_logger(not args.no_colors)
+
     # Remove our arguments (defined above) so that both the launch module as well as roslaunch
     # don't bother about it:
-    for arg in vars(args):
-        # TODO also remove flags (e.g. -p or --package) from sys.argv
-        v = getattr(args, arg)
-        if v in sys.argv:
-            sys.argv.remove(v)
+    sys.argv = sys.argv[:1] + unknown
 
     # ROS package name given? Try to resolve path to package and update <launchfile>
     # path appropriately:
