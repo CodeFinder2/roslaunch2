@@ -4,6 +4,8 @@ import lxml.etree
 import interfaces
 import machine
 import remapable
+import node
+import group
 
 
 class Launch(interfaces.Composable, remapable.Remapable):
@@ -11,11 +13,15 @@ class Launch(interfaces.Composable, remapable.Remapable):
         remapable.Remapable.__init__(self)
         interfaces.Composable.__init__(self)
         interfaces.GeneratorBase.__init__(self)
+        self.machine = None
         if deprecation_message:
             warnings.warn(deprecation_message, DeprecationWarning)
 
     def __repr__(self):
         return self.children.__repr__()
+
+    def start_on(self, machine_object):
+        self.machine = machine_object
 
     def add(self, other):
         if isinstance(other, machine.Machine):
@@ -33,6 +39,9 @@ class Launch(interfaces.Composable, remapable.Remapable):
             root = lxml.etree.Element('launch')
             machines = []
         for child in self.children:
+            if self.machine and (isinstance(child, node.Node) or isinstance(child, group.Group) or
+               isinstance(child, Launch)) and not child.machine:  # see comment in group.py
+                child.start_on(self.machine)
             child.generate(root, machines)
         if first_call:
             # Machines currently insert themselves at the beginning (for simplicity):
