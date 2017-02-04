@@ -2,7 +2,7 @@ import copy
 import lxml.etree
 
 
-class GeneratorBase:  # 'base class'?
+class GeneratorBase(object):  # 'base class'?
     def __init__(self):
         pass
 
@@ -28,7 +28,7 @@ class GeneratorBase:  # 'base class'?
         raise NotImplementedError('generate() not implemented in "{}" yet.'.format(self.__class__.__name__))
 
 
-class Composable:  # TODO: Composer vs. Composable
+class Composable(object):  # TODO: Composer vs. Composable
     def __init__(self):
         self.children = []
 
