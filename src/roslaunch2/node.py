@@ -29,8 +29,8 @@ class Node(remapable.Remapable):
         interfaces.GeneratorBase.__init__(self)
         if not pkg or not node:
             raise ValueError("pkg='{}' and/or node='{}' cannot be empty or None.".format(pkg, node))
-        self.pkg = package.Package(pkg) if type(pkg) is str else pkg
-        self.node = node  # equals the 'type' attribute in XML
+        self._pkg = package.Package(pkg) if type(pkg) is str else pkg
+        self._node = node  # equals the 'type' attribute in XML
         self.name = name if name else utils.anon()
         self.output = output
         self.args = args
@@ -43,6 +43,26 @@ class Node(remapable.Remapable):
         self.ns = None
         self.params = list()  # list of "Parameter" objects (private node parameters)
         self.rooted = False  # True if object has been add()ed to a parent
+
+    @property
+    def pkg(self):
+        return self._pkg
+
+    @property
+    def node(self):
+        return self._node
+
+    @pkg.setter
+    def pkg(self, value):
+        if not value:
+            raise ValueError("pkg='{}' cannot be empty or None.".format(value))
+        self._pkg = package.Package(value) if type(value) is str else value
+
+    @node.setter
+    def node(self, value):
+        if not value:
+            raise ValueError("node='{}' cannot be empty or None.".format(value))
+        self._node = value
 
     def __del__(self):
         if not self.rooted:
@@ -73,8 +93,8 @@ class Node(remapable.Remapable):
         elem = lxml.etree.SubElement(root, 'node')
         remapable.Remapable.generate(self, elem, machines)
 
-        interfaces.GeneratorBase.to_attr(elem, 'pkg', self.pkg, package.Package)
-        interfaces.GeneratorBase.to_attr(elem, 'type', self.node, str)
+        interfaces.GeneratorBase.to_attr(elem, 'pkg', self._pkg, package.Package)
+        interfaces.GeneratorBase.to_attr(elem, 'type', self._node, str)
         interfaces.GeneratorBase.to_attr(elem, 'name', self.name, str)
         interfaces.GeneratorBase.to_attr(elem, 'output', self.output, Output)
         interfaces.GeneratorBase.to_attr(elem, 'args', self.args, str)
