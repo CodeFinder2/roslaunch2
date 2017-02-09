@@ -10,7 +10,7 @@ class Machine(interfaces.GeneratorBase):
     """
     For defining (remote) machines to launch on, equals the <machine> tag.
     """
-    def __init__(self, address, user, name=None, password=None, timeout=None):
+    def __init__(self, address, user, env_loader=None, name=None, password=None, timeout=None):
         interfaces.GeneratorBase.__init__(self)
         if not address or not user:
             raise ValueError("address='{}' and/or user='{}' cannot be empty or None.".format(address, user))
@@ -19,7 +19,7 @@ class Machine(interfaces.GeneratorBase):
         self.name = name if name else utils.anon()
         self.password = password
         self.timeout = timeout
-        self.env_loader = None
+        self.env_loader = env_loader
 #        self.ssh_session = None
 
 #    def __del__(self):
