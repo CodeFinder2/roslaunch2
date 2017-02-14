@@ -21,6 +21,9 @@ import roslaunch2.parameter
 import roslaunch2.utils
 import roslaunch2.package
 
+# TODO (still missing) simply include launch files of other packages
+# TODO unique interface for root launch modules and child py files? -> should be not diff.
+
 
 if __name__ == '__main__':
     parser = roslaunch2.LaunchParameter(description='roslaunch2 - Python based launch files for ROS')
