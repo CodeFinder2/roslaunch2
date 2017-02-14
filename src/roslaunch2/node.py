@@ -24,9 +24,12 @@ class Node(remapable.Remapable):
     """
     For starting ROS nodes, equals <node>.
     """
-    def __init__(self, pkg, node, name=None, output=None, args=None):
+    def __init__(self, pkg, node=None, name=None, output=Output.Screen, args=None):
         remapable.Remapable.__init__(self)
         interfaces.GeneratorBase.__init__(self)
+        if pkg and not node:
+            node = pkg
+            name = pkg
         if not pkg or not node:
             raise ValueError("pkg='{}' and/or node='{}' cannot be empty or None.".format(pkg, node))
         self._pkg = package.Package(pkg) if type(pkg) is str else pkg
