@@ -6,7 +6,7 @@ import roslaunch2.logging
 
 def get_paths_to_file(start_dir, file_comp):
     """
-    Searches for $file_name in $start_dir recursively.
+    Searches for file_comp in $start_dir recursively.
 
     :param start_dir: root directory where to start the search
     :param file_comp: file path component (like some/dir/myfile.xml) name to search for
