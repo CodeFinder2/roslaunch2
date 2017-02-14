@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 04/02/2017
+#    Date: 14/02/2017
 
 # import roslaunch_meta
 # import importlib.util  # Python 3.5x
@@ -12,9 +12,15 @@ import imp  # Python 2.x (and 3.x)
 import argparse
 import sys
 import os
+import tempfile
+import roslaunch
+import traceback
 
 import roslaunch2.logging
 import roslaunch2.parameter
+import roslaunch2.utils
+import roslaunch2.package
+
 
 if __name__ == '__main__':
     parser = roslaunch2.LaunchParameter(description='roslaunch2 - Python based launch files for ROS')
@@ -24,11 +30,8 @@ if __name__ == '__main__':
     args = parser.get_args()
     roslaunch2.logging.init_logger(not args.no_colors)
 
-    # ROS package name given? Try to resolve path to package and update <launchfile>
-    # path appropriately:
+    # ROS package name given? Try to resolve path to package and update <launchfile> path appropriately:
     if args.package:
-        sys.path.append(os.path.abspath('../src/roslaunch2/'))
-        import roslaunch2.package
         args.launchfile = roslaunch2.package.Package(args.package).find(args.launchfile)
 
     # Import and execute the launch module:
@@ -42,7 +45,18 @@ if __name__ == '__main__':
     # m = importlib.util.module_from_spec(args.launchfile)
     # Python 2.x
     m = imp.load_source(module_name, args.launchfile)
-    content = m.main()
-    print(content.generate())
-    # write "launch" content to file
-    # roslaunch_meta.main()
+
+    # Generate the content, write it to a default launch file and invoke 'roslaunch':
+    launch_path = None
+    try:
+        content = m.main().generate()
+        ftmp = tempfile.NamedTemporaryFile(mode='w', suffix='.launch', delete=False)
+        launch_path = ftmp.name
+        ftmp.write(content)
+        ftmp.close()  # the tempfile exists *after* this line
+        sys.argv.insert(1, launch_path)
+        roslaunch.main(sys.argv)
+    except Exception as e:
+        traceback.print_exc()
+    finally:
+        roslaunch2.utils.silent_remove(launch_path)
