@@ -1,8 +1,27 @@
 import lxml.etree
 import warnings
+import argparse
+import sys
 
 import interfaces
 import enum
+
+
+class LaunchParameter(argparse.ArgumentParser):
+    def __init__(self, prog=None, usage=None, description=None, epilog=None, version=None,
+                 parents=[], formatter_class=argparse.HelpFormatter, prefix_chars='-',
+                 fromfile_prefix_chars=None, argument_default=None, conflict_handler='error',
+                 add_help=True):
+        argparse.ArgumentParser.__init__(self, prog, usage, description, epilog, version, parents,
+                                         formatter_class, prefix_chars, fromfile_prefix_chars,
+                                         argument_default, conflict_handler, add_help)
+
+    def get_args(self):
+        args, unknown = self.parse_known_args()
+        # Remove our arguments (defined above) so that both the launch module as well as roslaunch
+        # don't bother about it:
+        sys.argv = sys.argv[:1] + unknown
+        return args
 
 
 class Parameter(interfaces.GeneratorBase):

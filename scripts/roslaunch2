@@ -14,18 +14,15 @@ import sys
 import os
 
 import roslaunch2.logging
+import roslaunch2.parameter
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='roslaunch2 - Python based launch files for ROS')
+    parser = roslaunch2.LaunchParameter(description='roslaunch2 - Python based launch files for ROS')
     parser.add_argument('-p', '--package', default=str(), help='ROS package name to search for <launchfile>')
     parser.add_argument('--no-colors', default=False, action="store_true", help='Do not use colored output during processing')
     parser.add_argument('launchfile', help='Python based launch file')
-    args, unknown = parser.parse_known_args()
+    args = parser.get_args()
     roslaunch2.logging.init_logger(not args.no_colors)
-
-    # Remove our arguments (defined above) so that both the launch module as well as roslaunch
-    # don't bother about it:
-    sys.argv = sys.argv[:1] + unknown
 
     # ROS package name given? Try to resolve path to package and update <launchfile>
     # path appropriately:

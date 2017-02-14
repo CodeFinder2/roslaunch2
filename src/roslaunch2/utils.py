@@ -1,7 +1,6 @@
 import string
 import random
 
-
 def anon(length=6):
     """
     Creates random ROS names.
