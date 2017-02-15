@@ -36,6 +36,11 @@ def main():
     args = parser.get_args()
     init_logger(not args.no_colors)
 
+
+    # Add default extension:
+    if not os.path.splitext(args.launchfile)[1]:
+        args.launchfile += '.pyl'
+
     # ROS package name given? Try to resolve path to package and update <launchfile> path appropriately:
     if args.package:
         args.launchfile = Package(args.package).find(args.launchfile)
