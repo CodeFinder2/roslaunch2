@@ -29,7 +29,8 @@ class Node(remapable.Remapable):
         interfaces.GeneratorBase.__init__(self)
         if pkg and not node:
             node = pkg
-            name = pkg
+            if not name:
+                name = pkg
         if not pkg or not node:
             raise ValueError("pkg='{}' and/or node='{}' cannot be empty or None.".format(pkg, node))
         self._pkg = package.Package(pkg) if type(pkg) is str else pkg
