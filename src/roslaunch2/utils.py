@@ -36,6 +36,8 @@ def silent_remove(path):
     :param path: path to file which should be deleted silently
     :return: Returns True if the file was removed, False otherwise.
     """
+    if not path:
+        return False
     try:
         os.remove(path)
         return True
