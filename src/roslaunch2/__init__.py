@@ -18,6 +18,7 @@ from logging import *
 
 
 def main():
+    import os.path
     """
     Defines the core logic (= Python based dynamic launch files) of roslaunch2. It does NOT create any Launch modules
     or the like.
@@ -27,15 +28,19 @@ def main():
     :return: None
     """
     parser = LaunchParameter(description='roslaunch2 - Python based launch files for ROS')
-    parser.add_argument('-p', '--package', default=str(), help='ROS package name to search for <launchfile>')
     parser.add_argument('--no-colors', default=False, action="store_true",
                         help='Do not use colored output during processing')
     parser.add_argument('-d', '--dry-run', default=False, action="store_true",
                         help='Just print the launch file to stdout, do not run roslaunch')
-    parser.add_argument('launchfile', help='Python based launch file')
+    parser.add_argument('package', nargs='?', help='ROS package name to search for <launchfile>')
+    parser.add_argument('launchfile', nargs='+', help='Python based launch file')
     args = parser.get_args()
     init_logger(not args.no_colors)
 
+    if len(args.launchfile) > 1:
+        logging.warning("Multiple launch files at once are not supported (yet), just using the first.")
+
+    args.launchfile = args.launchfile[0]
 
     # Add default extension:
     if not os.path.splitext(args.launchfile)[1]:
