@@ -31,6 +31,7 @@ def critical(args, exit_code=1):
     Print a critical error message. After such errors, the script exits with the given code.
 
     :param args: data to be printed
+    :param exit_code: code to be used when exiting the program
     :return: None
     """
     t = 'error: ' + args
