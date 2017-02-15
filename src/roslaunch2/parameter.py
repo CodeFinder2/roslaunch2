@@ -8,20 +8,39 @@ import enum
 
 
 class LaunchParameter(argparse.ArgumentParser):
-    def __init__(self, prog=None, usage=None, description=None, epilog=None, version=None,
+    def __init__(self, prog=None, description=None, epilog=None, version=None,
                  parents=[], formatter_class=argparse.HelpFormatter, prefix_chars='-',
-                 fromfile_prefix_chars=None, argument_default=None, conflict_handler='error',
-                 add_help=True):
-        argparse.ArgumentParser.__init__(self, prog, usage, description, epilog, version, parents,
+                 fromfile_prefix_chars=None, argument_default=None, conflict_handler='error'):
+        argparse.ArgumentParser.__init__(self, prog, str(), description, epilog, version, parents,
                                          formatter_class, prefix_chars, fromfile_prefix_chars,
-                                         argument_default, conflict_handler, add_help)
+                                         argument_default, conflict_handler, add_help=False)
+        self.add_argument('--usage', default=False, action='help', help=argparse.SUPPRESS)
+
+    def add(self, name, help_text, default, **kwargs):
+        """
+        Generates a command line option for the current launch module named --name with the given help_text.
+        Additionally, the default value is retrieved from kwargs[name] if that key exists. If not, the provided default
+        value is set. This way, command line options have the highest precedence, followed by parameters passed by the
+        kwargs parameter of a launch module's main() function. If neither of which are set, the provided default value
+        is set.
+        :param name: command line parameter name and key to retrieve (fallback) default in kwargs
+        :param help_text: help text of command line option
+        :param default: final default value if neither a command line argument nor the key in kwargs is given
+        :param kwargs: dictionary of parameters for the launch module, possibly containing name
+        :return: None
+        """
+        self.add_argument('--' + name, default=kwargs[name] if name in kwargs else default, help=help_text)
 
     def get_args(self):
-        args, unknown = self.parse_known_args()
-        # Remove our arguments (defined above) so that both the launch module as well as roslaunch
-        # don't bother about it:
-        sys.argv = sys.argv[:1] + unknown
-        return args
+        """
+        Parse the previously defined command line arguments using add() or add_argument(). Ignored unknown args.
+        Parameters are always parsed from sys.argv and may overlap with parameters from other (used / included) launch
+        modules and/or with arguments of roslaunch.
+        :return: detected / known arguments. If an argument is named --name, then args.name contains the value whereby
+                 args is the value returned by this method
+        """
+        known_args, _ = self.parse_known_args()
+        return known_args
 
 
 class Parameter(interfaces.GeneratorBase):

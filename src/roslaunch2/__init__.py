@@ -20,21 +20,21 @@ from logging import *
 def main():
     import os.path
     """
-    Defines the core logic (= Python based dynamic launch files) of roslaunch2. It does NOT create any Launch modules
-    or the like.
-    TODOs:
-    - unique interface for root launch modules and child py files? -> should be not diff;
-      how to treat command line args and "parameters" in a similar manner?
+    Defines the core logic (= Python based dynamic launch files) of roslaunch2. It does NOT create any
+    launch modules or the like.
     :return: None
     """
-    parser = LaunchParameter(description='roslaunch2 - Python based launch files for ROS')
+    import os.path
+    parser = argparse.ArgumentPer(description='roslaunch2 - Python based launch files for ROS')
     parser.add_argument('--no-colors', default=False, action="store_true",
                         help='Do not use colored output during processing')
     parser.add_argument('-d', '--dry-run', default=False, action="store_true",
                         help='Just print the launch file to stdout, do not run roslaunch')
     parser.add_argument('package', nargs='?', help='ROS package name to search for <launchfile>')
     parser.add_argument('launchfile', nargs='+', help='Python based launch file')
-    args = parser.get_args()
+    parser.add_argument('--ros-args', default=False, action="store_true",
+                        help='Display command-line arguments for this launch file')
+    args, _ = parser.parse_known_args()
     init_logger(not args.no_colors)
 
     if len(args.launchfile) > 1:
@@ -50,8 +50,13 @@ def main():
     if args.package:
         args.launchfile = Package(args.package).find(args.launchfile)
 
-    # Import the launch module, generate the content, write it to a default launch file and invoke 'roslaunch':
+    # Import the launch module, generate the content, write it to a launch file and invoke 'roslaunch':
     m = Package.import_launch_module(args.launchfile)
+    if args.ros_args:
+        sys.argv[0] = args.launchfile  # display correct script name
+        sys.argv.append('--usage')  # force launch module to output its help text
+        m.main()
+        return
     content = m.main().generate()
     if not args.dry_run:
         import tempfile
