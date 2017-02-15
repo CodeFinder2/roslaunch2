@@ -3,63 +3,8 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 14/02/2017
-
-# import roslaunch_meta
-# import importlib.util  # Python 3.5x
-# from importlib.machinery import SourceFileLoader  # Python 3.3 and 3.4
-import imp  # Python 2.x (and 3.x)
-import argparse
-import sys
-import os
-import tempfile
-import roslaunch
-import traceback
-
-import roslaunch2.logging
-import roslaunch2.parameter
-import roslaunch2.utils
-import roslaunch2.package
-
-# TODO (still missing) simply include launch files of other packages
-# TODO unique interface for root launch modules and child py files? -> should be not diff.
-
+#    Date: 15/02/2017
 
 if __name__ == '__main__':
-    parser = roslaunch2.LaunchParameter(description='roslaunch2 - Python based launch files for ROS')
-    parser.add_argument('-p', '--package', default=str(), help='ROS package name to search for <launchfile>')
-    parser.add_argument('--no-colors', default=False, action="store_true", help='Do not use colored output during processing')
-    parser.add_argument('launchfile', help='Python based launch file')
-    args = parser.get_args()
-    roslaunch2.logging.init_logger(not args.no_colors)
-
-    # ROS package name given? Try to resolve path to package and update <launchfile> path appropriately:
-    if args.package:
-        args.launchfile = roslaunch2.package.Package(args.package).find(args.launchfile)
-
-    # Import and execute the launch module:
-    module_name = os.path.splitext(args.launchfile)[0]
-    sys.path.append(os.path.dirname(os.path.abspath(module_name)))  # patch PYTHONPATH to find . imports
-    # m = importlib.import_module(args.launchfile)
-    # Python 3.3 and 3.4:
-    # m = SourceFileLoader(module_name, args.launchfile).load_module()
-    # Python 3.5x
-    # spec = importlib.util.spec_from_file_location(module_name, args.launchfile)
-    # m = importlib.util.module_from_spec(args.launchfile)
-    # Python 2.x
-    m = imp.load_source(module_name, args.launchfile)
-
-    # Generate the content, write it to a default launch file and invoke 'roslaunch':
-    launch_path = None
-    try:
-        content = m.main().generate()
-        ftmp = tempfile.NamedTemporaryFile(mode='w', suffix='.launch', delete=False)
-        launch_path = ftmp.name
-        ftmp.write(content)
-        ftmp.close()  # the tempfile exists *after* this line
-        sys.argv.insert(1, launch_path)
-        roslaunch.main(sys.argv)
-    except Exception as e:
-        traceback.print_exc()
-    finally:
-        roslaunch2.utils.silent_remove(launch_path)
+    from roslaunch2 import main as roslaunch2_main
+    roslaunch2_main()
