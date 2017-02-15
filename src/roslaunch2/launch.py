@@ -48,5 +48,5 @@ class Launch(interfaces.Composable, remapable.Remapable):
             machines = list(set(machines))  # make unique based on machine names
             for m in machines:
                 m.generate(root, None)
-            return lxml.etree.tostring(root, pretty_print=True, xml_declaration=True,
-                                       encoding='UTF-8', standalone='yes').decode("utf-8")
+            return str(lxml.etree.tostring(root, pretty_print=True, xml_declaration=True,
+                                           encoding='UTF-8', standalone='yes').decode("utf-8"))
