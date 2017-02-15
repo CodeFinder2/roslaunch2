@@ -1,5 +1,6 @@
 import rospkg
 import os
+import sys
 
 import roslaunch2.logging
 
@@ -65,6 +66,48 @@ class Package:
             if warn:
                 roslaunch2.logging.warning("Node '{}' in package '{}' not found.".format(node_name, self.name))
             return False
+
+    @staticmethod
+    def include(pkg_name, path_comp, **kwargs):
+        """
+        Like use() but static for convenience.
+
+        :param pkg_name:
+        :param path_comp:
+        :param kwargs:
+        :return:
+        """
+        assert type(pkg_name) is str
+        return Package(pkg_name).use(path_comp, **kwargs)
+
+    def use(self, path_comp, **kwargs):
+        mod_path = self.find(path_comp, True)
+        if not mod_path:
+            raise ValueError("Launch module '{:s}' in package '{:s}' not found.".format(path_comp, self.name))
+        m = Package.import_launch_module(mod_path)
+        return m.main(**kwargs)
+
+    @staticmethod
+    def import_launch_module(full_module_path):
+        if sys.version_info < (2, 4):  # Python < 2.4 is not supported
+            raise RuntimeError('Must use Python version >= 2.4!')
+        module_name = os.path.splitext(full_module_path)[0]
+        # Hot-patch PYTHONPATH to find . imports:
+        search_path = os.path.dirname(os.path.abspath(module_name))
+        if search_path not in sys.path:
+            sys.path.append(search_path)
+        if sys.version_info < (3, 3):  # Python 2.x and 3.x where x < 3
+            import imp
+            return imp.load_source(module_name, full_module_path)
+        elif sys.version_info < (3, 4):  # Python 3.3 and 3.4
+            import importlib.machinery
+            return importlib.machinery.SourceFileLoader(module_name, full_module_path).load_module()
+        elif sys.version_info >= (3, 5):  # Python 3.5+
+            import importlib.util
+            spec = importlib.util.spec_from_file_location(module_name, full_module_path)
+            m = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(m)
+            return m
 
     def find(self, path_comp, silent=False):
         if not path_comp:
