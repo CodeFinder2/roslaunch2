@@ -54,9 +54,14 @@ def main():
         ftmp = tempfile.NamedTemporaryFile(mode='w', suffix='.launch', delete=False)
         launch_path = ftmp.name
         ftmp.write(content)
-        ftmp.close()  # ftmp still exists *after* this line
+        ftmp.close()  # close it so that roslaunch can open it (file still exists)
         sys.argv.insert(1, launch_path)
-        roslaunch.main(sys.argv)
-        silent_remove(launch_path)
+        # noinspection PyBroadException
+        try:
+            roslaunch.main(sys.argv)
+        except:
+            pass
+        import utils
+        utils.silent_remove(launch_path)
     else:
         print(content)
