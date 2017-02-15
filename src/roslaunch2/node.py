@@ -35,6 +35,7 @@ class Node(remapable.Remapable):
         self._pkg = package.Package(pkg) if type(pkg) is str else pkg
         self._node = node  # equals the 'type' attribute in XML
         self.name = name if name else utils.anon()
+        assert not output or type(output) == Output
         self.output = output
         self.args = args
         self.respawn = None  # None -> use roslaunch default

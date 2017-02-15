@@ -118,6 +118,7 @@ class FileParameter(Parameter):
     def __init__(self, value=None, command=None, file_path=None, param=None, ns=None):
         Parameter.__init__(self)
         # TODO test for valid/consistency (valid combination in particular)
+        assert not command or type(command) == FileCommand
         self.command = command
         self.file_path = file_path
         self.param = param
