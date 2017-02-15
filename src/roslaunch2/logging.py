@@ -40,7 +40,7 @@ def critical(args, exit_code=1):
 
 def warning(args):
     """
-    Print a warning.
+    Print a warning, added for completeness. Please prefer warnings.warn().
 
     :param args: data to be printed
     :return: None
@@ -49,7 +49,7 @@ def warning(args):
     print(termcolor.colored(t, 'yellow') if termcolor else t)
 
 
-def plain(args):
+def log(args):
     """
     Print a message w/o any prefix.
 
