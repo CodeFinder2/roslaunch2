@@ -16,18 +16,62 @@ from test import *
 from package import *
 from logging import *
 
+import argparse
+
+__version__ = '0.1'
+
+
+def strip_args(launch_path):
+    """
+    Return preprocessed argument list only containing options valid in roslaunch (not roslaunch2). Also append
+    path to generated launch file. For example, this returns
+    ['/home/abo/Development/SmartMAS/catkin_ws/devel/bin/roslaunch2', '/tmp/tmpd8xFTj.launch', '--timeout=5']
+
+    :param launch_path: path to generated launch file
+    :return: list of options to be passed to roslaunch.main()
+    """
+    import sys
+    dummy = argparse.ArgumentParser()
+    # Create list of all options accepted by roslaunch (as of 15/02/17, ROS Kinetic). These information may also be
+    # retrieved by "from roslaunch import _get_optparse" and then calling _get_optparse(), see
+    # https://github.com/ros/ros_comm/blob/kinetic-devel/tools/roslaunch/src/roslaunch/__init__.py#L113
+    # However, since this is not a stable API, we'll add them manually.
+    dummy.add_argument('--files')
+    dummy.add_argument('--args')
+    dummy.add_argument('--find-node')
+    dummy.add_argument('-c', '--child')
+    dummy.add_argument('--local')
+    dummy.add_argument('--screen')
+    dummy.add_argument('-u', '--server_uri')
+    dummy.add_argument('--run_id')
+    dummy.add_argument('--wait')
+    dummy.add_argument('-p', '--port')
+    dummy.add_argument('--core')
+    dummy.add_argument('--pid')
+    dummy.add_argument('-v')
+    dummy.add_argument('--dump-params')
+    dummy.add_argument('--skip-log-check')
+    dummy.add_argument('--disable-title')
+    dummy.add_argument('-w', '--numworkers')
+    dummy.add_argument('-t', '--timeout')
+    _, unknown_args = dummy.parse_known_args()
+    args = [arg for arg in sys.argv if arg not in unknown_args]
+    args.insert(1, launch_path)
+    return args
+
 
 def main():
-    import os.path
     """
     Defines the core logic (= Python based dynamic launch files) of roslaunch2. It does NOT create any
     launch modules or the like.
     :return: None
     """
     import os.path
-    parser = argparse.ArgumentPer(description='roslaunch2 - Python based launch files for ROS')
+    parser = argparse.ArgumentParser(description='roslaunch2 - Python based launch files for ROS (1)')
     parser.add_argument('--no-colors', default=False, action="store_true",
                         help='Do not use colored output during processing')
+    parser.add_argument('--version', action='version', version='%(prog)s v{version}, \
+                        (C) Copyright Adrian Böckenkamp, 16/02/2017'.format(version=__version__))
     parser.add_argument('-d', '--dry-run', default=False, action="store_true",
                         help='Just print the launch file to stdout, do not run roslaunch')
     parser.add_argument('package', nargs='?', help='ROS package name to search for <launchfile>')
@@ -61,17 +105,15 @@ def main():
     if not args.dry_run:
         import tempfile
         import roslaunch  # dry-run even works w/o ROS
+        import utils
         ftmp = tempfile.NamedTemporaryFile(mode='w', suffix='.launch', delete=False)
-        launch_path = ftmp.name
         ftmp.write(content)
         ftmp.close()  # close it so that roslaunch can open it (file still exists)
-        sys.argv.insert(1, launch_path)
         # noinspection PyBroadException
         try:
-            roslaunch.main(sys.argv)
+            roslaunch.main(strip_args(ftmp.name))
         except:
             pass
-        import utils
-        utils.silent_remove(launch_path)
+        utils.silent_remove(ftmp.name)
     else:
         print(content)
