@@ -72,15 +72,26 @@ class Package:
         """
         Like use() but static for convenience.
 
-        :param pkg_name:
-        :param path_comp:
-        :param kwargs:
-        :return:
+        :param pkg_name: Name of ROS package to be used for search of path_comp
+        :param path_comp: (partial) path or file name to launch module (if it does not end with .pyl, this is added
+               automatically)
+        :param kwargs: optional arguments to be passed to the main() function of the launch module
+        :return: GeneratorBase object as returned by the main() function
         """
         assert type(pkg_name) is str
         return Package(pkg_name).use(path_comp, **kwargs)
 
     def use(self, path_comp, **kwargs):
+        """
+        Imports (aka uses) the content of a launch module located in the current package (self).
+
+        :param path_comp: (partial) path or file name to launch module (if it does not end with .pyl, this is added
+               automatically)
+        :param kwargs: optional arguments to be passed to the main() function of the launch module
+        :return: GeneratorBase object as returned by the main() function
+        """
+        if not os.path.splitext(path_comp)[1]:
+            path_comp += '.pyl'
         mod_path = self.find(path_comp, True)
         if not mod_path:
             raise ValueError("Launch module '{:s}' in package '{:s}' not found.".format(path_comp, self.name))

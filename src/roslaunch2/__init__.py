@@ -78,6 +78,7 @@ def main():
     parser.add_argument('launchfile', nargs='+', help='Python based launch file')
     parser.add_argument('--ros-args', default=False, action="store_true",
                         help='Display command-line arguments for this launch file')
+    # TODO: this does not "collect" all outputs of all (included/used) launch modules, just the first is shown
     args, _ = parser.parse_known_args()
     init_logger(not args.no_colors)
 
