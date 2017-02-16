@@ -46,3 +46,18 @@ def silent_remove(path):
             raise  # re-raise exception if a different error occurred
         else:
             return False
+
+
+def merge_dicts(x, y):
+    """
+    Given two dicts, merge them into a new dict as a shallow copy. Values in y that are also already present in x will
+    overwrite them. This is supplied to be compatible with Python 2.x, see also
+    http://stackoverflow.com/questions/38987/how-to-merge-two-python-dictionaries-in-a-single-expression
+
+    :param x: first dict to merge
+    :param y: second dict to merge
+    :return: merged dictionary
+    """
+    z = x.copy()
+    z.update(y)
+    return z

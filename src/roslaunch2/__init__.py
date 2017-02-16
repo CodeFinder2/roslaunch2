@@ -15,6 +15,7 @@ from environment import *
 from test import *
 from package import *
 from logging import *
+from utils import *
 
 import argparse
 
@@ -106,7 +107,6 @@ def main():
     if not args.dry_run:
         import tempfile
         import roslaunch  # dry-run even works w/o ROS
-        import utils
         ftmp = tempfile.NamedTemporaryFile(mode='w', suffix='.launch', delete=False)
         ftmp.write(content)
         ftmp.close()  # close it so that roslaunch can open it (file still exists)
