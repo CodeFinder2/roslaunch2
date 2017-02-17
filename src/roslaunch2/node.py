@@ -29,13 +29,13 @@ class Node(remapable.Remapable):
         interfaces.GeneratorBase.__init__(self)
         if pkg and not node:
             node = pkg
-            if not name:
-                name = pkg
-        if not pkg or not node:
-            raise ValueError("pkg='{}' and/or node='{}' cannot be empty or None.".format(pkg, node))
+        if not name:
+            name = node
+        if not pkg:
+            raise ValueError("pkg='{}' cannot be empty or None.".format(pkg))
         self._pkg = package.Package(pkg) if type(pkg) is str else pkg
         self._node = node  # equals the 'type' attribute in XML
-        self.name = name if name else utils.anon()
+        self.name = name
         assert not output or type(output) == Output
         self.output = output
         self.args = args
