@@ -39,15 +39,35 @@ class Node(remapable.Remapable):
         assert not output or type(output) == Output
         self.output = output
         self.args = args
-        self.respawn = None  # None -> use roslaunch default
+        self._respawn = None  # None -> use roslaunch default
         self.machine = None
         self.respawn_delay = None
-        self.required = None
+        self._required = None
         self.clear_params = None
         self.prefix = None  # equals the 'launch-prefix' attribute in XML
         self.ns = None
         self.params = list()  # list of "Parameter" objects (private node parameters)
         self.rooted = False  # True if object has been add()ed to a parent
+
+    @property
+    def required(self):
+        return self._required
+
+    @required.setter
+    def required(self, value):
+        if value and self._respawn:
+            raise ValueError('Cannot set both required and respawn to True (incompatible).')
+        self._required = value
+
+    @property
+    def respawn(self):
+        return self._respawn
+
+    @respawn.setter
+    def respawn(self, value):
+        if value and self._required:
+            raise ValueError('Cannot set both required and respawn to True (incompatible).')
+        self._respawn = value
 
     @property
     def pkg(self):
@@ -103,10 +123,11 @@ class Node(remapable.Remapable):
         interfaces.GeneratorBase.to_attr(elem, 'name', self.name, str)
         interfaces.GeneratorBase.to_attr(elem, 'output', self.output, Output)
         interfaces.GeneratorBase.to_attr(elem, 'args', self.args, str)
-        interfaces.GeneratorBase.to_attr(elem, 'respawn', self.respawn, bool)
+        interfaces.GeneratorBase.to_attr(elem, 'respawn', self._respawn, bool)
         interfaces.GeneratorBase.to_attr(elem, 'machine', self.machine, machine.Machine)
-        interfaces.GeneratorBase.to_attr(elem, 'respawn_delay', self.respawn_delay, str)
-        interfaces.GeneratorBase.to_attr(elem, 'required', self.required, bool)
+        if self.respawn:
+            interfaces.GeneratorBase.to_attr(elem, 'respawn_delay', self.respawn_delay, str)
+        interfaces.GeneratorBase.to_attr(elem, 'required', self._required, bool)
         interfaces.GeneratorBase.to_attr(elem, 'clear_params', self.clear_params, bool)
         interfaces.GeneratorBase.to_attr(elem, 'ns', self.ns, str)
         interfaces.GeneratorBase.to_attr(elem, 'launch-prefix', self.prefix, str)
