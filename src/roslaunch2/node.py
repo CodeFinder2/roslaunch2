@@ -125,7 +125,7 @@ class Node(remapable.Remapable):
         interfaces.GeneratorBase.to_attr(elem, 'args', self.args, str)
         interfaces.GeneratorBase.to_attr(elem, 'respawn', self._respawn, bool)
         interfaces.GeneratorBase.to_attr(elem, 'machine', self.machine, machine.Machine)
-        if self.respawn:
+        if self._respawn:
             interfaces.GeneratorBase.to_attr(elem, 'respawn_delay', self.respawn_delay, str)
         interfaces.GeneratorBase.to_attr(elem, 'required', self._required, bool)
         interfaces.GeneratorBase.to_attr(elem, 'clear_params', self.clear_params, bool)
