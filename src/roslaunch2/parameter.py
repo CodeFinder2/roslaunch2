@@ -1,7 +1,6 @@
 import lxml.etree
 import warnings
 import argparse
-import sys
 
 import interfaces
 import enum
@@ -31,13 +30,17 @@ class LaunchParameter(argparse.ArgumentParser):
         """
         self.add_argument('--' + name, default=kwargs[name] if name in kwargs else default, help=help_text)
 
+    def add_flag(self, name, help_text, default, store, **kwargs):
+        self.add_argument('--' + name, action='store_true' if store else 'store_false',
+                          default=kwargs[name] if name in kwargs else default, help=help_text)
+
     def get_args(self):
         """
         Parse the previously defined command line arguments using add() or add_argument(). Ignored unknown args.
         Parameters are always parsed from sys.argv and may overlap with parameters from other (used / included) launch
         modules and/or with arguments of roslaunch.
         :return: detected / known arguments. If an argument is named --name, then args.name contains the value whereby
-                 args is the value returned by this method
+        args is the value returned by this method
         """
         known_args, _ = self.parse_known_args()
         return known_args
