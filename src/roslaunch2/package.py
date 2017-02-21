@@ -5,34 +5,47 @@ import sys
 import roslaunch2.logging
 
 
-def get_paths_to_file(start_dir, file_comp):
-    """
-    Searches for file_comp in $start_dir recursively.
-
-    :param start_dir: root directory where to start the search
-    :param file_comp: file path component (like some/dir/myfile.xml) name to search for
-    :return: Set of files found (with their full path)
-    """
-    file_name = os.path.basename(file_comp)
-    dir_comp = os.path.dirname(file_comp)
-    result = []
-    for root, dir_set, file_set in os.walk(start_dir):
-        for a_file in file_set:
-            if a_file == file_name and root.endswith(dir_comp):
-                result.append(os.path.join(root, a_file))
-    return result
-
-
 class Package:
-    __path_cache = {}
+    __pkg_cache = {}
+    __dir_cache = {}
+    __find_cache = {}
+
+    @staticmethod
+    def get_paths_to_file(start_dir, file_comp):
+        """
+        Searches for file_comp in $start_dir recursively (also using a cache for speedup).
+
+        :param start_dir: root directory where to start the search
+        :param file_comp: file path component (like some/dir/myfile.xml) name to search for
+        :return: Set of files found (with their full path)
+        """
+        file_name = os.path.basename(file_comp)
+        dir_comp = os.path.dirname(file_comp)
+        result = []
+        if start_dir in Package.__dir_cache:  # use cached file listing of $start_dir
+            for root, file_set in Package.__dir_cache[start_dir]:
+                for a_file in file_set:
+                    if a_file == file_name and root.endswith(dir_comp):
+                        result.append(os.path.join(root, a_file))
+        else:  # crawl the file system at $start_dir (and cache for future requests)
+            cache_entry = []
+            for root, _, file_set in os.walk(start_dir):
+                cache_entry.append((root, file_set))
+                for a_file in file_set:
+                    if a_file == file_name and root.endswith(dir_comp):
+                        result.append(os.path.join(root, a_file))
+            Package.__dir_cache[start_dir] = cache_entry
+        return result
+
+    @staticmethod
+    def __get_pkg_path_cached(name):
+        if name not in Package.__pkg_cache:
+            Package.__pkg_cache[name] = rospkg.RosPack().get_path(name)  # may throws rospkg.ResourceNotFound
+        return Package.__pkg_cache[name]
 
     def __init__(self, name):
         self.name = name
-        if name in Package.__path_cache:
-            self.path = Package.__path_cache[name]
-        else:
-            self.path = rospkg.RosPack().get_path(name)  # may throws rospkg.ResourceNotFound
-            Package.__path_cache[name] = self.path
+        self.path = Package.__get_pkg_path_cached(name)
 
     def __str__(self):
         return self.name
@@ -46,8 +59,7 @@ class Package:
                 name = pkg.name
             else:
                 raise ValueError('Cannot process type {}'.format(str(type(pkg))))
-            pkg_path = rospkg.RosPack().get_path(name)
-            return pkg_path
+            return Package.__get_pkg_path_cached(name)
         except rospkg.ResourceNotFound:
             return None
 
@@ -119,7 +131,8 @@ class Package:
         elif sys.version_info < (3, 4):  # Python 3.3 and 3.4
             import importlib.machinery
             return importlib.machinery.SourceFileLoader(module_name, full_module_path).load_module()
-        elif sys.version_info >= (3, 5):  # Python 3.5+
+        elif sys.version_info >= (3, 5):  # Python 3.
+            # 5+
             import importlib.util
             spec = importlib.util.spec_from_file_location(module_name, full_module_path)
             m = importlib.util.module_from_spec(spec)
@@ -127,12 +140,16 @@ class Package:
             return m
 
     def find(self, path_comp, silent=False):
+        key = ''.join([self.name, path_comp])
+        if key in Package.__find_cache:
+            return Package.__find_cache[key]
         if not path_comp:
             return self.path
         dir_path = os.path.join(self.path, path_comp if not path_comp.startswith(os.path.sep) else path_comp[1:])
         if os.path.isdir(dir_path):
+            Package.__find_cache[key] = dir_path
             return dir_path
-        f = get_paths_to_file(self.path, path_comp)
+        f = Package.get_paths_to_file(self.path, path_comp)
         if len(f) > 1:
             print("Found {} files, unique selection impossible (using first).".format(', '.join(f)))
         if not f:
@@ -140,4 +157,5 @@ class Package:
                 raise IOError("No files like '{}' found in '{}'.".format(path_comp, self.name))
             else:
                 return None
+        Package.__find_cache[key] = f[0]
         return f[0]
