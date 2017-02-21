@@ -24,9 +24,15 @@ def get_paths_to_file(start_dir, file_comp):
 
 
 class Package:
+    __path_cache = {}
+
     def __init__(self, name):
         self.name = name
-        self.path = rospkg.RosPack().get_path(name)  # may throws rospkg.ResourceNotFound
+        if name in Package.__path_cache:
+            self.path = Package.__path_cache[name]
+        else:
+            self.path = rospkg.RosPack().get_path(name)  # may throws rospkg.ResourceNotFound
+            Package.__path_cache[name] = self.path
 
     def __str__(self):
         return self.name
