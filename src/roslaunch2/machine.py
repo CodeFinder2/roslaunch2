@@ -1,6 +1,5 @@
 import lxml.etree
 import paramiko
-import copy
 
 import interfaces
 import utils
@@ -12,6 +11,7 @@ class Machine(interfaces.GeneratorBase):
     """
     def __init__(self, address, user, env_loader=None, name=None, password=None, timeout=None):
         interfaces.GeneratorBase.__init__(self)
+        interfaces.Composable.__init__(self)
         if not address or not user:
             raise ValueError("address='{}' and/or user='{}' cannot be empty or None.".format(address, user))
         self.address = address
@@ -42,7 +42,7 @@ class Machine(interfaces.GeneratorBase):
         self.env_loader = script_path
 
     def find(self, pkg, path_comp=None):
-#        if not self.ssh_session:
+        # if not self.ssh_session:
         ssh_session = paramiko.SSHClient()
         ssh_session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh_session.connect(hostname=self.address, username=self.user)

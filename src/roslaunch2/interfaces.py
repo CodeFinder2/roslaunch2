@@ -28,11 +28,21 @@ class GeneratorBase(object):  # 'base class'?
         raise NotImplementedError('generate() not implemented in "{}" yet.'.format(self.__class__.__name__))
 
 
-class Composable(object):  # TODO: Composer vs. Composable
+class Composable(object):
     def __init__(self):
+        self.rooted = False  # True if object has been (Composer.)add()ed to a parent
+
+
+class Composer(object):
+    def __init__(self, valid_types):
         self.children = []
+        self.valid_types = tuple(valid_types) if valid_types is not None else None
 
     def add(self, other):
-        if hasattr(other, 'rooted'):
-            other.rooted = True
+        assert isinstance(other, Composable), "Object to be added must have the 'Composable' base class."
+        if self.valid_types is not None:
+            assert isinstance(other, self.valid_types),\
+                "Cannot add objects of type '{:s}' to '{:s}'.".format(other.__class__.__name__,
+                                                                      self.__class__.__name__)
+        other.rooted = True
         self.children.append(copy.deepcopy(other))

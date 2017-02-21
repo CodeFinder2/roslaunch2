@@ -1,19 +1,22 @@
 import lxml.etree
+import warnings
 
 import remapable
 import interfaces
 import package
 import utils
+import parameter
 
 
 # TODO implement this completely
-class Test(remapable.Remapable, interfaces.GeneratorBase):
+class Test(remapable.Remapable, interfaces.Composable, interfaces.Composer):
     """
     For starting ROS nodes as tests (see rostest), equals <test>.
     """
     def __init__(self, pkg, node, test_name=None, args=None, name=None):
         remapable.Remapable.__init__(self)
-        interfaces.GeneratorBase.__init__(self)
+        interfaces.Composable.__init__(self)
+        interfaces.Composer.__init__(self, [parameter.Parameter])
         if not pkg or not node:
             raise ValueError("pkg='{}' and/or node='{}' cannot be empty or None.".format(pkg, node))
         self.pkg = package.Package(pkg) if type(pkg) is str else pkg
@@ -24,7 +27,6 @@ class Test(remapable.Remapable, interfaces.GeneratorBase):
         self.clear_params = None
         self.prefix = None  # equals the 'launch-prefix' attribute in XML
         self.ns = None
-        self.params = list()  # list of "Parameter" objects (private node parameters)
         self.retry = None
         self.time_limit = None
         self.cwd = None
@@ -41,14 +43,14 @@ class Test(remapable.Remapable, interfaces.GeneratorBase):
         self.ns = ns
 
     def add(self, param):
-        for p in self.params:
+        for p in self.children:
             if param == p:
                 raise ValueError("Parameter '{}' already added.".format(str(param)))
-        self.params.append(param)
+        interfaces.Composer.add(self, param)
 
-    def generate(self, root, machine):
-        elem = lxml.etree.SubElement(root, 'node')
-        remapable.Remapable.generate(self, elem)
+    def generate(self, root, machines):
+        elem = lxml.etree.SubElement(root, 'test')
+        remapable.Remapable.generate(self, elem, machines)
 
         interfaces.GeneratorBase.to_attr(elem, 'pkg', self.pkg, package.Package)
         interfaces.GeneratorBase.to_attr(elem, 'type', self.node, str)
@@ -61,5 +63,5 @@ class Test(remapable.Remapable, interfaces.GeneratorBase):
         interfaces.GeneratorBase.to_attr(elem, 'retry', self.retry, int)
         interfaces.GeneratorBase.to_attr(elem, 'time-limit', self.time_limit, float)
         interfaces.GeneratorBase.to_attr(elem, 'cwd', self.cwd, str)
-        for p in self.params:
+        for p in self.children:  # generate parameters
             p.generate(elem, None)

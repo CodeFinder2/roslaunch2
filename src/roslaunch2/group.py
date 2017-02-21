@@ -5,19 +5,22 @@ import interfaces
 import remapable
 import node
 import launch
+import parameter
+import environment
+import test
 
 
-class Group(remapable.Remapable, interfaces.Composable, interfaces.GeneratorBase):
+class Group(remapable.Remapable, interfaces.Composer, interfaces.Composable):
     """
     For grouping nodes in namespaces, equals <group ns="namespace"> ... </group>.
     """
     def __init__(self, namespace, ignore_content=False, clear_params=None):
         remapable.Remapable.__init__(self)
+        interfaces.Composer.__init__(self, None)  # everything can be put into a Group
         interfaces.Composable.__init__(self)
         self.name = namespace
         self.clear_params = clear_params
         self.ignore_content = ignore_content
-        self.rooted = False  # True if object has been add()ed to a parent
         self.machine = None
 
     def __del__(self):

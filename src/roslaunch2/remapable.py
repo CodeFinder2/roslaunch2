@@ -1,14 +1,14 @@
 from lxml import etree
 
-from interfaces import GeneratorBase
+import interfaces
 
 
-class Remapable(GeneratorBase):
+class Remapable(interfaces.GeneratorBase):
     """
     Represents the capability of being <remap>able.
     """
     def __init__(self):
-        GeneratorBase.__init__(self)
+        interfaces.GeneratorBase.__init__(self)
         self.from_name = list()
         self.to_name = list()
 
@@ -27,5 +27,5 @@ class Remapable(GeneratorBase):
         if self.from_name and self.to_name:
             for fn, tn in zip(self.from_name, self.to_name):
                 elem = etree.SubElement(root, 'remap')
-                GeneratorBase.to_attr(elem, 'from', fn, str)
-                GeneratorBase.to_attr(elem, 'to', tn, str)
+                interfaces.GeneratorBase.to_attr(elem, 'from', fn, str)
+                interfaces.GeneratorBase.to_attr(elem, 'to', tn, str)

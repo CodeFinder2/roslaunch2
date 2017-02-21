@@ -46,12 +46,13 @@ class LaunchParameter(argparse.ArgumentParser):
         return known_args
 
 
-class Parameter(interfaces.GeneratorBase):
+class Parameter(interfaces.GeneratorBase, interfaces.Composable):
     """
     Base class for parameters
     """
     def __init__(self):
         interfaces.GeneratorBase.__init__(self)
+        interfaces.Composable.__init__(self)
         self.rooted = False  # True if object has been add()ed to a parent
 
     def __del__(self):

@@ -8,11 +8,11 @@ import node
 import group
 
 
-class Launch(interfaces.Composable, remapable.Remapable):
+class Launch(interfaces.Composable, interfaces.Composer, remapable.Remapable):
     def __init__(self, deprecation_message=None):
-        remapable.Remapable.__init__(self)
         interfaces.Composable.__init__(self)
-        interfaces.GeneratorBase.__init__(self)
+        interfaces.Composer.__init__(self, None)  # everything can be put into Launch
+        remapable.Remapable.__init__(self)
         self.machine = None
         if deprecation_message:
             warnings.warn(deprecation_message, DeprecationWarning)

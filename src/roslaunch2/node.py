@@ -6,7 +6,7 @@ import remapable
 import interfaces
 import package
 import machine
-import utils
+import parameter
 
 
 class Output(enum.IntEnum):
@@ -20,13 +20,14 @@ class Output(enum.IntEnum):
             return 'log'
 
 
-class Node(remapable.Remapable):
+class Node(remapable.Remapable, interfaces.Composable, interfaces.Composer):
     """
     For starting ROS nodes, equals <node>.
     """
     def __init__(self, pkg, node=None, name=None, output=Output.Screen, args=None):
         remapable.Remapable.__init__(self)
-        interfaces.GeneratorBase.__init__(self)
+        interfaces.Composable.__init__(self)
+        interfaces.Composer.__init__(self, [parameter.Parameter])
         if pkg and not node:
             node = pkg
         if not name:
@@ -46,7 +47,6 @@ class Node(remapable.Remapable):
         self.clear_params = None
         self.prefix = None  # equals the 'launch-prefix' attribute in XML
         self.ns = None
-        self.params = list()  # list of "Parameter" objects (private node parameters)
         self.rooted = False  # True if object has been add()ed to a parent
 
     @property
@@ -103,13 +103,11 @@ class Node(remapable.Remapable):
         self.ns = ns
 
     def add(self, param):
-        if hasattr(param, 'rooted'):
-            param.rooted = True
-
-        for p in self.params:
+        for p in self.children:
             if param == p:
                 raise ValueError("Parameter '{}' already added.".format(str(param)))
-        self.params.append(param)
+
+        interfaces.Composer.add(self, param)
 
     def start_on(self, machine_object):
         self.machine = machine_object
@@ -134,5 +132,5 @@ class Node(remapable.Remapable):
         if self.machine:
             assert type(machines) is list
             machines.append(self.machine)
-        for p in self.params:  # generate parameters
+        for p in self.children:  # generate parameters
             p.generate(elem, None)

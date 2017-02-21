@@ -4,14 +4,14 @@ import warnings
 import interfaces
 
 
-class EnvironmentVariable(interfaces.GeneratorBase):
+class EnvironmentVariable(interfaces.GeneratorBase, interfaces.Composable):
     def __init__(self, name, value):
         interfaces.GeneratorBase.__init__(self)
+        interfaces.Composable.__init__(self)
         self.name = name
         self.value = value
         warnings.warn("EnvironmentVariable (<env> tag) is deprecated since Fuerte. Use env-loader instead.",
                       DeprecationWarning)
-        self.rooted = False  # True if object has been add()ed to a parent
 
     def __del__(self):
         if not self.rooted:
