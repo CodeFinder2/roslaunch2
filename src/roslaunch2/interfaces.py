@@ -46,3 +46,7 @@ class Composer(object):
                                                                       self.__class__.__name__)
         other.rooted = True
         self.children.append(copy.deepcopy(other))
+
+    def __iadd__(self, other):
+        self.add(other)
+        return self
