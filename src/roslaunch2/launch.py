@@ -38,6 +38,7 @@ class Launch(interfaces.Composable, interfaces.Composer, remapable.Remapable):
         if first_call:
             root = lxml.etree.Element('launch')
             machines = []
+        remapable.Remapable.generate(self, root, machines)
         for child in self.children:
             if self.machine and (isinstance(child, node.Node) or isinstance(child, group.Group) or
                isinstance(child, Launch)) and not child.machine:  # see comment in group.py
