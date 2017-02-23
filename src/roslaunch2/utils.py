@@ -3,7 +3,7 @@ import random
 import os
 import itertools
 
-# Separator for communication (topic, services) and tf (frame) names:
+#: Separator for communication (topic, services) and tf (frame) names
 ROS_NAME_SEP = '/'
 
 
@@ -67,13 +67,39 @@ def merge_dicts(x, y):
     return z
 
 
-def tf_join(left, right):
-    def remove_successive_duplicates(s, c):
-        return ''.join(c if a == c else ''.join(b) for a, b in itertools.groupby(s))
+def clean_name(ros_name, c=ROS_NAME_SEP):
+    """
+    Removes successive duplicates of c from the given ros_name.
+    :param ros_name: Name (string) to process
+    :param c: character whose successive occurrences should be removed
+    :return: processed string (or unchanged ros_name if nothing needs to be done)
+    """
+    return ''.join(c if a == c else ''.join(b) for a, b in itertools.groupby(ros_name))
 
-    res = ROS_NAME_SEP.join([left, right])
-    return remove_successive_duplicates(res, ROS_NAME_SEP)
+
+def tf_join(left, right):
+    """
+    Combines the partial frame IDs left and right to a new combined valid frame IDs. According to tf2
+    design, preceding slashes will be stripped.
+    :param left: partial frame ID to put leftmost (e. g., a parent frame ID)
+    :param right: partial frame ID to put rightmost (e. g., a child frame ID)
+    :return: combined frame ID (e. g., "parent1/child0")
+    """
+    # Join left and right, and get rid of successive occurrences of ROS_NAME_SEP:
+    res = clean_name(ROS_NAME_SEP.join([left, right]), ROS_NAME_SEP)
+    # Remove a possibly preceding ROS_NAME_SEP:
+    return res[1:] if res.startswith(ROS_NAME_SEP) else res
 
 
 def ros_join(left, right, force_global=False):
-    return tf_join(ROS_NAME_SEP + left, right) if force_global else tf_join(left, right)
+    """
+    Behaves much like tf_join but is intended to work on ROS names (like topics, services, namespaces).
+    Allows to force the creation of a global name.
+    :param left: partial name to put leftmost
+    :param right: partial name to put rightmost
+    :param force_global: True to ensure / force the resulting name to be in the global namespace (not advised, also
+    useful in rare cases)
+    :return: combined ROS name
+    """
+    res = clean_name(ROS_NAME_SEP.join([left, right]), ROS_NAME_SEP)
+    return ROS_NAME_SEP + res if force_global and not res.startswith(ROS_NAME_SEP) else res
