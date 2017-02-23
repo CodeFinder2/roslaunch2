@@ -1,6 +1,10 @@
 import string
 import random
 import os
+import itertools
+
+# Separator for communication (topic, services) and tf (frame) names:
+ROS_NAME_SEP = '/'
 
 
 def anon(length=6):
@@ -61,3 +65,15 @@ def merge_dicts(x, y):
     z = x.copy()
     z.update(y)
     return z
+
+
+def tf_join(left, right):
+    def remove_successive_duplicates(s, c):
+        return ''.join(c if a == c else ''.join(b) for a, b in itertools.groupby(s))
+
+    res = ROS_NAME_SEP.join([left, right])
+    return remove_successive_duplicates(res, ROS_NAME_SEP)
+
+
+def ros_join(left, right, force_global=False):
+    return tf_join(ROS_NAME_SEP + left, right) if force_global else tf_join(left, right)
