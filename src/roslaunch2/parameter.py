@@ -28,7 +28,8 @@ class LaunchParameter(argparse.ArgumentParser):
         :param kwargs: dictionary of parameters for the launch module, possibly containing name
         :return: None
         """
-        self.add_argument('--' + name, default=kwargs[name] if name in kwargs else default, help=help_text)
+        self.add_argument('--' + name, default=kwargs[name] if name in kwargs else default, help=help_text,
+                          type=type(default))
 
     def add_flag(self, name, help_text, default, store, **kwargs):
         self.add_argument('--' + name, action='store_true' if store else 'store_false',
