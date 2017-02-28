@@ -7,7 +7,7 @@ catkin_package()
 
 install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-catkin_install_python(PROGRAMS scripts/roslaunch2 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+catkin_install_python(PROGRAMS script/roslaunch2 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(FILES config/roslaunch2_auto_completion.bash
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
