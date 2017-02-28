@@ -70,6 +70,7 @@ def merge_dicts(x, y):
 def clean_name(ros_name, c=ROS_NAME_SEP):
     """
     Removes successive duplicates of c from the given ros_name.
+
     :param ros_name: Name (string) to process
     :param c: character whose successive occurrences should be removed
     :return: processed string (or unchanged ros_name if nothing needs to be done)
@@ -81,6 +82,7 @@ def tf_join(left, right):
     """
     Combines the partial frame IDs left and right to a new combined valid frame IDs. According to tf2
     design, preceding slashes will be stripped.
+
     :param left: partial frame ID to put leftmost (e. g., a parent frame ID)
     :param right: partial frame ID to put rightmost (e. g., a child frame ID)
     :return: combined frame ID (e. g., "parent1/child0")
@@ -95,6 +97,7 @@ def ros_join(left, right, force_global=False):
     """
     Behaves much like tf_join but is intended to work on ROS names (like topics, services, namespaces).
     Allows to force the creation of a global name.
+
     :param left: partial name to put leftmost
     :param right: partial name to put rightmost
     :param force_global: True to ensure / force the resulting name to be in the global namespace (not advised, also

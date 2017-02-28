@@ -22,6 +22,7 @@ class LaunchParameter(argparse.ArgumentParser):
         value is set. This way, command line options have the highest precedence, followed by parameters passed by the
         kwargs parameter of a launch module's main() function. If neither of which are set, the provided default value
         is set.
+
         :param name: command line parameter name and key to retrieve (fallback) default in kwargs
         :param help_text: help text of command line option
         :param default: final default value if neither a command line argument nor the key in kwargs is given
@@ -40,6 +41,7 @@ class LaunchParameter(argparse.ArgumentParser):
         Parse the previously defined command line arguments using add() or add_argument(). Ignored unknown args.
         Parameters are always parsed from sys.argv and may overlap with parameters from other (used / included) launch
         modules and/or with arguments of roslaunch.
+
         :return: detected / known arguments. If an argument is named --name, then args.name contains the value whereby
         args is the value returned by this method
         """
