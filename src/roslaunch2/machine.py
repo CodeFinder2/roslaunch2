@@ -1,5 +1,6 @@
 import lxml.etree
 import paramiko
+import getpass
 
 import interfaces
 import utils
@@ -86,6 +87,9 @@ class Machine(interfaces.GeneratorBase):
         interfaces.GeneratorBase.to_attr(elem, 'password', self.password, str)
         interfaces.GeneratorBase.to_attr(elem, 'env-loader', self.env_loader, str)
         interfaces.GeneratorBase.to_attr(elem, 'timeout', self.timeout, float)
+
+
+Localhost = Machine('localhost', getpass.getuser())
 
 
 class MachinePool:  # TODO?
