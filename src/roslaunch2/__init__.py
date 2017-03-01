@@ -26,7 +26,7 @@ def strip_args(launch_path):
     """
     Return preprocessed argument list only containing options valid in roslaunch (not roslaunch2). Also append
     path to generated launch file. For example, this returns
-    ['/home/abo/Development/SmartMAS/catkin_ws/devel/bin/roslaunch2', '/tmp/tmpd8xFTj.launch', '--timeout=5']
+    ['/home/user/catkin_ws/devel/bin/roslaunch2', '/tmp/tmpd8xFTj.launch', '--timeout=5']
 
     :param launch_path: path to generated launch file
     :return: list of options to be passed to roslaunch.main()
