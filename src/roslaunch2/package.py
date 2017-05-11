@@ -43,9 +43,25 @@ class Package:
             Package.__pkg_cache[name] = rospkg.RosPack().get_path(name)  # may throws rospkg.ResourceNotFound
         return Package.__pkg_cache[name]
 
-    def __init__(self, name):
+    def __init__(self, name=None):
         self.name = name
-        self.path = Package.__get_pkg_path_cached(name)
+        if self.name:
+            self.path = Package.__get_pkg_path_cached(name)
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        self.name = name
+        if self.name:
+            self.path = Package.__get_pkg_path_cached(name)
+
+    name = property(get_name, set_name)
+
+    def get_path(self):
+        return self.path
+
+    path = property(get_path)
 
     def __str__(self):
         return self.name
@@ -67,7 +83,7 @@ class Package:
         """
         Tests if a ROS node actually exists.
 
-        This method checks whether a ROS node named $node_name exists in a ROS package named $package_name.
+        This method checks whether a ROS node named $node_name exists in the current ROS package.
 
         :param node_name: name of ROS node to test
         :param warn: True if a warning about the missing node should be emitted
