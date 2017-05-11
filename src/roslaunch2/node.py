@@ -7,6 +7,7 @@ import interfaces
 import package
 import machine
 import parameter
+import environment
 
 
 class Output(enum.IntEnum):
@@ -27,7 +28,7 @@ class Node(remapable.Remapable, interfaces.Composable, interfaces.Composer):
     def __init__(self, pkg, node=None, name=None, output=Output.Screen, args=None):
         remapable.Remapable.__init__(self)
         interfaces.Composable.__init__(self)
-        interfaces.Composer.__init__(self, [parameter.Parameter])
+        interfaces.Composer.__init__(self, [parameter.Parameter, environment.EnvironmentVariable])
         if pkg and not node:
             node = pkg
         if not name:
