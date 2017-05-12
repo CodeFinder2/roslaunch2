@@ -133,5 +133,5 @@ class Node(remapable.Remapable, interfaces.Composable, interfaces.Composer):
         if self.machine:
             assert type(machines) is list
             machines.append(self.machine)
-        for p in self.children:  # generate parameters
+        for p in self.children:  # generate parameter/environment tags
             p.generate(elem, None)
