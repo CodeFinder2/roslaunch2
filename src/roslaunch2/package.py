@@ -97,7 +97,7 @@ class Package:
         """
         pkg = os.path.join(self.path, '../..')
         # Just consider files that are executable:
-        if [f for f in get_paths_to_file(pkg, node_name) if os.access(f, os.X_OK)]:
+        if [f for f in Package.get_paths_to_file(pkg, node_name) if os.access(f, os.X_OK)]:
             # if len(res) > 1:
             #     log.warning("Found {} executable files named {}, assuming existence."
             #                 .format(len(res), node_name, res[0]))
@@ -153,8 +153,7 @@ class Package:
         elif sys.version_info < (3, 4):  # Python 3.3 and 3.4
             import importlib.machinery
             return importlib.machinery.SourceFileLoader(module_name, full_module_path).load_module()
-        elif sys.version_info >= (3, 5):  # Python 3.
-            # 5+
+        elif sys.version_info >= (3, 5):  # Python 3.5+
             import importlib.util
             spec = importlib.util.spec_from_file_location(module_name, full_module_path)
             m = importlib.util.module_from_spec(spec)
