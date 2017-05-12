@@ -11,6 +11,12 @@ class Package:
     __find_cache = {}
 
     @staticmethod
+    def invalidate_cache():
+        Package.__pkg_cache = {}
+        Package.__dir_cache = {}
+        Package.__find_cache = {}
+
+    @staticmethod
     def get_paths_to_file(start_dir, file_comp):
         """
         Searches for file_comp in $start_dir recursively (also using a cache for speedup).
