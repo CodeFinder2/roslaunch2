@@ -14,7 +14,7 @@ from machine import *
 from environment import *
 from test import *
 from package import *
-from logging import *
+from logger import *
 from utils import *
 
 import argparse
@@ -84,7 +84,7 @@ def main():
     init_logger(not args.no_colors)
 
     if len(args.launchfile) > 1:
-        logging.warning("Multiple launch files at once are not supported (yet), just using the first.")
+        logger.warning("Multiple launch files at once are not supported (yet), just using the first.")
 
     args.launchfile = args.launchfile[0]
 

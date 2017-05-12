@@ -2,6 +2,8 @@ import rospkg
 import os
 import sys
 
+import roslaunch2.logger
+
 import roslaunch2.logging
 
 
