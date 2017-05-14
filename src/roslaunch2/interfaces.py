@@ -20,10 +20,11 @@ class GeneratorBase(object):  # 'base class'?
                 data = data.lower()
             elem.set(name, data)
 
-    def generate(self, root, machines):  # generates XML output
+    def generate(self, root, machines, pkg):  # generates XML output
         """
         Generates a roslaunch compatible XML representation of this object.
-        :return: XML representation of type etree.Element, and, finally, a string (see Launch impl.)
+        :return: the return value can be used arbitrarily (for an example, see node.Runnable); however, finally, a
+        string (see Launch impl.) must be returned which is the XML representation of the roslaunch file
         """
         raise NotImplementedError('generate() not implemented in "{}" yet.'.format(self.__class__.__name__))
 

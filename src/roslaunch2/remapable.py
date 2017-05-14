@@ -23,7 +23,7 @@ class Remapable(interfaces.GeneratorBase):
         self.from_name = list()
         self.to_name = list()
 
-    def generate(self, root, machines):
+    def generate(self, root, machines, pkg):
         if self.from_name and self.to_name:
             for fn, tn in zip(self.from_name, self.to_name):
                 elem = etree.SubElement(root, 'remap')

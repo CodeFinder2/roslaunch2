@@ -31,23 +31,23 @@ class Launch(interfaces.Composable, interfaces.Composer, remapable.Remapable):
         else:
             super(Launch, self).add(other)
 
-    def generate(self, root=None, machines=None):
+    def generate(self, root=None, machines=None, pkg=None):
         # Work around this issue (order of boolean expressions matters!):
         # http://stackoverflow.com/questions/20129996/why-does-boolxml-etree-elementtree-element-evaluate-to-false
         first_call = isinstance(root, type(None)) and not root
         if first_call:
             root = lxml.etree.Element('launch')
             machines = []
-        remapable.Remapable.generate(self, root, machines)
+        remapable.Remapable.generate(self, root, machines, None)
         for child in self.children:
             if self.machine and (isinstance(child, node.Node) or isinstance(child, group.Group) or
                isinstance(child, Launch)) and not child.machine:  # see comment in group.py
                 child.start_on(self.machine)
-            child.generate(root, machines)
+            child.generate(root, machines, None)
         if first_call:
             # Machines currently insert themselves at the beginning (for simplicity):
             machines = list(set(machines))  # make unique based on machine names
             for m in machines:
-                m.generate(root, None)
+                m.generate(root, None, None)
             return str(lxml.etree.tostring(root, pretty_print=True, xml_declaration=True,
                                            encoding='UTF-8', standalone='yes').decode("utf-8"))

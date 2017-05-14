@@ -1,10 +1,13 @@
 import rospkg
 import os
 import sys
+import Pyro4
 
 import roslaunch2.logger
 
-import roslaunch2.logging
+
+class DataRef:
+    pass
 
 
 class Package:
@@ -56,9 +59,11 @@ class Package:
         if self.name:
             self.path = Package.__get_pkg_path_cached(name)
 
+    @Pyro4.expose
     def get_name(self):
         return self.name
 
+    @Pyro4.expose
     def set_name(self, name):
         self.name = name
         if self.name:
@@ -66,6 +71,7 @@ class Package:
 
     name = property(get_name, set_name)
 
+    @Pyro4.expose
     def get_path(self):
         return self.path
 
@@ -162,6 +168,7 @@ class Package:
             spec.loader.exec_module(m)
             return m
 
+    @Pyro4.expose
     def find(self, path_comp, silent=False):
         key = ''.join([self.name, path_comp])
         if key in Package.__find_cache:

@@ -17,7 +17,8 @@ class EnvironmentVariable(interfaces.GeneratorBase, interfaces.Composable):
         if not self.rooted:
             warnings.warn('{} has been created but never add()ed.'.format(str(self)), Warning, 2)
 
-    def generate(self, root, machines):
+    def generate(self, root, machines, pkg):
         elem = lxml.etree.SubElement(root, 'env')
         interfaces.GeneratorBase.to_attr(elem, 'name', self.name, str)
+        # TODO: allow self.value to be a remote.Resolvable object?
         interfaces.GeneratorBase.to_attr(elem, 'value', self.value, str)

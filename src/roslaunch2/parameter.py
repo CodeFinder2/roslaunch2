@@ -3,6 +3,7 @@ import warnings
 import argparse
 
 import interfaces
+import machine
 import enum
 
 
@@ -63,7 +64,7 @@ class Parameter(interfaces.GeneratorBase, interfaces.Composable):
             warnings.warn("'{}' parameter has been created but never add()ed."
                           .format(str(self)), Warning, 2)
 
-    def generate(self, root, machines):
+    def generate(self, root, machines, pkg):
         raise NotImplementedError('generate() not implemented in "{}" yet.'.format(self.__class__.__name__))
 
 
@@ -111,10 +112,10 @@ class ServerParameter(Parameter):
         else:  # escalate to default value
             return ServerParameter(name, default)
 
-    def generate(self, root, machine):
+    def generate(self, root, starting_machine, pkg):
         elem = lxml.etree.SubElement(root, 'param')
         interfaces.GeneratorBase.to_attr(elem, 'name', self.name, str)
-        # Python type of self.value varies/depends on input:
+        self.value = machine.Machine.resolve_if(self.value, starting_machine, pkg)
         interfaces.GeneratorBase.to_attr(elem, 'value', self.value)
         interfaces.GeneratorBase.to_attr(elem, 'type', ServerParameter.type_to_str(self.value))
 
@@ -157,7 +158,7 @@ class FileParameter(Parameter):
         return self.command == other.command and self.file_path == other.file_path and \
                self.param == other.param and self.value == other.value and self.ns == other.ns
 
-    def generate(self, root, machine):
+    def generate(self, root, starting_machine, pkg):
         elem = lxml.etree.SubElement(root, 'rosparam')
         interfaces.GeneratorBase.to_attr(elem, 'command', self.command, FileCommand)
         interfaces.GeneratorBase.to_attr(elem, 'param', self.param, str)

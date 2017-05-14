@@ -1,12 +1,18 @@
 import lxml.etree
-import paramiko
 import getpass
+import Pyro4
+import ipaddress
+import socket
 
 import interfaces
 import utils
+import package
+import remote
 
 
 class Machine(interfaces.GeneratorBase):
+    __generated_env_loaders = []
+
     """
     For defining (remote) machines to launch on, equals the <machine> tag.
     """
@@ -20,47 +26,39 @@ class Machine(interfaces.GeneratorBase):
         self.password = password
         self.timeout = timeout
         self.env_loader = env_loader
-#        self.ssh_session = None
 
-#    def __del__(self):
-#        if self.ssh_session:
-#            self.ssh_session.close()
+    def __resolve_setup(self):
+        addr = self.address
+        local = (addr == 'localhost' or addr == '127.0.0.1') and self.user == getpass.getuser()
+        # Always use IP addresses as PYRONAMEs:
+        try:
+            ipaddress.ip_address(addr)
+        except ValueError:
+            addr = socket.gethostbyname(addr)
+        return addr, local
 
-#    def __copy__(self):
-#        # Ignore self.ssh_session (cannot / should not be copied).
-#        cpy = Machine(self.address, self.user, self.name, self.password, self.timeout)
-#        cpy.env_loader = self.env_loader
-#        return cpy
+    def resolve(self, what):
+        addr, local = self.__resolve_setup()
+        return what.resolve(addr, self.user, local)
 
-#    def __deepcopy__(self):
-#        # Ignore self.ssh_session (cannot / should not be copied).
-#        dcpy = type(self)(copy.deepcopy(self.address, self.user, self.name, self.password, self.timeout))
-#        dcpy.env_loader = copy.deepcopy(self.env_loader)
-#        return dcpy
+    def remote(self, object_name=None):
+        if not object_name:
+            object_name = 'roslaunch2.remote.API'  # default to the roslaunch2 API
+
+        def get_class(class_name):
+            parts = class_name.split('.')
+            module_name = ".".join(parts[:-1])
+            m = __import__(module_name)
+            for comp in parts[1:]:
+                m = getattr(m, comp)
+            return m
+        addr, local = self.__resolve_setup()
+        if local:
+            return get_class(object_name)  # return a local instance
+        return Pyro4.Proxy('PYRONAME:{:s}.{:s}.{:s}'.format(addr, self.user, object_name))
 
     def set_loader(self, script_path=None):
         self.env_loader = script_path
-
-    def find(self, pkg, path_comp=None):
-        # if not self.ssh_session:
-        ssh_session = paramiko.SSHClient()
-        ssh_session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh_session.connect(hostname=self.address, username=self.user)
-        # TODO: would be cooler if we can use our Python code remotely as well
-        cmd = r"""
-        if [ "$0" = "bash" ] || [ "$0" = "sh" ]; then
-          . ~/.bashrc
-        fi
-        rospack find {:s}
-        """.format(pkg.name)
-        _, o, e = ssh_session.exec_command(cmd)
-
-        o = [str(r).strip() for r in o.readlines()]
-        e = [str(r).strip() for r in e.readlines()]
-        if e or not o:
-            raise RuntimeError(e)
-        else:
-            return o[0]
 
     def __eq__(self, other):
         return self.name == other.name
@@ -78,15 +76,42 @@ class Machine(interfaces.GeneratorBase):
         pstr = ":{}".format(self.password) if self.password else str()
         return '{} -> {}{}@{}'.format(self.name, self.user, pstr, self.address)
 
-    def generate(self, root, machines):
+    def generate(self, root, machines, pkg):
         elem = lxml.etree.Element('machine')
         root.insert(0, elem)  # insert at the top to make them usable in subsequent nodes
         interfaces.GeneratorBase.to_attr(elem, 'name', self.name, str)
         interfaces.GeneratorBase.to_attr(elem, 'address', self.address, str)
         interfaces.GeneratorBase.to_attr(elem, 'user', self.user, str)
         interfaces.GeneratorBase.to_attr(elem, 'password', self.password, str)
+        # Automatically generate the env-loader script remotely:
+        addr, local = self.__resolve_setup()
+        if not self.env_loader and not local:
+            pyro_addr = 'PYRONAME:{:s}.{:s}.roslaunch2.remote.Internals'.format(addr, self.user)
+            Machine.__generated_env_loaders.append(pyro_addr)
+            remote_object = Pyro4.Proxy(pyro_addr)
+            self.env_loader = str(remote_object.get_env_loader())
         interfaces.GeneratorBase.to_attr(elem, 'env-loader', self.env_loader, str)
         interfaces.GeneratorBase.to_attr(elem, 'timeout', self.timeout, float)
+
+    @staticmethod
+    def resolve_if(what, machine_obj, pkg):
+        if isinstance(what, remote.Resolvable):
+            # Set package for resolving paths to provided pkg if not already set on construction:
+            if isinstance(what, remote.Path):
+                what.set_package(pkg)
+            # Do the actual resolving
+            if isinstance(machine_obj, Machine):  # resolve remotely
+                return machine_obj.resolve(what)
+            else:  # resolve on localhost
+                return Localhost.resolve(what)
+        else:
+            return what  # unchanged (not resolvable)
+
+    @staticmethod
+    def cleanup():
+        for obj_addr in Machine.__generated_env_loaders:
+            Pyro4.Proxy(obj_addr).cleanup()
+        Machine.__generated_env_loaders = []
 
 
 Localhost = Machine('localhost', getpass.getuser())

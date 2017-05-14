@@ -16,6 +16,7 @@ from test import *
 from package import *
 from logger import *
 from utils import *
+from remote import *
 
 import argparse
 
@@ -115,6 +116,8 @@ def main():
             roslaunch.main(strip_args(ftmp.name))
         except:
             pass
+        # Local and remote cleanup:
+        Machine.cleanup()
         utils.silent_remove(ftmp.name)
     else:
         print(content)

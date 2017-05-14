@@ -5,9 +5,6 @@ import interfaces
 import remapable
 import node
 import launch
-import parameter
-import environment
-import test
 
 
 class Group(remapable.Remapable, interfaces.Composer, interfaces.Composable):
@@ -30,12 +27,12 @@ class Group(remapable.Remapable, interfaces.Composer, interfaces.Composable):
     def start_on(self, machine_object):
         self.machine = machine_object
 
-    def generate(self, root, machines):
+    def generate(self, root, machines, pkg):
         if self.name:  # exclude the group if namespace is empty
             elem = lxml.etree.SubElement(root, 'group')
             interfaces.GeneratorBase.to_attr(elem, 'ns', self.name)
             interfaces.GeneratorBase.to_attr(elem, 'clear_params', self.clear_params)
-            remapable.Remapable.generate(self, elem, machines)
+            remapable.Remapable.generate(self, elem, machines, pkg)
         else:
             elem = root
         # Do not ignore the content:
@@ -47,4 +44,4 @@ class Group(remapable.Remapable, interfaces.Composer, interfaces.Composable):
                 if self.machine and (isinstance(child, node.Node) or isinstance(child, Group) or
                    isinstance(child, launch.Launch)) and not child.machine:
                     child.start_on(self.machine)
-                child.generate(elem, machines)
+                child.generate(elem, machines, pkg)
