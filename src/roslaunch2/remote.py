@@ -85,9 +85,9 @@ class Path(Resolvable):
     def resolve(self, address, user, local_only):
         if local_only:
             return self.pkg.find(self.data)
-        remote_object = Pyro4.Proxy('PYRONAME:{:s}.{:s}.roslaunch2.package.Package'.format(address, user))
-        remote_object.set_name(str(self.pkg))  # just the package name
-        return str(remote_object.find(self.data))  # convert from unicode to str
+        with Pyro4.Proxy('PYRONAME:{:s}.{:s}.roslaunch2.package.Package'.format(address, user)) as remote_object:
+            remote_object.set_name(str(self.pkg))  # just the package name
+            return str(remote_object.find(self.data))  # convert from unicode to str
 
 
 class Variable(Resolvable):
@@ -97,5 +97,5 @@ class Variable(Resolvable):
     def resolve(self, address, user, local_only):
         if local_only:
             return API.env(self.data)
-        remote_object = Pyro4.Proxy('PYRONAME:{:s}.{:s}.roslaunch2.remote.API'.format(address, user))
-        return str(remote_object.env(self.data))
+        with Pyro4.Proxy('PYRONAME:{:s}.{:s}.roslaunch2.remote.API'.format(address, user)) as remote_object:
+            return str(remote_object.env(self.data))

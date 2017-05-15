@@ -86,10 +86,10 @@ class Machine(interfaces.GeneratorBase):
         # Automatically generate the env-loader script remotely:
         addr, local = self.__resolve_setup()
         if not self.env_loader and not local:
-            pyro_addr = 'PYRONAME:{:s}.{:s}.roslaunch2.remote.Internals'.format(addr, self.user)
+            pyro_addr = 'PYRONAME:{:s}.{:s}.roslaunch2.remote.__Internals'.format(addr, self.user)
             Machine.__generated_env_loaders.append(pyro_addr)
-            remote_object = Pyro4.Proxy(pyro_addr)
-            self.env_loader = str(remote_object.get_env_loader())
+            with Pyro4.Proxy(pyro_addr) as remote_object:
+                self.env_loader = str(remote_object.get_env_loader())
         interfaces.GeneratorBase.to_attr(elem, 'env-loader', self.env_loader, str)
         interfaces.GeneratorBase.to_attr(elem, 'timeout', self.timeout, float)
 
@@ -110,7 +110,8 @@ class Machine(interfaces.GeneratorBase):
     @staticmethod
     def cleanup():
         for obj_addr in Machine.__generated_env_loaders:
-            Pyro4.Proxy(obj_addr).cleanup()
+            with Pyro4.Proxy(obj_addr) as remote_object:
+                remote_object.cleanup()
         Machine.__generated_env_loaders = []
 
 
