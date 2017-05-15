@@ -33,6 +33,17 @@ sudo journalctl -ru pyro_name_server
 - Note that **a roslaunch2 server is required to be running on all machines that should support roslaunch2's remote API**. (If such features are not required, the server does not need to run and all other features of roslaunch2 still work.)
 - The process is similar to setting up the name server, see above for more details.
 - Like for the PyRO name server (see above), fix the file `$(rospack find roslaunch2)/config/systemd/roslaunch2_server.service` according to your system configuration (path and user name).
+- Clearly, on a system without a PyRO name server (and its associated service unit file), you also need to change:
+```
+Wants=pyro_name_server.service
+After=pyro_name_server.service
+```
+to
+```
+Wants=network-online.target
+After=network.target network-online.target
+```
+in `roslaunch2_server.service`.
 - Then, type:
 ```
 sudo cp $(rospack find roslaunch2)/config/systemd/roslaunch2_server.service /etc/systemd/system/
