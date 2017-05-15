@@ -86,7 +86,7 @@ class Machine(interfaces.GeneratorBase):
         # Automatically generate the env-loader script remotely:
         addr, local = self.__resolve_setup()
         if not self.env_loader and not local:
-            pyro_addr = 'PYRONAME:{:s}.{:s}.roslaunch2.remote.__Internals'.format(addr, self.user)
+            pyro_addr = 'PYRONAME:{:s}.{:s}.roslaunch2.remote.Internals'.format(addr, self.user)
             Machine.__generated_env_loaders.append(pyro_addr)
             with Pyro4.Proxy(pyro_addr) as remote_object:
                 self.env_loader = str(remote_object.get_env_loader())
