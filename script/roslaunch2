@@ -3,11 +3,10 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 15/02/2017
+#    Date: 15/05/2017
 #
 # TODO list:
 # - complete documentation
-# - add (convenient!) remote package ("find") resolver, using PyRO?
 # - complete MachinePool class
 
 if __name__ == '__main__':

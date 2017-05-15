@@ -54,6 +54,7 @@ class Parameter(interfaces.GeneratorBase, interfaces.Composable):
     """
     Base class for parameters
     """
+
     def __init__(self):
         interfaces.GeneratorBase.__init__(self)
         interfaces.Composable.__init__(self)
@@ -72,6 +73,7 @@ class ServerParameter(Parameter):
     """
     For setting parameters on the ROS parameter server. Equals the <param> tag.
     """
+
     def __init__(self, name, value, textfile=None, binfile=None, command=None):
         Parameter.__init__(self)
         # TODO add checks for consistency
@@ -107,7 +109,7 @@ class ServerParameter(Parameter):
         """
         Convenience method.
         """
-        if name in kwargs:   # get value from dict item named 'name' as well
+        if name in kwargs:  # get value from dict item named 'name' as well
             return ServerParameter(name, kwargs[name])
         else:  # escalate to default value
             return ServerParameter(name, default)
@@ -142,6 +144,7 @@ class FileParameter(Parameter):
     Used for loading, dumping or deleting YAML files to/from the ROS parameter server.
     Equals the <rosparam> tag.
     """
+
     def __init__(self, value=None, command=None, file_path=None, param=None, ns=None):
         Parameter.__init__(self)
         # TODO test for valid/consistency (valid combination in particular)
