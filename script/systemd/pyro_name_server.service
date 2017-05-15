@@ -1,0 +1,19 @@
+# This is the service unit definition for running a PyRO name server. It should only be added to
+# systemd on a SINGLE system, i. e., there shouldn't be >1 name servers. For more information about
+#  - systemd, refer to https://wiki.ubuntuusers.de/systemd/Service_Units/
+#  - PyRO name server, refer to https://pythonhosted.org/Pyro4/nameserver.html
+
+[Unit]
+Description=PyRO Name Server
+Wants=network-online.target
+After=network.target network-online.target
+
+[Service]
+Type=simple
+# The absolute path to the script:
+ExecStart=/home/abo/Development/SmartMAPS/catkin_ws/src/roslaunch2/script/systemd/pyro_name_server.bash
+# User name who should run the server
+User=abo
+
+[Install]
+WantedBy=multi-user.target

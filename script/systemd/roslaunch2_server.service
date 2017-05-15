@@ -1,0 +1,18 @@
+# This is the service unit definition for running a roslaunch2 server. It must be added to systemd
+# on EVERY system where you would like to use the remote features of roslaunch2. For more
+# information about
+#  - systemd, refer to https://wiki.ubuntuusers.de/systemd/Service_Units/
+#  - Python Remote Objects (PyRO), refer to https://pythonhosted.org/Pyro4/index.html
+
+[Unit]
+Description=roslaunch2 Server
+Wants=pyro_name_server.service
+After=pyro_name_server.service
+
+[Service]
+Type=simple
+ExecStart=/home/abo/Development/SmartMAPS/catkin_ws/src/roslaunch2/script/systemd/roslaunch2_server.bash
+User=abo
+
+[Install]
+WantedBy=multi-user.target
