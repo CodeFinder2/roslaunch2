@@ -2,10 +2,10 @@ This guide explains how to setup a PyRO name server as well as the roslaunch2 se
 
 # Setting up a PyRO name server:
 - Note that **a PyRO name server should only be started *once* per setup** (for all robots / simulations); otherwise you end up with a partitioned name space, see [here](https://pythonhosted.org/Pyro4/nameserver.html).
-- First, edit the file `$(rospack find roslaunch2)/script/systemd/pyro_name_server.service` and fix the path in `ExecStart` as well as the user in `User`. The rest should be fine.
+- First, edit the file `$(rospack find roslaunch2)/config/systemd/pyro_name_server.service` and fix the path in `ExecStart` as well as the user in `User`. The rest should be fine.
 - Once done, copy the file to the default location systemd scripts:
 ```
-sudo cp $(rospack find roslaunch2)/script/systemd/pyro_name_server.service /etc/systemd/system/
+sudo cp $(rospack find roslaunch2)/config/systemd/pyro_name_server.service /etc/systemd/system/
 ```
 - Add/enable the service unit to systemd: `sudo systemctl enable pyro_name_server.service`
 - Test if you can run it with: `sudo systemctl start pyro_name_server.service` (shouldn't produce any output). Then `sudo systemctl status pyro_name_server.service` should show something like:
@@ -14,7 +14,7 @@ sudo cp $(rospack find roslaunch2)/script/systemd/pyro_name_server.service /etc/
 >   Active: active (running) since Mo 2017-05-15 15:07:00 CEST; 6s ago
 > Main PID: 14033 (pyro_name_serve)
 >   CGroup: /system.slice/pyro_name_server.service
->           ├─14033 /bin/bash -l /home/abo/Development/SmartMAPS/catkin_ws/src/roslaunch2/script/systemd/pyro_name_server.bash
+>           ├─14033 /bin/bash -l /home/abo/Development/SmartMAPS/catkin_ws/src/roslaunch2/config/systemd/pyro_name_server.bash
 >           └─14163 python -m Pyro4.naming -n 129.217.52.228
 >
 > Mai 15 15:07:00 boeckenkamp systemd[1]: Started PyRO Name Server.
@@ -34,7 +34,7 @@ sudo journalctl -ru pyro_name_server
 - The process is similar to setting up the name server, see above for more details.
 - Type:
 ```
-sudo cp $(rospack find roslaunch2)/script/systemd/roslaunch2_server.service /etc/systemd/system/
+sudo cp $(rospack find roslaunch2)/config/systemd/roslaunch2_server.service /etc/systemd/system/
 sudo systemctl enable roslaunch2_server.service
 sudo systemctl start roslaunch2_server.service
 sudo reboot
