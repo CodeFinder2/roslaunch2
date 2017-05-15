@@ -11,7 +11,7 @@ After=pyro_name_server.service
 
 [Service]
 Type=simple
-ExecStart=/home/abo/Development/SmartMAPS/catkin_ws/src/roslaunch2/script/systemd/roslaunch2_server.bash
+ExecStart=/home/abo/Development/SmartMAPS/catkin_ws/src/roslaunch2/config/systemd/roslaunch2_server.bash
 User=abo
 
 [Install]

@@ -9,8 +9,8 @@ install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 catkin_install_python(PROGRAMS script/roslaunch2 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 catkin_install_python(PROGRAMS script/roslaunch2_server DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-install(PROGRAMS script/systemd/roslaunch2_server.bash script/systemd/pyro_name_server.bash
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/systemd/
+install(PROGRAMS config/systemd/roslaunch2_server.bash config/systemd/pyro_name_server.bash
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/systemd/
 )
 
 install(FILES config/roslaunch2_auto_completion.bash

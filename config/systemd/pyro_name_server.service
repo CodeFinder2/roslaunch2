@@ -11,7 +11,7 @@ After=network.target network-online.target
 [Service]
 Type=simple
 # The absolute path to the script:
-ExecStart=/home/abo/Development/SmartMAPS/catkin_ws/src/roslaunch2/script/systemd/pyro_name_server.bash
+ExecStart=/home/abo/Development/SmartMAPS/catkin_ws/src/roslaunch2/config/systemd/pyro_name_server.bash
 # User name who should run the server
 User=abo
 
