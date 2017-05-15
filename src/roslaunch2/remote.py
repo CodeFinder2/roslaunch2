@@ -54,6 +54,14 @@ class API:
             return None
         return os.environ[str(name)]
 
+    @staticmethod
+    @Pyro4.expose
+    def cpu_count():
+        try:
+            import multiprocessing
+            return multiprocessing.cpu_count()
+        except (ImportError, NotImplementedError):
+            pass
 
 class Resolvable(object):
     def __init__(self, data):
