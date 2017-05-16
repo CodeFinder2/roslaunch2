@@ -133,7 +133,9 @@ class Node(Runnable):
 
     def generate(self, root, machines, pkg):
         # The following allows machine.Resolvable objects in self.args:
-        self.args = str(machine.Machine.resolve_if(self.args, self.machine, self._pkg))
+        self.args = machine.Machine.resolve_if(self.args, self.machine, self._pkg)
+        if self.args:
+            self.args = str(self.args)
         elem = Runnable.generate(self, root, machines, pkg)
         interfaces.GeneratorBase.to_attr(elem, 'output', self.output, Output)
         interfaces.GeneratorBase.to_attr(elem, 'respawn', self._respawn, bool)
