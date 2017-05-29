@@ -19,6 +19,6 @@
   <build_depend>python-catkin-pkg</build_depend>
 
   <exec_depend>python-enum34</exec_depend>
-  <exec_depend>rospkg</exec_depend>
+  <exec_depend>python-rospkg</exec_depend>
   <exec_depend>roslaunch</exec_depend>
 </package>
