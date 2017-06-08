@@ -65,6 +65,7 @@ class API:
         except (ImportError, NotImplementedError):
             pass
 
+
 class Resolvable(object):
     def __init__(self, data):
         self.data = data

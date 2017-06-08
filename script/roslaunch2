@@ -6,6 +6,8 @@
 #    Date: 15/05/2017
 #
 # TODO list:
+# - allow Resolvable's in EnvironmentVariable class?
+# - test/use Test class
 # - complete documentation
 # - complete MachinePool class
 
