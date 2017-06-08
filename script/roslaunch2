@@ -6,9 +6,8 @@
 #    Date: 08/06/2017
 #
 # TODO list:
-# - allow Resolvable's in EnvironmentVariable class?
+# - allow adding additional env. variables to generated env-loader via API
 # - complete documentation
-# - complete MachinePool class
 
 if __name__ == '__main__':
     from roslaunch2 import main as roslaunch2_main

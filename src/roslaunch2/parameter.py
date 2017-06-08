@@ -76,7 +76,6 @@ class ServerParameter(Parameter):
 
     def __init__(self, name, value, textfile=None, binfile=None, command=None):
         Parameter.__init__(self)
-        # TODO add checks for consistency
         self.name = name
         self.value = value
         self.textfile = textfile
@@ -147,7 +146,6 @@ class FileParameter(Parameter):
 
     def __init__(self, value=None, command=None, file_path=None, param=None, ns=None):
         Parameter.__init__(self)
-        # TODO test for valid/consistency (valid combination in particular)
         assert not command or type(command) == FileCommand
         self.command = command
         self.file_path = file_path

@@ -2,7 +2,7 @@ import copy
 import lxml.etree
 
 
-class GeneratorBase(object):  # 'base class'?
+class GeneratorBase(object):
     def __init__(self):
         pass
 

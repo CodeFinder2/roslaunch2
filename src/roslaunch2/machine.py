@@ -6,7 +6,6 @@ import socket
 
 import interfaces
 import utils
-import package
 import remote
 
 
@@ -116,8 +115,3 @@ class Machine(interfaces.GeneratorBase):
 
 
 Localhost = Machine('localhost', getpass.getuser())
-
-
-class MachinePool:  # TODO?
-    def __init__(self):
-        pass
