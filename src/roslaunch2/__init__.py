@@ -116,8 +116,8 @@ def main():
             roslaunch.main(strip_args(ftmp.name))
         except:
             pass
-        # Local and remote cleanup:
-        Machine.cleanup()
         utils.silent_remove(ftmp.name)
     else:
         print(content)
+    # Delete created (temporary) env-loader script files:
+    Machine.cleanup()
