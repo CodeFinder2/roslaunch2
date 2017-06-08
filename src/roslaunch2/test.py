@@ -7,7 +7,7 @@ class Test(node.Runnable):
     For starting ROS nodes as tests (see rostest), equals <test>.
     """
     def __init__(self, pkg, node_type, test_name, args=None, name=None):
-        node.Runnable.__init__(self, 'test', pkg, node_type, name, args)
+        node.Runnable.__init__(self, 'test', pkg, node_type, test_name if name is None else name, args)
         self.test_name = test_name
         self.retry = None
         self.time_limit = None

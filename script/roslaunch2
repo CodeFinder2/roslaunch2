@@ -3,11 +3,10 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 15/05/2017
+#    Date: 08/06/2017
 #
 # TODO list:
 # - allow Resolvable's in EnvironmentVariable class?
-# - test/use Test class
 # - complete documentation
 # - complete MachinePool class
 
