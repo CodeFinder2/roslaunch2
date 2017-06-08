@@ -2,6 +2,7 @@ import string
 import random
 import os
 import itertools
+import errno
 
 #: Separator for communication (topic, services) and tf (frame) names
 ROS_NAME_SEP = '/'
