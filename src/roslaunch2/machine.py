@@ -25,6 +25,7 @@ class Machine(interfaces.GeneratorBase):
         self.password = password
         self.timeout = timeout
         self.env_loader = env_loader
+        self.env_vars = {}
 
     def __resolve_setup(self):
         addr = self.address
@@ -75,6 +76,17 @@ class Machine(interfaces.GeneratorBase):
         pstr = ":{}".format(self.password) if self.password else str()
         return '{} -> {}{}@{}'.format(self.name, self.user, pstr, self.address)
 
+    def set_env_var(self, name, value):
+        """
+        Defines an environment variable on this machine iff the env-loader is generated automatically
+        and the machine does not equal Localhost.
+
+        :param name: Name of variable (should be unique)
+        :param value: value to be assigned to the variable (converted to str)
+        :return:
+        """
+        self.env_vars[name] = str(value)
+
     def generate(self, root, machines, pkg):
         elem = lxml.etree.Element('machine')
         root.insert(0, elem)  # insert at the top to make them usable in subsequent nodes
@@ -88,7 +100,8 @@ class Machine(interfaces.GeneratorBase):
             pyro_addr = 'PYRONAME:{:s}.{:s}.roslaunch2.remote.Internals'.format(addr, self.user)
             Machine.__generated_env_loaders.append(pyro_addr)
             with Pyro4.Proxy(pyro_addr) as remote_object:
-                self.env_loader = str(remote_object.get_env_loader())
+                self.env_loader = str(remote_object.get_env_loader(self.env_vars))
+            # TODO: always generate env-loader (also on localhost to allow set_env_var() to work?)
         interfaces.GeneratorBase.to_attr(elem, 'env-loader', self.env_loader, str)
         interfaces.GeneratorBase.to_attr(elem, 'timeout', self.timeout, float)
 

@@ -16,7 +16,7 @@ class Internals:
 
     @staticmethod
     @Pyro4.expose
-    def get_env_loader():
+    def get_env_loader(env_vars):
         shell_name = os.environ['SHELL'].split(os.sep)[-1]
         if not shell_name:
             raise ValueError('Cannot determine / parse default shell.')
@@ -26,6 +26,8 @@ class Internals:
         Internals.__created_temp_files.append(ftmp.name)
         content = '#!/usr/bin/env {:s}\n\n'.format(shell_name)
         content += '\n'.join(['export {:s}="{:s}"'.format(k, os.environ[k]) for k in os.environ])
+        content += '\n\n# Manually added environment variables (using roslaunch2.machine.Machine.set_env_var()):\n'
+        content += '\n'.join(['export {:s}="{:s}"'.format(k, env_vars[k]) for k in env_vars])
         content += '\n\nexec "$@"\n\n'
         ftmp.write(content)
         ftmp.close()

@@ -6,7 +6,6 @@
 #    Date: 08/06/2017
 #
 # TODO list:
-# - allow adding additional env. variables to generated env-loader via API
 # - complete documentation
 
 if __name__ == '__main__':
