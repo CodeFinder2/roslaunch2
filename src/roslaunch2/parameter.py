@@ -44,7 +44,7 @@ class LaunchParameter(argparse.ArgumentParser):
         modules and/or with arguments of roslaunch.
 
         :return: detected / known arguments. If an argument is named --name, then args.name contains the value whereby
-        args is the value returned by this method
+                 args is the value returned by this method
         """
         known_args, _ = self.parse_known_args()
         return known_args

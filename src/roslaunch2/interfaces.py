@@ -25,7 +25,7 @@ class GeneratorBase(object):
         :param name: Name of attribute
         :param value: Value of attribute
         :param expected_type: Expected type that value should have (None to disable this check, e. g., where the type
-        is not known a priori)
+                              is not known a priori)
         :return: None
         """
         # None represents roslaunch's default value so let's omit the attribute:

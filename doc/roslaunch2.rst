@@ -4,14 +4,6 @@ roslaunch2 package
 Submodules
 ----------
 
-roslaunch2.ShellHandler module
-------------------------------
-
-.. automodule:: roslaunch2.ShellHandler
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 roslaunch2.environment module
 -----------------------------
 
@@ -47,7 +39,7 @@ roslaunch2.launch module
 roslaunch2.logging module
 -------------------------
 
-.. automodule:: roslaunch2.logging
+.. automodule:: roslaunch2.logger
     :members:
     :undoc-members:
     :show-inheritance:
@@ -104,6 +96,14 @@ roslaunch2.utils module
 -----------------------
 
 .. automodule:: roslaunch2.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+roslaunch2.remote module
+------------------------
+
+.. automodule:: roslaunch2.remote
     :members:
     :undoc-members:
     :show-inheritance:

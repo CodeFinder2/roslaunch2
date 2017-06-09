@@ -102,7 +102,7 @@ def ros_join(left, right, force_global=False):
     :param left: partial name to put leftmost
     :param right: partial name to put rightmost
     :param force_global: True to ensure / force the resulting name to be in the global namespace (not advised, also
-    useful in rare cases)
+                         useful in rare cases)
     :return: combined ROS name
     """
     res = clean_name(ROS_NAME_SEP.join([left, right]), ROS_NAME_SEP)
