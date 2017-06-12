@@ -81,6 +81,9 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
     def set_namespace(self, ns=None):
         self.ns = ns
 
+    def debug(self):
+        self.prefix = 'xterm -e gdb --args'
+
     def generate(self, root, machines, pkg):
         elem = lxml.etree.SubElement(root, self.__tag_name)
         remapable.Remapable.generate(self, elem, machines, self._pkg)
