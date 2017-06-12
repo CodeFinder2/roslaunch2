@@ -7,6 +7,8 @@
 #
 # TODO list:
 # - complete documentation
+# - allow a set of machines (MachinePool) to be passed to a node/group ... to let
+#   roslaunch2 decide where to launch based on the load avg.
 
 if __name__ == '__main__':
     from roslaunch2 import main as roslaunch2_main
