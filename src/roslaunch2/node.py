@@ -81,8 +81,14 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
     def set_namespace(self, ns=None):
         self.ns = ns
 
-    def debug(self):
-        self.prefix = 'xterm -e gdb --args'
+    def debug(self, separate_window=True, auto_run=True):
+        """
+        Add gdb debug prefix to this node.
+        See http://wiki.ros.org/roslaunch/Tutorials/Roslaunch%20Nodes%20in%20Valgrind%20or%20GDB
+        """
+        sw = 'xterm -e ' if separate_window else ''
+        ar = '-ex run ' if auto_run else ''
+        self.prefix = '{}gdb {}--args'.format(sw, ar)
 
     def generate(self, root, machines, pkg):
         elem = lxml.etree.SubElement(root, self.__tag_name)
