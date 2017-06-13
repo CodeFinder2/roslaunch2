@@ -3,6 +3,7 @@ import getpass
 import Pyro4
 import ipaddress
 import socket
+import enum
 
 import interfaces
 import utils
@@ -29,12 +30,13 @@ class Machine(interfaces.GeneratorBase):
 
     def __resolve_setup(self):
         addr = self.address
-        local = (addr == 'localhost' or addr == '127.0.0.1') and self.user == getpass.getuser()
         # Always use IP addresses as PYRONAMEs:
         try:
             ipaddress.ip_address(addr)
         except ValueError:
             addr = socket.gethostbyname(addr)
+        # Now, 'addr' must be an IP address.
+        local = (addr == '127.0.0.1' and self.user == getpass.getuser())
         return addr, local
 
     def resolve(self, what):
@@ -126,5 +128,44 @@ class Machine(interfaces.GeneratorBase):
                 remote_object.cleanup()
         Machine.__generated_env_loaders = []
 
-
 Localhost = Machine('localhost', getpass.getuser())
+
+
+class MachinePool(list):
+    class Strategy(enum.IntEnum):
+        LeastLoadAverage = 1
+        LeastMemoryUsage = 2
+
+    def __init__(self, select_strategy=Strategy.LeastLoadAverage, *args):
+        list.__init__(self, *args)
+        self.strategy = select_strategy
+
+    def by_address(self, address):
+        return [m for m in self if m.address == address]
+
+    def by_user(self, user):
+        return [m for m in self if m.user == user]
+
+    def select(self):
+        if not self:
+            raise RuntimeError('Your MachinePool is empty! Cannot select() a machine for launching.')
+        if self.strategy == MachinePool.Strategy.LeastLoadAverage:
+            # Use 5min load average (divided by CPU count) value to determine the least used machine:
+            fitness = [m.remote().load_avg()[1] / float(m.remote().cpu_count()) for m in self]
+        elif self.strategy == MachinePool.Strategy.LeastMemoryUsage:
+            # Use currently used memory to determine the most capable machine:
+            fitness = [total - free for total, free in [m.remote().memory_stats() for m in self]]
+        else:
+            raise ValueError('Strategy {:s} is not implemented.'.format(self.strategy))
+        return self[fitness.index(min(fitness))]
+
+    def __iadd__(self, other):
+        """
+        Behaves like append().
+
+        :param other: Object to be added to this MachinePool (a Python list)
+        :return: a reference to itself (self)
+        """
+        assert isinstance(other, Machine)
+        self.append(other)
+        return self

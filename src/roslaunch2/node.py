@@ -141,6 +141,10 @@ class Node(Runnable):
         self.machine = machine_object
 
     def generate(self, root, machines, pkg):
+        # If a set of machines was assigned to this node, it's now time to select the final machine this node gets
+        # executed on. Note that if the pool was empty, self.machine has NoneType so that the machine tag is ignored:
+        if isinstance(self.machine, machine.MachinePool):
+            self.machine = self.machine.select()
         # The following allows machine.Resolvable objects in self.args:
         self.args = machine.Machine.resolve_if(self.args, self.machine, self._pkg)
         if self.args:

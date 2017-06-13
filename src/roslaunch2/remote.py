@@ -48,8 +48,19 @@ class API:
 
     @staticmethod
     @Pyro4.expose
-    def get_load_avg():
+    def load_avg():
         return os.getloadavg()
+
+    @staticmethod
+    @Pyro4.expose
+    def memory_stats():
+        """
+        Determines the physical system-wide total (index 0) and available (index 1) memory (RAM) in bytes.
+
+        :return: tuple (total, available) memory in bytes
+        """
+        import psutil
+        return psutil.virtual_memory()[0:2]  # total and available memory in bytes
 
     @staticmethod
     @Pyro4.expose
