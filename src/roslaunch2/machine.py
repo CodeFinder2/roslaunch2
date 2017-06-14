@@ -147,6 +147,12 @@ class MachinePool(list):
         return [m for m in self if m.user == user]
 
     def select(self):
+        """
+        Selects a machine for starting a node based on the current strategy. Note that this just considers the load on
+        the machines in the pool when none of nodes has actually been started (roslaunch XML generation step).
+
+        :return: current optimal Machine object selected for execution
+        """
         if not self:
             raise RuntimeError('Your MachinePool is empty! Cannot select() a machine for launching.')
         if self.strategy == MachinePool.Strategy.LeastLoadAverage:
@@ -161,7 +167,7 @@ class MachinePool(list):
 
     def __iadd__(self, other):
         """
-        Behaves like append().
+        Behaves like list.append().
 
         :param other: Object to be added to this MachinePool (a Python list)
         :return: a reference to itself (self)
