@@ -1,10 +1,31 @@
 import lxml.etree
 import warnings
 import argparse
+import os.path
+import yaml
 
 import interfaces
 import machine
 import enum
+
+
+def load_from_file(path):
+    class LoadFromFile(argparse.Action):
+        def __call__ (self, parser, namespace, values, option_string = None):
+            assert(len(values) == 1 and values[0]), "Invalid file name argument."
+
+            filename = os.path.join(path, "{:s}.yaml".format(values[0]))
+            try:
+                f = yaml.load(file(filename, 'r'))
+                for key, value in f.iteritems():
+                    parser.parse_args(['--{:s}'.format(key), str(value)], namespace)
+                    print ['--{:s}'.format(key), value]
+            except yaml.YAMLError, exc:
+                print("Cannot load parameters from file '{:s}.yaml'.".format(filename))
+
+    return LoadFromFile
+
+
 
 
 class LaunchParameter(argparse.ArgumentParser):
@@ -36,6 +57,14 @@ class LaunchParameter(argparse.ArgumentParser):
     def add_flag(self, name, help_text, default, store, **kwargs):
         self.add_argument('--' + name, action='store_true' if store else 'store_false',
                           default=kwargs[name] if name in kwargs else default, help=help_text)
+
+    def add_parameter_file(self, name, path, **kwargs):
+        """
+        Generates a command line option named --name that loads parameters from a yaml file given by
+        'path/value.yaml' where value is the actual command line value of --name.
+        """
+        self.add_argument('--' + name, action=load_from_file(path), default='', nargs=1,
+                          help="Load parameters from file '<{:s}>.yaml'.".format(name))
 
     def get_args(self):
         """
