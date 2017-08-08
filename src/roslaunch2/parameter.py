@@ -19,7 +19,6 @@ def load_from_file(path):
                 f = yaml.load(file(filename, 'r'))
                 for key, value in f.iteritems():
                     parser.parse_args(['--{:s}'.format(key), str(value)], namespace)
-                    print ['--{:s}'.format(key), value]
             except yaml.YAMLError, exc:
                 print("Cannot load parameters from file '{:s}.yaml'.".format(filename))
 
