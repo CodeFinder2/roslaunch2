@@ -18,13 +18,12 @@ def load_from_file(path):
             try:
                 f = yaml.load(file(filename, 'r'))
                 for key, value in f.iteritems():
-                    parser.parse_args(['--{:s}'.format(key), str(value)], namespace)
+                    if value is not None:
+                        parser.parse_args(['--{:s}'.format(key), str(value)], namespace)
             except yaml.YAMLError, exc:
                 print("Cannot load parameters from file '{:s}.yaml'.".format(filename))
 
     return LoadFromFile
-
-
 
 
 class LaunchParameter(argparse.ArgumentParser):
