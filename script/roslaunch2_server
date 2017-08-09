@@ -24,8 +24,8 @@ class Server:
         Pyro4.config.REQUIRE_EXPOSE = True
 
         if not Server.is_name_server_running():
-            roslaunch2.logger.critical('- Cannot find a running PyRO name server, please start it with:\n'
-                                       '  $ python -m Pyro4.naming -n $(hostname -I)\n')
+            roslaunch2.logger.critical("- Cannot find a running PyRO name server, please start it with:\n"
+                                       "  $ python -m Pyro4.naming -n $(hostname -I | grep -o '^\S*')\n")
         else:
             roslaunch2.logger.log('- Name server found.')
 
