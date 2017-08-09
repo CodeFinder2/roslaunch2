@@ -14,14 +14,18 @@ def load_from_file(path):
         def __call__ (self, parser, namespace, values, option_string=None):
             assert(len(values) == 1 and values[0]), "Invalid file name argument."
 
-            filename = os.path.join(path, "{:s}.yaml".format(values[0]))
+            filename = values[0]
+            if not filename.endswith('.yaml'):
+                filename = "{:s}.yaml".format(values[0])
+            filepath = os.path.join(path, filename)
             try:
-                f = yaml.load(file(filename, 'r'))
+                f = yaml.load(file(filepath, 'r'))
                 for key, value in f.iteritems():
                     if value is not None:
                         parser.parse_args(['--{:s}'.format(key), str(value)], namespace)
             except yaml.YAMLError:
-                print("Cannot load parameters from file '{:s}.yaml'.".format(filename))
+                print("Cannot load parameters from file '{:s}'.".format(filename))
+
     return LoadFromFile
 
 
