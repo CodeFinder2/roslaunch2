@@ -11,7 +11,7 @@ import enum
 
 def load_from_file(path):
     class LoadFromFile(argparse.Action):
-        def __call__ (self, parser, namespace, values, option_string = None):
+        def __call__ (self, parser, namespace, values, option_string=None):
             assert(len(values) == 1 and values[0]), "Invalid file name argument."
 
             filename = os.path.join(path, "{:s}.yaml".format(values[0]))
@@ -20,9 +20,8 @@ def load_from_file(path):
                 for key, value in f.iteritems():
                     if value is not None:
                         parser.parse_args(['--{:s}'.format(key), str(value)], namespace)
-            except yaml.YAMLError, exc:
+            except yaml.YAMLError:
                 print("Cannot load parameters from file '{:s}.yaml'.".format(filename))
-
     return LoadFromFile
 
 
@@ -66,7 +65,7 @@ class LaunchParameter(argparse.ArgumentParser):
 
     def get_args(self):
         """
-        Parse the previously defined command line arguments using add() or add_argument(). Ignored unknown args.
+        Parse the previously defined command line arguments using add() or add_argument(). Ignores unknown arguments.
         Parameters are always parsed from sys.argv and may overlap with parameters from other (used / included) launch
         modules and/or with arguments of roslaunch.
 
