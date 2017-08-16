@@ -170,6 +170,14 @@ class Package:
 
     @Pyro4.expose
     def find(self, path_comp, silent=False):
+        """
+        Searches for a file or directory in the current package (self).
+
+        :param path_comp: (partial) path or file name
+        :param silent: if True return None when nothing is found, otherwise an IOError is raised in
+                       case of failure
+        :return: first found file (full path) or None if silent==True and nothing found
+        """
         key = ''.join([self.name, path_comp])
         if key in Package.__find_cache:
             return Package.__find_cache[key]
@@ -189,3 +197,26 @@ class Package:
                 return None
         Package.__find_cache[key] = f[0]
         return f[0]
+
+    @Pyro4.expose
+    def selective_find(self, path_comp_options, path_comp_prefix='', silent=False):
+        """
+        Searches for a set of files or directories in the current package (self). Tries to find any
+        path from the path_comp_options list starting at the first element. Once a path is found
+        the search for the remaining paths is canceled and the found path is returned.
+
+        :param path_comp_options: list of (partial) path or file names
+        :param path_comp_prefix: prefix to each element of path_comp_options
+        :param silent: if True return None when nothing is found, otherwise an IOError is raised in
+                       case of failure
+        :return: first found file (full path) or None if silent==True and nothing found
+        """
+        for path_comp in path_comp_options:
+            path = self.find(path_comp=os.path.join(path_comp_prefix, path_comp), silent=True)
+            if path is not None:
+                return path
+        # Nothing found
+        if not silent:
+            raise IOError("None of the queried files found in '{}'.".format(self.name))
+        else:
+            return None
