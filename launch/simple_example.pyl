@@ -1,14 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# roslaunch2 modules:
+# Note: you can launch this file by typing:
+#       roslaunch2 roslaunch2 simple_example.pyl
+#       To inspect the generated XML, add the -d option.
+
+# Import all important / frequently used roslaunch2 modules:
 from roslaunch2 import *
 
 
+# All launch modules that can be started in roslaunch2 need to define a main() function as follows. Its content defines
+# what to launch.
 def main(**kwargs):
+    # To create a launch module using roslaunch2, all "objects" need to be added to a root object of type "Launch".
+    # This object is similar to the <launch> tag in roslaunch (but more powerful).
     root = Launch()
-    pkg = Package('rostopic')
+
+    # Create a ROS package reference to allow finding files, referencing nodes in a package, etc.
+    rl2 = Package('roslaunch2')
+    log('Path to this launch module is: {:s}'.format(rl2.find('simple_example.pyl')))
+
+    # We can refer to any other launch files:
+    g = Group('my_namespace')
+
+    g.add(rl2.use('simple_include'))
+    root.add(g)
 
     # Define a ROS node to launch (without namespace):
-    root.add(Node(pkg, 'rostopic', 'rostopic', args="""pub /foo/bar std_msgs/String "data: ''" """))
+    root.add(Node('rostopic', 'rostopic', 'rostopic', args="""pub /foo/bar std_msgs/String "data: ''" """))
+    # Return the root object of the launch module to be started. It is processed by roslaunch2.
     return root
