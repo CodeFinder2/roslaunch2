@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 15/05/2017
+#    Date: 18/08/2017
 
 import Pyro4
 import socket
@@ -16,7 +16,14 @@ __version__ = '0.1'
 
 
 class Server:
+    """
+    This class represents the roslaunch2 server required to be launched on remote computes that should run
+    node remotely using roslaunch2.
+    """
     def __init__(self):
+        """
+        Initializes the server (it does not start it right away). It also tests whether a PyRO name server is running.
+        """
         self.machine_address = Server.get_ip_address()
         self.reg_db = {}
         roslaunch2.logger.log('This is the roslaunch2 PyRO server v{:s}, '
@@ -42,6 +49,11 @@ class Server:
 
     @staticmethod
     def is_name_server_running():
+        """
+        Tests whether the PyRO name server can be found.
+
+        :return: True if started, False otherwise
+        """
         with Pyro4.Proxy("PYRONAME:Pyro.NameServer") as p:
             try:
                 p._pyroBind()
@@ -51,18 +63,35 @@ class Server:
 
     @staticmethod
     def get_ip_address():
+        """
+        Returns the IP address of the primary network adapter having internet access. This is used to bound the server.
+        (By using localhost, other cannot connect to the server.)
+
+        :return:
+        """
         # http://stackoverflow.com/questions/24196932/how-can-i-get-the-ip-address-of-eth0-in-python
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
         return str(s.getsockname()[0])
 
     def register_remote_class(self, cls):
+        """
+        Registers the given Python class at the PyRO server, making it available remotely.
+
+        :param cls: Fully qualified type to register
+        :return: always None
+        """
         name = self.machine_address + '.' + getpass.getuser() + '.' + str(cls)
         uri = self.daemon.register(cls)
         self.ns.register(name, uri)
         self.reg_db[name] = uri
 
     def main(self):
+        """
+        Starts the server by entering its main request processing loop.
+
+        :return: always None
+        """
         roslaunch2.logger.log('\nReady, entering request processing loop.')
         self.daemon.requestLoop()  # start the event loop of the server to wait for calls
         pass
