@@ -113,7 +113,7 @@ def main():
         ftmp.close()  # close it so that roslaunch can open it (file still exists)
         # noinspection PyBroadException
         try:
-            roslaunch.main(strip_args(ftmp.name))
+            roslaunch.main(strip_args(ftmp.name)) # actually do the launch!
         except:
             pass
         utils.silent_remove(ftmp.name)

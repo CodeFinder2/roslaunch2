@@ -11,11 +11,11 @@ import remote
 
 
 class Machine(interfaces.GeneratorBase):
-    __generated_env_loaders = []
-
     """
     For defining (remote) machines to launch on, equals the <machine> tag.
     """
+    __generated_env_loaders = []
+
     def __init__(self, address, user, env_loader=None, name=None, password=None, timeout=None):
         interfaces.GeneratorBase.__init__(self)
         if not address or not user:
@@ -132,6 +132,9 @@ Localhost = Machine('localhost', getpass.getuser())
 
 
 class MachinePool(list):
+    """
+    Represents a set of machines to choose from when a new ROS node should be started based on a configurable criterion.
+    """
     class Strategy(enum.IntEnum):
         LeastLoadAverage = 1
         LeastMemoryUsage = 2

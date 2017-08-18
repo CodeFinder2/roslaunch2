@@ -13,6 +13,13 @@ class Remapable(interfaces.GeneratorBase):
         self.to_name = list()
 
     def remap(self, from_name, to_name):
+        """
+        Remap the ROS name from_name (e. g., a topic) to the new name to_name.
+
+        :param from_name: Previous name
+        :param to_name: New ROS name
+        :return: None
+        """
         if from_name and to_name:
             self.from_name.append(from_name)
             self.to_name.append(to_name)
@@ -20,6 +27,11 @@ class Remapable(interfaces.GeneratorBase):
             raise ValueError('Parameters cannot be empty.')
 
     def unmap(self):
+        """
+        Clear all remappings added by remap().
+
+        :return: None
+        """
         self.from_name = list()
         self.to_name = list()
 

@@ -9,6 +9,10 @@ __all__ = ["API", "Resolvable", "Path", "Variable"]
 
 
 class Internals:
+    """
+    Contains various internal function used by the internals of roslaunch2. These functions should not be used from
+    outside.
+    """
     __created_temp_files = []
 
     def __init__(self):
@@ -17,6 +21,13 @@ class Internals:
     @staticmethod
     @Pyro4.expose
     def get_env_loader(env_vars):
+        """
+        Generate an env-loader script on the current machine given the current environment of the started
+        roslaunch2_server.
+
+        :param env_vars: Manually added environment variables that need to be available remotely
+        :return: Path to generated env. script
+        """
         shell_name = os.environ['SHELL'].split(os.sep)[-1]
         if not shell_name:
             raise ValueError('Cannot determine / parse default shell.')
@@ -37,12 +48,21 @@ class Internals:
     @staticmethod
     @Pyro4.expose
     def cleanup():
+        """
+        Deletes all remotely created env-loader scripts.
+
+        :return: None
+        """
         for f in Internals.__created_temp_files:
             utils.silent_remove(f)
             Internals.__created_temp_files = []
 
 
 class API:
+    """
+    Provides an API that can be used locally and remotely (via the PyRO backend) on other robots / machines. For
+    example, it can be used to query the value of a remote environment variable or the number of CPU cores.
+    """
     def __init__(self):
         pass
 
@@ -80,6 +100,10 @@ class API:
 
 
 class Resolvable(object):
+    """
+    Represents the interface for data that is just given as a "shell" or "sleeve" and still needs to be filled with the
+    correct information of the target (remote) system. The latter process is denoted as resolving the data.
+    """
     def __init__(self, data):
         self.data = data
 
@@ -88,6 +112,11 @@ class Resolvable(object):
 
 
 class Path(Resolvable):
+    """
+    Represents a path of a local or remote system. For example, if a node *may* be executed on another machine
+    (depending on some condition) and that machine may be selected "dynamically" on some other condition, a path must be
+    resolved if the final machine is known. This process is encapsulated in this class.
+    """
     def __init__(self, path, pkg=None):
         Resolvable.__init__(self, path)
         self.pkg = package.Package(pkg) if type(pkg) is str else pkg
@@ -105,6 +134,10 @@ class Path(Resolvable):
 
 
 class Variable(Resolvable):
+    """
+    Represents an environment variable that is resolved on the localhost or remotely, depending on where the information
+    is needed.
+    """
     def __init__(self, name):
         Resolvable.__init__(self, name)
 

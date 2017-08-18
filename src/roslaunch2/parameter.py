@@ -30,6 +30,10 @@ def load_from_file(path):
 
 
 class LaunchParameter(argparse.ArgumentParser):
+    """
+    Represents a parameter for a launch module. For example, this can influence whether to select simulator A or B.
+    These parameters are NOT consumed by ROS nodes (refer to ServerParameter and FileParameter in such cases).
+    """
     def __init__(self, prog=None, description=None, epilog=None, version=None,
                  parents=[], formatter_class=argparse.HelpFormatter, prefix_chars='-',
                  fromfile_prefix_chars=None, argument_default=None, conflict_handler='error'):
@@ -82,7 +86,7 @@ class LaunchParameter(argparse.ArgumentParser):
 
 class Parameter(interfaces.GeneratorBase, interfaces.Composable):
     """
-    Base class for parameters
+    Base class for ROS node parameters.
     """
 
     def __init__(self):
@@ -153,7 +157,8 @@ class ServerParameter(Parameter):
 
 class FileCommand(enum.IntEnum):
     """
-    Defines file operations / commands to be used with FileParameter.
+    Defines file operations / commands to be used with FileParameter. This allows, e. g., to load a set of parameters
+    from a given .yaml file.
     """
     Load = 1
     Dump = 2

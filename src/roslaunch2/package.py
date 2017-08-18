@@ -6,11 +6,11 @@ import Pyro4
 import roslaunch2.logger
 
 
-class DataRef:
-    pass
-
-
 class Package:
+    """
+    Encapsulates a ROS package and its ability to find files in the package directory structure. A caching mechanism is
+    used to speedup find() commands.
+    """
     __pkg_cache = {}
     __dir_cache = {}
     __find_cache = {}
@@ -82,6 +82,12 @@ class Package:
 
     @staticmethod
     def valid(pkg):
+        """
+        Tests whether pkg is a valid ROS package on the current system.
+
+        :param pkg: Name of ROS package (type: str) or a valid package.Package object)
+        :return: Path to pkg if valid or None if not found
+        """
         try:
             if type(pkg) is str:
                 name = pkg

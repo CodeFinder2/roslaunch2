@@ -11,6 +11,9 @@ import environment
 
 
 class Output(enum.IntEnum):
+    """
+    Possible output targets for ROS logging commands (e. g., ROS_INFO()).
+    """
     Screen = 1
     Log = 2
 
@@ -22,6 +25,9 @@ class Output(enum.IntEnum):
 
 
 class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
+    """
+    Encapsulates the common attributes and methods of a <node> and <test> tag/class.
+    """
     def __init__(self, tag_name, pkg, node_type=None, name=None, args=None):
         remapable.Remapable.__init__(self)
         interfaces.Composable.__init__(self)

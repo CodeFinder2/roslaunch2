@@ -72,7 +72,7 @@ class Composer(object):
     def __init__(self, valid_types):
         """
         Constructs the object.
-
+Delete
         :param valid_types: tuple-convertible list of types that are allowed to be added to this composer
         """
         self.children = []

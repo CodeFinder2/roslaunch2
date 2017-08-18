@@ -12,6 +12,15 @@ class Group(remapable.Remapable, interfaces.Composer, interfaces.Composable):
     For grouping nodes in namespaces, equals <group ns="namespace"> ... </group>.
     """
     def __init__(self, namespace, ignore_content=False, clear_params=None):
+        """
+        Initializes the Group object. If the namespace is empty or None, all elements of the group will appear in the
+        resulting launch code but without a namespace (this is different to roslaunch but more flexible).
+
+        :param namespace: Name of ROS namespace, can be empty
+        :param ignore_content: Simple switch to not add the entire Group's content to the launch code (if set to True)
+        :param clear_params: True to clear all parameters in the node's private namespace before launch, False to keep
+               them unchanged
+        """
         remapable.Remapable.__init__(self)
         interfaces.Composer.__init__(self, None)  # everything can be put into a Group
         interfaces.Composable.__init__(self)
@@ -25,9 +34,26 @@ class Group(remapable.Remapable, interfaces.Composer, interfaces.Composable):
             warnings.warn('{} has been created but never add()ed.'.format(str(self)), Warning, 2)
 
     def start_on(self, machine_object):
+        """
+        Allows to start all nodes added to this group to be launched on the given machine. However, if a node has
+        already been assigned a specific machine object, the given machine_object is ignored for that node.
+
+        :param machine_object: Machine object to be used for launching remotely; a roslaunch2_server needs to be running
+               on that machine
+        :return: None
+        """
         self.machine = machine_object
 
     def generate(self, root, machines, pkg):
+        """
+        Generates the underlying roslaunch XML code.
+
+        :param root: XML root element object
+        :param machines: list of machines currently known in the launch module (may still contain duplicates)
+        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,
+               e. g., ServerParameter.generate())
+        :return: None
+        """
         if self.name:  # exclude the group if namespace is empty
             elem = lxml.etree.SubElement(root, 'group')
             interfaces.GeneratorBase.to_attr(elem, 'ns', self.name)

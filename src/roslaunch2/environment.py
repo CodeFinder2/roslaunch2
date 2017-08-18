@@ -22,6 +22,16 @@ class EnvironmentVariable(interfaces.GeneratorBase, interfaces.Composable):
             warnings.warn('{} has been created but never add()ed.'.format(str(self)), Warning, 2)
 
     def generate(self, root, starting_machine, pkg):
+        """
+        Generates the underlying roslaunch XML code.
+
+        :param root: XML root element object
+        :param starting_machine: May be set to a machine.Machine object where the environment variable should be
+               resolved on
+        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,
+               e. g., ServerParameter.generate())
+        :return: None
+        """
         elem = lxml.etree.SubElement(root, 'env')
         interfaces.GeneratorBase.to_attr(elem, 'name', self.name, str)
         if not isinstance(starting_machine, machine.Machine):
