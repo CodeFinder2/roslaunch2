@@ -156,6 +156,8 @@ class Package:
     def import_launch_module(full_module_path):
         if sys.version_info < (2, 4):  # Python < 2.4 is not supported
             raise RuntimeError('Must use Python version >= 2.4!')
+        if not os.path.isfile(full_module_path):
+            raise ValueError("Launch module '{:s}' not found.".format(full_module_path))
         module_name = os.path.splitext(full_module_path)[0]
         # Hot-patch PYTHONPATH to find . imports:
         search_path = os.path.dirname(os.path.abspath(module_name))
