@@ -107,3 +107,31 @@ def ros_join(left, right, force_global=False):
     """
     res = clean_name(ROS_NAME_SEP.join([left, right]), ROS_NAME_SEP)
     return ROS_NAME_SEP + res if force_global and not res.startswith(ROS_NAME_SEP) else res
+
+
+class Observable(object):
+    """
+    Allows to create observable events (like the termination of roslaunch) to register custom actions in case such event
+    are being triggered.
+    """
+    def __init__(self):
+        self.callbacks = []
+
+    def subscribe(self, callback, **kwargs):
+        """
+        Allows to register a custom action to be executed if the associated event (= object of this class) fires.
+
+        :param callback: Python function to be executed ("callback") when the event is being triggered
+        :param kwargs: Optional additional parameters for the callback, may be None / ignored
+        :return: None
+        """
+        self.callbacks.append((callback, kwargs))
+
+    def fire(self):
+        """
+        Triggers the event (typically only used by the enitity defining the event, i. e., roslaunch2 here).
+
+        :return: None
+        """
+        for fn, kwargs in self.callbacks:
+            fn(**kwargs)

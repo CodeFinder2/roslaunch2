@@ -22,6 +22,10 @@ import argparse
 
 __version__ = '0.1'
 
+# Define the events in roslaunch2 that may be associated with custom actions:
+on_initialize = Observable()
+on_terminate = Observable()
+
 
 def strip_args(launch_path):
     """
@@ -113,11 +117,13 @@ def main():
         ftmp.close()  # close it so that roslaunch can open it (file still exists)
         # noinspection PyBroadException
         try:
+            on_initialize.fire()
             roslaunch.main(strip_args(ftmp.name)) # actually do the launch!
         except:
             pass
         utils.silent_remove(ftmp.name)
     else:
         print(content)
+    on_terminate.fire()
     # Delete created (temporary) env-loader script files:
     Machine.cleanup()
