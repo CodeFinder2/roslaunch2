@@ -17,7 +17,7 @@ function _roscomplete_roslaunch2 {
     roslaunch2_flags="--help --version  --no-colors --dry-run --ros-args"
     roslaunch2_flags_short="-h -d -v"
 
-    # This implements the completion for the various token that havev already been typed:
+    # This implements the completion for the various token that have already been typed:
     if [[ ${arg} =~ \-.* ]]; then # flags beginning with a dash ('-')
         COMPREPLY=(${COMPREPLY[@]} $(compgen -W "$roslaunch_default_flags $roslaunch2_flags $roslaunch2_flags_short" -- ${arg}))
     else # <package> <launch_module>
