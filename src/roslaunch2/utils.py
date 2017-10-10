@@ -100,12 +100,15 @@ def ros_join(left, right, force_global=False):
     Allows to force the creation of a global name.
 
     :param left: partial name to put leftmost
-    :param right: partial name to put rightmost
-    :param force_global: True to ensure / force the resulting name to be in the global namespace (not advised, also
-                         useful in rare cases)
+    :param right: partial name to put rightmost, can also be a list of names
+    :param force_global: True to ensure / force the resulting name to be in the global namespace (not advised, but
+                         useful/required in rare cases). If left is already global, the resulting name remains global.
     :return: combined ROS name
     """
-    res = clean_name(ROS_NAME_SEP.join([left, right]), ROS_NAME_SEP)
+    if type(right) is list or type(right) is tuple:
+        res = clean_name(ROS_NAME_SEP.join([left] + right), ROS_NAME_SEP)
+    else:
+        res = clean_name(ROS_NAME_SEP.join([left, right]), ROS_NAME_SEP)
     return ROS_NAME_SEP + res if force_global and not res.startswith(ROS_NAME_SEP) else res
 
 
