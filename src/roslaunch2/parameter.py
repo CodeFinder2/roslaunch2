@@ -9,7 +9,12 @@ import machine
 import enum
 
 
-def load_from_file(path):
+def load_from_file(path, only_parse_known_args):
+    """
+    :param path: Prefix to given file name argument
+    :param only_parse_known_args: If True unknown arguments from yaml file are ignored,
+                                  otherwise parsing fails with unknown arguments in yaml file
+    """
     class LoadFromFile(argparse.Action):
         def __call__ (self, parser, namespace, values, option_string=None):
             assert(len(values) == 1 and values[0]), "Invalid file name argument."
@@ -22,7 +27,10 @@ def load_from_file(path):
                 f = yaml.load(file(filepath, 'r'))
                 for key, value in f.iteritems():
                     if value is not None:
-                        parser.parse_args(['--{:s}'.format(key), str(value)], namespace)
+                        if only_parse_known_args:
+                            parser.parse_known_args(['--{:s}'.format(key), str(value)], namespace)
+                        else:
+                            parser.parse_args(['--{:s}'.format(key), str(value)], namespace)
             except yaml.YAMLError:
                 print("Cannot load parameters from file '{:s}'.".format(filename))
 
@@ -63,13 +71,15 @@ class LaunchParameter(argparse.ArgumentParser):
         self.add_argument('--' + name, action='store_true' if store else 'store_false',
                           default=kwargs[name] if name in kwargs else default, help=help_text)
 
-    def add_parameter_file(self, name, path, **kwargs):
+    def add_parameter_file(self, name, path, only_parse_known_args=False, **kwargs):
         """
         Generates a command line option named --name that loads parameters from a yaml file given by
         'path/value.yaml' where value is the actual command line value of --name.
+        :param only_parse_known_args: If True unknown arguments from yaml file are ignored,
+                                      otherwise parsing fails with unknown arguments in yaml file
         """
-        self.add_argument('--' + name, action=load_from_file(path), default='', nargs=1,
-                          help="Load parameters from file '<{:s}>.yaml'.".format(name))
+        self.add_argument('--' + name, action=load_from_file(path, only_parse_known_args), default='',
+                          nargs=1, help="Load parameters from file '<{:s}>.yaml'.".format(name))
 
     def get_args(self):
         """
