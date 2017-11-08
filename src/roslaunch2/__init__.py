@@ -66,6 +66,47 @@ def strip_args(launch_path):
     return args
 
 
+def _add_env_to_nodes(composer, environment_variable_dict={}):
+    """
+    Traverses the whole tree of the composer object and search for instances of environment.EnvironmentVariable.
+    Copy each EnvironmentVariable to all subsequent node.Node instances that has not defined it on their own.
+    :param composer: Instance of interfaces.Composer
+    :param environment_variable_dict: Dictionary of instances of environment.EnvironmentVariable that are valid for
+                                      composer (dictionary keys are the environment variable names)
+    """
+    from interfaces import Composer
+
+    # Copy dict to not change the argument in higher recursion levels:
+    tmp_env_dict = dict(environment_variable_dict)
+
+    # Iterate over all children:
+    for child in list(composer.children):
+        if isinstance(child, EnvironmentVariable):
+            # Found new environment variable; add or replace instances from higher levels:
+            tmp_env_dict[child.name] = child
+            # Remove environment variables from groups because in roslaunch groups are not allowed to have env members:
+            # http://wiki.ros.org/roslaunch/XML/env
+            if isinstance(composer, Group):
+                composer.children.remove(child)
+
+        elif isinstance(child, Node):
+            # Found node; add previously found environment variables:
+            for env_name in tmp_env_dict:
+                env = tmp_env_dict[env_name]
+                # Check if node already has defined an EnvironmentVariable with the same name:
+                add_env = True
+                for node_child in child.children:
+                    if isinstance(node_child, EnvironmentVariable) and node_child.name == env_name:
+                        add_env = False
+                        break
+                if add_env:
+                    child += env
+
+        elif isinstance(child, Composer):
+            # Recursive call on composer children (launch, group, not node because handled earlier):
+            _add_env_to_nodes(composer=child, environment_variable_dict=tmp_env_dict)
+
+
 def main():
     """
     Defines the core logic (= Python based dynamic launch files) of roslaunch2. It does NOT create any
@@ -108,7 +149,9 @@ def main():
         sys.argv.append('--usage')  # force launch module to output its help text
         m.main()
         return
-    content = m.main().generate()
+    launch_tree = m.main()
+    _add_env_to_nodes(composer=launch_tree)
+    content = launch_tree.generate()
     if not args.dry_run:
         import tempfile
         import roslaunch  # dry-run even works w/o ROS
