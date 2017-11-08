@@ -22,11 +22,21 @@ class Machine(interfaces.GeneratorBase):
             raise ValueError("address='{}' and/or user='{}' cannot be empty or None.".format(address, user))
         self.address = address
         self.user = user
-        self.name = name if name else utils.anon()
+        self.__name = name
         self.password = password
         self.timeout = timeout
         self.env_loader = env_loader
         self.env_vars = {}
+
+    def name(self):
+        """
+        Return the set machine name (self.__name) if set or generate name as hash of all relevant members.
+        :return: Machine name as string
+        """
+        if self.__name is None:
+            # Don't generate random machine name (utils.anon()) but use hash of all relevant members.
+            return str(hash(tuple([self.address, self.user, self.env_loader] + list(frozenset(self.env_vars)))))
+        return self.__name
 
     def __resolve_setup(self):
         addr = self.address
@@ -63,20 +73,20 @@ class Machine(interfaces.GeneratorBase):
         self.env_loader = script_path
 
     def __eq__(self, other):
-        return self.name == other.name
+        return self.name() == other.name()
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash(self.name)
+        return hash(self.name())
 
     def __str__(self):
-        return self.name
+        return self.name()
 
     def __repr__(self):
         pstr = ":{}".format(self.password) if self.password else str()
-        return '{} -> {}{}@{}'.format(self.name, self.user, pstr, self.address)
+        return '{} -> {}{}@{}'.format(self.name(), self.user, pstr, self.address)
 
     def set_env_var(self, name, value):
         """
@@ -92,7 +102,7 @@ class Machine(interfaces.GeneratorBase):
     def generate(self, root, machines, pkg):
         elem = lxml.etree.Element('machine')
         root.insert(0, elem)  # insert at the top to make them usable in subsequent nodes
-        interfaces.GeneratorBase.to_attr(elem, 'name', self.name, str)
+        interfaces.GeneratorBase.to_attr(elem, 'name', self.name(), str)
         interfaces.GeneratorBase.to_attr(elem, 'address', self.address, str)
         interfaces.GeneratorBase.to_attr(elem, 'user', self.user, str)
         interfaces.GeneratorBase.to_attr(elem, 'password', self.password, str)
