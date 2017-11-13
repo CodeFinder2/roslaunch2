@@ -107,14 +107,12 @@ def _add_env_to_nodes(composer, environment_variable_dict={}):
             _add_env_to_nodes(composer=child, environment_variable_dict=tmp_env_dict)
 
 
-def main():
-    """
-    Defines the core logic (= Python based dynamic launch files) of roslaunch2. It does NOT create any
-    launch modules or the like.
-    :return: None
-    """
-    import os.path
-    parser = argparse.ArgumentParser(description='roslaunch2 - Python based launch files for ROS (1)')
+def argument_parser(parents=[]):
+    parser = argparse.ArgumentParser(description='roslaunch2 - Python based launch files for ROS (1)',
+                                     add_help=False, parents=parents,
+                                     conflict_handler='resolve' if parents else 'error')
+    parser.add_argument('-h', '--help', default=False, action="help",
+                        help='Show this help message and exit')
     parser.add_argument('--no-colors', default=False, action="store_true",
                         help='Do not use colored output during processing')
     parser.add_argument('--version', action='version', version='%(prog)s v{version}, \
@@ -125,6 +123,17 @@ def main():
     parser.add_argument('launchfile', nargs='+', help='Python based launch file')
     parser.add_argument('--ros-args', default=False, action="store_true",
                         help='Display command-line arguments for this launch file')
+    return parser
+
+
+def main():
+    """
+    Defines the core logic (= Python based dynamic launch files) of roslaunch2. It does NOT create any
+    launch modules or the like.
+    :return: None
+    """
+    import os.path
+    parser = argument_parser()
     # TODO: this does not "collect" all outputs of all (included/used) launch modules, just the first is shown
     args, _ = parser.parse_known_args()
     init_logger(not args.no_colors)
@@ -140,15 +149,37 @@ def main():
 
     # ROS package name given? Try to resolve path to package and update <launchfile> path appropriately:
     if args.package:
-        args.launchfile = Package(args.package).find(args.launchfile)
+        try:
+            args.launchfile = Package(args.package).find(args.launchfile)
+        except IOError:
+            critical("Launch module '{:s}' not found in package '{:s}'.".format(
+                     args.launchfile, args.package))
+            return
 
     # Import the launch module, generate the content, write it to a launch file and invoke 'roslaunch':
-    m = Package.import_launch_module(args.launchfile)
-    if args.ros_args:
-        sys.argv[0] = args.launchfile  # display correct script name
-        sys.argv.append('--usage')  # force launch module to output its help text
-        m.main()
+    try:
+        m = Package.import_launch_module(args.launchfile)
+    except ValueError:
+        critical("Launch module '{:s}' not found.".format(args.launchfile))
         return
+
+    # Roslaunch help text:
+    if args.ros_args:
+        m.main()
+        sys.argv[0] = args.launchfile  # display correct script name
+        parents = LaunchParameter.launch_parameter_list
+        if len(parents) == 0:
+            return
+        elif len(parents) == 1:
+            parser = parents[0]
+        else:
+            parser = LaunchParameter(description=parents[0].description,
+                                     conflict_handler='resolve', parents=parents)
+        sys.argv.append('--usage')  # force launch module to output its help text
+        parser.add_argument('--usage', default=False, action='help', help=argparse.SUPPRESS)
+        parser.parse_known_args()
+        return
+
     launch_tree = m.main()
     _add_env_to_nodes(composer=launch_tree)
     content = launch_tree.generate()

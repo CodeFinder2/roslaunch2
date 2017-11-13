@@ -43,13 +43,15 @@ class LaunchParameter(argparse.ArgumentParser):
     Represents a parameter for a launch module. For example, this can influence whether to select simulator A or B.
     These parameters are NOT consumed by ROS nodes (refer to ServerParameter and FileParameter in such cases).
     """
+    launch_parameter_list = []  # Static list collection all LaunchParameter instances.
+
     def __init__(self, prog=None, description=None, epilog=None, version=None,
                  parents=[], formatter_class=argparse.HelpFormatter, prefix_chars='-',
-                 fromfile_prefix_chars=None, argument_default=None, conflict_handler='error'):
+                 fromfile_prefix_chars=None, argument_default=None, conflict_handler='resolve'):
         argparse.ArgumentParser.__init__(self, prog, str(), description, epilog, version, parents,
                                          formatter_class, prefix_chars, fromfile_prefix_chars,
                                          argument_default, conflict_handler, add_help=False)
-        self.add_argument('--usage', default=False, action='help', help=argparse.SUPPRESS)
+        self.ros_argument_group = self.add_argument_group(title='ros arguments', description=None)
 
     def add(self, name, help_text, default, **kwargs):
         """
@@ -65,11 +67,12 @@ class LaunchParameter(argparse.ArgumentParser):
         :param kwargs: dictionary of parameters for the launch module, possibly containing name
         :return: None
         """
-        self.add_argument('--' + name, default=kwargs[name] if name in kwargs else default, help=help_text,
+        self.ros_argument_group.add_argument('--' + name, default=kwargs[name] if name in kwargs else default,
+                          help=help_text,
                           type=type(default))
 
     def add_flag(self, name, help_text, default, store, **kwargs):
-        self.add_argument('--' + name, action='store_true' if store else 'store_false',
+        self.ros_argument_group.add_argument('--' + name, action='store_true' if store else 'store_false',
                           default=kwargs[name] if name in kwargs else default, help=help_text)
 
     def add_parameter_file(self, name, path, only_parse_known_args=False, **kwargs):
@@ -79,8 +82,8 @@ class LaunchParameter(argparse.ArgumentParser):
         :param only_parse_known_args: If True unknown arguments from yaml file are ignored,
                                       otherwise parsing fails with unknown arguments in yaml file
         """
-        self.add_argument('--' + name, action=load_from_file(path, only_parse_known_args), default='',
-                          nargs=1, help="Load parameters from file '<{:s}>.yaml'.".format(name))
+        self.ros_argument_group.add_argument('--' + name, action=load_from_file(path, only_parse_known_args), default='',
+                          nargs=1, help="Load parameters from file '<{:s}>.yaml'.".format(name.upper()))
 
     def get_args(self):
         """
@@ -91,6 +94,7 @@ class LaunchParameter(argparse.ArgumentParser):
         :return: detected / known arguments. If an argument is named --name, then args.name contains the value whereby
                  args is the value returned by this method
         """
+        self.launch_parameter_list.append(self)
         known_args, _ = self.parse_known_args()
         return known_args
 
