@@ -39,6 +39,17 @@ def critical(args, exit_code=1):
     sys.exit(exit_code)
 
 
+def error(args):
+    """
+    Print an error, added for completeness.
+
+    :param args: data to be printed
+    :return: None
+    """
+    t = 'error: ' + args
+    print(termcolor.colored(t, 'red') if termcolor else t)
+
+
 def warning(args):
     """
     Print a warning, added for completeness. Please prefer warnings.warn().

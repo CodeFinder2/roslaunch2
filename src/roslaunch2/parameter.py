@@ -6,6 +6,7 @@ import yaml
 
 import interfaces
 import machine
+import logger
 import enum
 
 
@@ -32,7 +33,7 @@ def load_from_file(path, only_parse_known_args):
                         else:
                             parser.parse_args(['--{:s}'.format(key), str(value)], namespace)
             except yaml.YAMLError:
-                print("Cannot load parameters from file '{:s}'.".format(filename))
+                logger.error("Cannot load parameters from file '{:s}'.".format(filename))
 
     return LoadFromFile
 
