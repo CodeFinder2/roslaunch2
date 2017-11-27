@@ -53,7 +53,7 @@ class LaunchParameter(argparse.ArgumentParser):
                                          argument_default, conflict_handler, add_help=False)
         self.ros_argument_group = self.add_argument_group(title='ros arguments', description=None)
 
-    def add(self, name, help_text, default, **kwargs):
+    def add(self, name, help_text, default, short_name=None, **kwargs):
         """
         Generates a command line option for the current launch module named --name with the given help_text.
         Additionally, the default value is retrieved from kwargs[name] if that key exists. If not, the provided default
@@ -64,16 +64,33 @@ class LaunchParameter(argparse.ArgumentParser):
         :param name: command line parameter name and key to retrieve (fallback) default in kwargs
         :param help_text: help text of command line option
         :param default: final default value if neither a command line argument nor the key in kwargs is given
+        :param short_name: Optional string: Short command line parameter name
         :param kwargs: dictionary of parameters for the launch module, possibly containing name
         :return: None
         """
+        if short_name:
+            if len(short_name) == 1:
+                sn = '-' + short_name
+            else:
+                sn = '--' + short_name
+            self.ros_argument_group.add_argument(sn, '--' + name, dest=name,
+                                                 default=kwargs[name] if name in kwargs else default,
+                                                 help=help_text, type=type(default))
         self.ros_argument_group.add_argument('--' + name, default=kwargs[name] if name in kwargs else default,
-                          help=help_text,
-                          type=type(default))
+                                             help=help_text, type=type(default))
 
-    def add_flag(self, name, help_text, default, store, **kwargs):
+    def add_flag(self, name, help_text, default, store, short_name=None, **kwargs):
+        if short_name:
+            if len(short_name) == 1:
+                sn = '-' + short_name
+            else:
+                sn = '--' + short_name
+            self.ros_argument_group.add_argument(sn, '--' + name, dest=name,
+                                                 action='store_true' if store else 'store_false',
+                                                 default=kwargs[name] if name in kwargs else default,
+                                                 help=help_text)
         self.ros_argument_group.add_argument('--' + name, action='store_true' if store else 'store_false',
-                          default=kwargs[name] if name in kwargs else default, help=help_text)
+                                             default=kwargs[name] if name in kwargs else default, help=help_text)
 
     def add_parameter_file(self, name, path, only_parse_known_args=False, **kwargs):
         """
