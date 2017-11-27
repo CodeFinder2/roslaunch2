@@ -114,7 +114,7 @@ def ros_join(left, right, force_global=False):
 
 class Observable(object):
     """
-    Allows to create observable events (like the termination of roslaunch) to register custom actions in case such event
+    Allows to create observable events (like the termination of roslaunch) to register custom actions in case such events
     are being triggered.
     """
     def __init__(self):

@@ -41,7 +41,7 @@ def load_from_file(path, only_parse_known_args):
 class LaunchParameter(argparse.ArgumentParser):
     """
     Represents a parameter for a launch module. For example, this can influence whether to select simulator A or B.
-    These parameters are NOT consumed by ROS nodes (refer to ServerParameter and FileParameter in such cases).
+    These parameters are NOT consumed by ROS nodes (refer to ``ServerParameter`` and ``FileParameter`` in such cases).
     """
     launch_parameter_list = []  # Static list collection all LaunchParameter instances.
 
@@ -51,14 +51,14 @@ class LaunchParameter(argparse.ArgumentParser):
         argparse.ArgumentParser.__init__(self, prog, str(), description, epilog, version, parents,
                                          formatter_class, prefix_chars, fromfile_prefix_chars,
                                          argument_default, conflict_handler, add_help=False)
-        self.ros_argument_group = self.add_argument_group(title='ros arguments', description=None)
+        self.ros_argument_group = self.add_argument_group(title='ROS launch module arguments', description=None)
 
     def add(self, name, help_text, default, short_name=None, **kwargs):
         """
-        Generates a command line option for the current launch module named --name with the given help_text.
-        Additionally, the default value is retrieved from kwargs[name] if that key exists. If not, the provided default
+        Generates a command line option for the current launch module named ``--name`` with the given ``help_text``.
+        Additionally, the default value is retrieved from ``kwargs[name]`` if that key exists. If not, the provided default
         value is set. This way, command line options have the highest precedence, followed by parameters passed by the
-        kwargs parameter of a launch module's main() function. If neither of which are set, the provided default value
+        kwargs parameter of a launch module's ``main()`` function. If neither of which are set, the provided default value
         is set.
 
         :param name: command line parameter name and key to retrieve (fallback) default in kwargs
@@ -80,6 +80,22 @@ class LaunchParameter(argparse.ArgumentParser):
                                              help=help_text, type=type(default))
 
     def add_flag(self, name, help_text, default, store, short_name=None, **kwargs):
+        """
+        Generates a command line flag for the current launch module named ``--name`` with the given ``help_text``.
+        Additionally, the default value is retrieved from ``kwargs[name]`` if that key exists. If not, the provided default
+        value is set. This way, command line flags have the highest precedence, followed by parameters passed by the
+        kwargs parameter of a launch module's ``main()`` function. If neither of which are set, the provided default value
+        is set.
+
+        :param name: command line parameter name and key to retrieve (fallback) default in kwargs
+        :param help_text: help text of command line option
+        :param default: final default value if neither a command line argument nor the key in kwargs is given
+        :param store: ``True`` to store ``True`` of the flag is set / provided on the command line, ``False`` to store
+               ``False`` if the flag is provided
+        :param short_name: Optional string: Short command line parameter name
+        :param kwargs: dictionary of parameters for the launch module, possibly containing name
+        :return: None
+        """
         if short_name:
             if len(short_name) == 1:
                 sn = '-' + short_name
@@ -95,20 +111,20 @@ class LaunchParameter(argparse.ArgumentParser):
     def add_parameter_file(self, name, path, only_parse_known_args=False, **kwargs):
         """
         Generates a command line option named --name that loads parameters from a yaml file given by
-        'path/value.yaml' where value is the actual command line value of --name.
+        'path/value.yaml' where value is the actual command line value of ``--name``.
         :param only_parse_known_args: If True unknown arguments from yaml file are ignored,
-                                      otherwise parsing fails with unknown arguments in yaml file
+        otherwise parsing fails with unknown arguments in yaml file
         """
         self.ros_argument_group.add_argument('--' + name, action=load_from_file(path, only_parse_known_args), default='',
                           nargs=1, help="Load parameters from file '<{:s}>.yaml'.".format(name.upper()))
 
     def get_args(self):
         """
-        Parse the previously defined command line arguments using add() or add_argument(). Ignores unknown arguments.
-        Parameters are always parsed from sys.argv and may overlap with parameters from other (used / included) launch
+        Parse the previously defined command line arguments using ``add()`` or ``add_argument()``. Ignores unknown arguments.
+        Parameters are always parsed from ``sys.argv`` and may overlap with parameters from other (used / included) launch
         modules and/or with arguments of roslaunch.
 
-        :return: detected / known arguments. If an argument is named --name, then args.name contains the value whereby
+        :return: detected / known arguments. If an argument is named ``--name``, then args.name contains the value whereby
                  args is the value returned by this method
         """
         self.launch_parameter_list.append(self)
@@ -137,7 +153,7 @@ class Parameter(interfaces.GeneratorBase, interfaces.Composable):
 
 class ServerParameter(Parameter):
     """
-    For setting parameters on the ROS parameter server. Equals the <param> tag.
+    For setting parameters on the ROS parameter server. Equals the ``<param>`` tag.
     """
 
     def __init__(self, name, value, textfile=None, binfile=None, command=None):
@@ -189,7 +205,7 @@ class ServerParameter(Parameter):
 
 class FileCommand(enum.IntEnum):
     """
-    Defines file operations / commands to be used with FileParameter. This allows, e. g., to load a set of parameters
+    Defines file operations / commands to be used with ``FileParameter``. This allows, e. g., to load a set of parameters
     from a given .yaml file.
     """
     Load = 1
@@ -208,7 +224,7 @@ class FileCommand(enum.IntEnum):
 class FileParameter(Parameter):
     """
     Used for loading, dumping or deleting YAML files to/from the ROS parameter server.
-    Equals the <rosparam> tag.
+    Equals the ``<rosparam>`` tag.
     """
 
     def __init__(self, value=None, command=None, file_path=None, param=None, ns=None):

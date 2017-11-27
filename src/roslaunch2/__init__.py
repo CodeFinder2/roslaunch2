@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 15/02/2017
+#    Date: 27/11/2017
 
 # Import all submodules typically used in launch modules:
 from group import *
@@ -27,7 +27,7 @@ on_initialize = Observable()
 on_terminate = Observable()
 
 
-def strip_args(launch_path):
+def _strip_args(launch_path):
     """
     Return preprocessed argument list only containing options valid in roslaunch (not roslaunch2). Also append
     path to generated launch file. For example, this returns
@@ -107,7 +107,7 @@ def _add_env_to_nodes(composer, environment_variable_dict={}):
             _add_env_to_nodes(composer=child, environment_variable_dict=tmp_env_dict)
 
 
-def argument_parser(parents=[]):
+def _argument_parser(parents=[]):
     parser = argparse.ArgumentParser(description='roslaunch2 - Python based launch files for ROS (1)',
                                      add_help=False, parents=parents,
                                      conflict_handler='resolve' if parents else 'error')
@@ -133,7 +133,7 @@ def main():
     :return: None
     """
     import os.path
-    parser = argument_parser()
+    parser = _argument_parser()
     # TODO: this does not "collect" all outputs of all (included/used) launch modules, just the first is shown
     args, _ = parser.parse_known_args()
     init_logger(not args.no_colors)
@@ -192,7 +192,7 @@ def main():
         # noinspection PyBroadException
         try:
             on_initialize.fire()
-            roslaunch.main(strip_args(ftmp.name)) # actually do the launch!
+            roslaunch.main(_strip_args(ftmp.name)) # actually do the launch!
         except:
             pass
         utils.silent_remove(ftmp.name)
