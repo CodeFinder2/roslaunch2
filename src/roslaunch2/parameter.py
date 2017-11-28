@@ -124,8 +124,8 @@ class LaunchParameter(argparse.ArgumentParser):
         Parameters are always parsed from ``sys.argv`` and may overlap with parameters from other (used / included) launch
         modules and/or with arguments of roslaunch.
 
-        :return: detected / known arguments. If an argument is named ``--name``, then args.name contains the value whereby
-                 args is the value returned by this method
+        :return: detected / known arguments. If an argument is named ``--name``, then ``args.name`` contains the value whereby
+                 ``args`` is the value returned by this method
         """
         self.launch_parameter_list.append(self)
         known_args, _ = self.parse_known_args()
