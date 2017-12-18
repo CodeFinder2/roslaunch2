@@ -85,6 +85,52 @@ def _argument_parser(parents=[]):
     return parser
 
 
+def launch(launch_obj, dry_run=False):
+    """
+    Generates a temporary roslaunch XML file from the given roslaunch2 Launch instance and passes it over to roslaunch.
+    Returns after roslaunch has terminated and temporary files have been removed.
+    :param launch_obj: Instance of class launch.Launch
+    :param dry_run: If Only print generated XML (default: False)
+    """
+    content = launch_obj.generate()
+    if not dry_run:
+        import tempfile
+        import roslaunch  # dry-run even works w/o ROS
+        ftmp = tempfile.NamedTemporaryFile(mode='w', suffix='.launch', delete=False)
+        ftmp.write(content)
+        ftmp.close()  # close it so that roslaunch can open it (file still exists)
+        # noinspection PyBroadException
+        try:
+            on_initialize.fire()
+            roslaunch.main(_strip_args(ftmp.name))  # actually do the launch!
+        except:
+            pass
+        utils.silent_remove(ftmp.name)
+
+        on_terminate.fire()
+        # Delete created (temporary) env-loader script files:
+        Machine.cleanup()
+    else:
+        print(content)
+    on_terminate.fire()
+    # Delete created (temporary) env-loader script files:
+    Machine.cleanup()
+
+
+def launch_async(launch_obj):
+    """
+    Call method launch() in a separate process and returns without waiting for roslaunch to terminate.
+    :param launch_obj: Instance of class launch.Launch
+    :return: Instance of class multiprocessing.Process
+    """
+    from multiprocessing import Process
+    p = Process(target=launch, args=(launch_obj, False))
+    p.start()
+    # Call p.terminate() to shutdown roslaunch
+    # and p.join() to wait until roslaunch has terminated.
+    return p
+
+
 def main(command_line_args=None):
     """
     Defines the core logic (= Python based dynamic launch files) of roslaunch2. It does NOT create any
@@ -141,22 +187,4 @@ def main(command_line_args=None):
         return
 
     launch_tree = m.main()
-    content = launch_tree.generate()
-    if not args.dry_run:
-        import tempfile
-        import roslaunch  # dry-run even works w/o ROS
-        ftmp = tempfile.NamedTemporaryFile(mode='w', suffix='.launch', delete=False)
-        ftmp.write(content)
-        ftmp.close()  # close it so that roslaunch can open it (file still exists)
-        # noinspection PyBroadException
-        try:
-            on_initialize.fire()
-            roslaunch.main(_strip_args(ftmp.name))  # actually do the launch!
-        except:
-            pass
-        utils.silent_remove(ftmp.name)
-    else:
-        print(content)
-    on_terminate.fire()
-    # Delete created (temporary) env-loader script files:
-    Machine.cleanup()
+    launch(launch_obj=launch_tree, dry_run=args.dry_run)
