@@ -107,3 +107,44 @@ Delete
         """
         self.add(other)
         return self
+
+    def add_env_variables_to_nodes(self, environment_variable_dict={}):
+        """
+        Traverses the whole tree of this composer object and searches for instances of environment.EnvironmentVariable.
+        Copy each EnvironmentVariable to all subsequent node.Node instances that has not defined it on their own.
+        :param environment_variable_dict: Dictionary of instances of environment.EnvironmentVariable that are valid for
+                                          composer (dictionary keys are the environment variable names)
+        """
+        from environment import EnvironmentVariable
+        from group import Group
+        from node import Node
+
+        # Copy dict to not change the argument in higher recursion levels:
+        tmp_env_dict = dict(environment_variable_dict)
+
+        # Iterate over all children:
+        for child in list(self.children):
+            if isinstance(child, EnvironmentVariable):
+                # Found new environment variable; add or replace instances from higher levels:
+                tmp_env_dict[child.name] = child
+                # Remove environment variables from groups cause roslaunch groups are not allowed to have env members:
+                # http://wiki.ros.org/roslaunch/XML/env
+                if isinstance(self, Group):
+                    self.children.remove(child)
+
+            elif isinstance(child, Node):
+                # Found node; add previously found environment variables:
+                for env_name in tmp_env_dict:
+                    env = tmp_env_dict[env_name]
+                    # Check if node already has defined an EnvironmentVariable with the same name:
+                    add_env = True
+                    for node_child in child.children:
+                        if isinstance(node_child, EnvironmentVariable) and node_child.name == env_name:
+                            add_env = False
+                            break
+                    if add_env:
+                        child += env
+
+            elif isinstance(child, Composer):
+                # Recursive call on composer children (launch, group, not node because handled earlier):
+                child.add_env_variables_to_nodes(environment_variable_dict=tmp_env_dict)

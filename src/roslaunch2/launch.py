@@ -61,6 +61,7 @@ class Launch(interfaces.Composable, interfaces.Composer, remapable.Remapable):
                  the top level (i. e., the Launch object was not nested as a part of anther launch module; in such cases
                  None is returned)
         """
+        self.add_env_variables_to_nodes()
         # Work around this issue (order of boolean expressions matters!):
         # http://stackoverflow.com/questions/20129996/why-does-boolxml-etree-elementtree-element-evaluate-to-false
         first_call = isinstance(root, type(None)) and not root
