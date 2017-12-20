@@ -106,8 +106,6 @@ def launch(launch_obj, dry_run=False):
         except:
             pass
         utils.silent_remove(ftmp.name)
-
-        on_terminate.fire()
         # Delete created (temporary) env-loader script files:
         Machine.cleanup()
     else:
