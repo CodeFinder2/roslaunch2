@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#  Author: Adrian Böckenkamp
+# License: BSD (https://opensource.org/licenses/BSD-3-Clause)
+#    Date: 26/01/2018
+
 import rospkg
 import os
 import sys
@@ -9,7 +16,7 @@ import roslaunch2.logger
 class Package:
     """
     Encapsulates a ROS package and its ability to find files in the package directory structure. A caching mechanism is
-    used to speedup find() commands.
+    used to speedup *find() commands.
     """
     __pkg_cache = {}
     __dir_cache = {}
@@ -56,8 +63,7 @@ class Package:
 
     def __init__(self, name=None):
         self.name = name
-        if self.name:
-            self.path = Package.__get_pkg_path_cached(name)
+        self.path = Package.__get_pkg_path_cached(name)
 
     @Pyro4.expose
     def get_name(self):
@@ -66,8 +72,7 @@ class Package:
     @Pyro4.expose
     def set_name(self, name):
         self.name = name
-        if self.name:
-            self.path = Package.__get_pkg_path_cached(name)
+        self.path = Package.__get_pkg_path_cached(name)
 
     name = property(get_name, set_name)
 
@@ -75,7 +80,13 @@ class Package:
     def get_path(self):
         return self.path
 
-    path = property(get_path)
+    def _set_path(self, pkg_path):  # not exposed to Pyro!
+        if self.name:
+            self.path = pkg_path
+        else:
+            self.path = None
+
+    path = property(get_path, _set_path)
 
     def __str__(self):
         return self.name

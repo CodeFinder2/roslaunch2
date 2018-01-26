@@ -3,13 +3,14 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 04/02/2017
+#    Date: 26/01/2018
 
 # System imports:
 import sys
-termcolor = None
+termcolor_avail = False
 try:
     import termcolor
+    termcolor_avail = True
 except ImportError:
     pass
 
@@ -21,9 +22,9 @@ def init_logger(want_colors=True):
     :param want_colors: True to allow colored output, False to disable it
     :return: None
     """
-    global termcolor
-    if termcolor and not want_colors:
-        termcolor = None
+    global termcolor_avail
+    if termcolor_avail and not want_colors:
+        termcolor_avail = False
 
 
 def critical(args, exit_code=1):
@@ -35,7 +36,7 @@ def critical(args, exit_code=1):
     :return: None
     """
     t = 'error: ' + args
-    print(termcolor.colored(t, 'red') if termcolor else t)
+    print(termcolor.colored(t, 'red') if termcolor_avail else t)
     sys.exit(exit_code)
 
 
@@ -47,7 +48,7 @@ def error(args):
     :return: None
     """
     t = 'error: ' + args
-    print(termcolor.colored(t, 'red') if termcolor else t)
+    print(termcolor.colored(t, 'red') if termcolor_avail else t)
 
 
 def warning(args):
@@ -58,7 +59,7 @@ def warning(args):
     :return: None
     """
     t = 'warning: ' + args
-    print(termcolor.colored(t, 'yellow') if termcolor else t)
+    print(termcolor.colored(t, 'yellow') if termcolor_avail else t)
 
 
 def log(args):
@@ -68,4 +69,4 @@ def log(args):
     :param args: data to be printed
     :return: None
     """
-    print(termcolor.colored(args, 'cyan') if termcolor else args)
+    print(termcolor.colored(args, 'cyan') if termcolor_avail else args)

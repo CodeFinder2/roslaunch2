@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#  Author: Adrian Böckenkamp
+# License: BSD (https://opensource.org/licenses/BSD-3-Clause)
+#    Date: 26/01/2018
+
 import string
 import random
 import os
@@ -114,8 +121,8 @@ def ros_join(left, right, force_global=False):
 
 class Observable(object):
     """
-    Allows to create observable events (like the termination of roslaunch) to register custom actions in case such events
-    are being triggered.
+    Allows to create observable events (like the termination of roslaunch) to register custom actions in case such
+    events are being triggered.
     """
     def __init__(self):
         self.callbacks = []

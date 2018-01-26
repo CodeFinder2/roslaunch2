@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#  Author: Adrian Böckenkamp
+# License: BSD (https://opensource.org/licenses/BSD-3-Clause)
+#    Date: 26/01/2018
+
 import lxml.etree
 import warnings
 import argparse
@@ -16,9 +23,10 @@ def load_from_file(path, only_parse_known_args):
     :param only_parse_known_args: If True unknown arguments from yaml file are ignored,
                                   otherwise parsing fails with unknown arguments in yaml file
     """
+
     class LoadFromFile(argparse.Action):
-        def __call__ (self, parser, namespace, values, option_string=None):
-            assert(len(values) == 1 and values[0]), "Invalid file name argument."
+        def __call__(self, parser, namespace, values, option_string=None):
+            assert (len(values) == 1 and values[0]), "Invalid file name argument."
 
             filename = values[0]
             if not filename.endswith('.yaml'):
@@ -46,8 +54,10 @@ class LaunchParameter(argparse.ArgumentParser):
     launch_parameter_list = []  # Static list collection all LaunchParameter instances.
 
     def __init__(self, prog=None, description=None, epilog=None, version=None,
-                 parents=[], formatter_class=argparse.HelpFormatter, prefix_chars='-',
+                 parents=None, formatter_class=argparse.HelpFormatter, prefix_chars='-',
                  fromfile_prefix_chars=None, argument_default=None, conflict_handler='resolve'):
+        if parents is None:
+            parents = []
         argparse.ArgumentParser.__init__(self, prog, str(), description, epilog, version, parents,
                                          formatter_class, prefix_chars, fromfile_prefix_chars,
                                          argument_default, conflict_handler, add_help=False)
@@ -56,10 +66,10 @@ class LaunchParameter(argparse.ArgumentParser):
     def add(self, name, help_text, default, short_name=None, **kwargs):
         """
         Generates a command line option for the current launch module named ``--name`` with the given ``help_text``.
-        Additionally, the default value is retrieved from ``kwargs[name]`` if that key exists. If not, the provided default
-        value is set. This way, command line options have the highest precedence, followed by parameters passed by the
-        kwargs parameter of a launch module's ``main()`` function. If neither of which are set, the provided default value
-        is set.
+        Additionally, the default value is retrieved from ``kwargs[name]`` if that key exists. If not, the provided
+        default  value is set. This way, command line options have the highest precedence, followed by parameters passed
+        by the kwargs parameter of a launch module's ``main()`` function. If neither of which are set, the provided
+        default value is set.
 
         :param name: command line parameter name and key to retrieve (fallback) default in kwargs
         :param help_text: help text of command line option
@@ -82,10 +92,10 @@ class LaunchParameter(argparse.ArgumentParser):
     def add_flag(self, name, help_text, default, store, short_name=None, **kwargs):
         """
         Generates a command line flag for the current launch module named ``--name`` with the given ``help_text``.
-        Additionally, the default value is retrieved from ``kwargs[name]`` if that key exists. If not, the provided default
-        value is set. This way, command line flags have the highest precedence, followed by parameters passed by the
-        kwargs parameter of a launch module's ``main()`` function. If neither of which are set, the provided default value
-        is set.
+        Additionally, the default value is retrieved from ``kwargs[name]`` if that key exists. If not, the provided
+        default value is set. This way, command line flags have the highest precedence, followed by parameters passed by
+        the kwargs parameter of a launch module's ``main()`` function. If neither of which are set, the provided default
+        value is set.
 
         :param name: command line parameter name and key to retrieve (fallback) default in kwargs
         :param help_text: help text of command line option
@@ -108,24 +118,27 @@ class LaunchParameter(argparse.ArgumentParser):
         self.ros_argument_group.add_argument('--' + name, action='store_true' if store else 'store_false',
                                              default=kwargs[name] if name in kwargs else default, help=help_text)
 
-    def add_parameter_file(self, name, path, only_parse_known_args=False, **kwargs):
+    def add_parameter_file(self, name, path, only_parse_known_args=False):
         """
         Generates a command line option named --name that loads parameters from a yaml file given by
         'path/value.yaml' where value is the actual command line value of ``--name``.
-        :param only_parse_known_args: If True unknown arguments from yaml file are ignored,
-        otherwise parsing fails with unknown arguments in yaml file
+        :param name: Name of the command line option
+        :param path: Path of the .yaml file
+        :param only_parse_known_args: If True unknown arguments from yaml file are ignored
+               otherwise parsing fails with unknown arguments in yaml file
         """
-        self.ros_argument_group.add_argument('--' + name, action=load_from_file(path, only_parse_known_args), default='',
-                          nargs=1, help="Load parameters from file '<{:s}>.yaml'.".format(name.upper()))
+        self.ros_argument_group.add_argument('--' + name, action=load_from_file(path, only_parse_known_args),
+                                             default='', nargs=1,
+                                             help="Load parameters from file '<{:s}>.yaml'.".format(name.upper()))
 
     def get_args(self):
         """
-        Parse the previously defined command line arguments using ``add()`` or ``add_argument()``. Ignores unknown arguments.
-        Parameters are always parsed from ``sys.argv`` and may overlap with parameters from other (used / included) launch
-        modules and/or with arguments of roslaunch.
+        Parse the previously defined command line arguments using ``add()`` or ``add_argument()``. Ignores unknown
+        arguments. Parameters are always parsed from ``sys.argv`` and may overlap with parameters from other
+        (used / included) launch modules and/or with arguments of roslaunch.
 
-        :return: detected / known arguments. If an argument is named ``--name``, then ``args.name`` contains the value whereby
-                 ``args`` is the value returned by this method
+        :return: detected / known arguments. If an argument is named ``--name``, then ``args.name`` contains the value
+                 whereby ``args`` is the value returned by this method
         """
         self.launch_parameter_list.append(self)
         known_args, _ = self.parse_known_args()
@@ -205,8 +218,8 @@ class ServerParameter(Parameter):
 
 class FileCommand(enum.IntEnum):
     """
-    Defines file operations / commands to be used with ``FileParameter``. This allows, e. g., to load a set of parameters
-    from a given .yaml file.
+    Defines file operations / commands to be used with ``FileParameter``. This allows, e. g., to load a set of
+    parameters from a given .yaml file.
     """
     Load = 1
     Dump = 2
@@ -239,8 +252,8 @@ class FileParameter(Parameter):
     def __eq__(self, other):
         if not isinstance(other, self.__class__):  # different types are never equal
             return False
-        return self.command == other.command and self.file_path == other.file_path and \
-               self.param == other.param and self.value == other.value and self.ns == other.ns
+        return self.command == other.command and self.file_path == other.file_path and self.param == other.param and \
+               self.value == other.value and self.ns == other.ns
 
     def generate(self, root, starting_machine, pkg):
         elem = lxml.etree.SubElement(root, 'rosparam')

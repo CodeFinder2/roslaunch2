@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 18/08/2017
+#    Date: 26/01/2018
 
 if __name__ == '__main__':
     from roslaunch2 import main as roslaunch2_main

@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 18/08/2017
+#    Date: 26/01/2018
 
 import Pyro4
 import socket
@@ -17,7 +17,7 @@ __version__ = '0.1'
 
 class Server:
     """
-    This class represents the roslaunch2 server required to be launched on remote computes that should run
+    This class represents the roslaunch2 server required to be launched on remote computers that should run
     node remotely using roslaunch2.
     """
     def __init__(self):

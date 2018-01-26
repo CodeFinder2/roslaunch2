@@ -3,20 +3,20 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 27/11/2017
+#    Date: 26/01/2018
 
 # Import all submodules typically used in launch modules:
 from group import *
-from launch import *
-from node import *
 from parameter import *
 from machine import *
-from environment import *
-from test import *
 from package import *
 from logger import *
 from utils import *
 from remote import *
+from launch import *
+from node import *
+from environment import *
+from test import *
 
 import argparse
 
@@ -66,7 +66,9 @@ def _strip_args(launch_path):
     return args
 
 
-def _argument_parser(parents=[]):
+def _argument_parser(parents=None):
+    if parents is None:
+        parents = []
     parser = argparse.ArgumentParser(description='roslaunch2 - Python based launch files for ROS (1)',
                                      add_help=False, parents=parents,
                                      conflict_handler='resolve' if parents else 'error')
@@ -103,7 +105,7 @@ def launch(launch_obj, dry_run=False):
         try:
             on_initialize.fire()
             roslaunch.main(_strip_args(ftmp.name))  # actually do the launch!
-        except:
+        except Exception:
             pass
         utils.silent_remove(ftmp.name)
         # Delete created (temporary) env-loader script files:
@@ -122,7 +124,7 @@ def launch_async(launch_obj):
     :return: Instance of class multiprocessing.Process
     """
     from multiprocessing import Process
-    p = Process(target=launch, args=(launch_obj, False))
+    p = Process(target=roslaunch2.launch, args=(launch_obj, False))
     p.start()
     # Call p.terminate() to shutdown roslaunch
     # and p.join() to wait until roslaunch has terminated.
@@ -138,7 +140,6 @@ def main(command_line_args=None):
     """
     import os.path
     parser = _argument_parser()
-    # TODO: this does not "collect" all outputs of all (included/used) launch modules, just the first is shown
     args, _ = parser.parse_known_args(args=command_line_args)
     init_logger(not args.no_colors)
 
@@ -185,4 +186,4 @@ def main(command_line_args=None):
         return
 
     launch_tree = m.main()
-    launch(launch_obj=launch_tree, dry_run=args.dry_run)
+    roslaunch2.launch(launch_obj=launch_tree, dry_run=args.dry_run)

@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#  Author: Adrian Böckenkamp
+# License: BSD (https://opensource.org/licenses/BSD-3-Clause)
+#    Date: 26/01/2018
+
 import lxml.etree
 import getpass
 import Pyro4
@@ -138,6 +145,7 @@ class Machine(interfaces.GeneratorBase):
                 remote_object.cleanup()
         Machine.__generated_env_loaders = []
 
+
 Localhost = Machine('localhost', getpass.getuser())
 
 
@@ -148,6 +156,14 @@ class MachinePool(list):
     class Strategy(enum.IntEnum):
         LeastLoadAverage = 1
         LeastMemoryUsage = 2
+
+        def __str__(self):
+            if self.value == MachinePool.Strategy.LeastLoadAverage:
+                return '\"LeastLoadAverage\"'
+            elif self.value == MachinePool.Strategy.LeastMemoryUsage:
+                return '\"LeastMemoryUsage\"'
+            else:
+                raise ValueError('Unknown strategy in machine pool!')
 
     def __init__(self, select_strategy=Strategy.LeastLoadAverage, *args):
         list.__init__(self, *args)
@@ -175,7 +191,7 @@ class MachinePool(list):
             # Use currently used memory to determine the most capable machine:
             fitness = [total - free for total, free in [m.remote().memory_stats() for m in self]]
         else:
-            raise ValueError('Strategy {:s} is not implemented.'.format(self.strategy))
+            raise ValueError('Strategy {:s} is not implemented.'.format(str(self.strategy)))
         return self[fitness.index(min(fitness))]
 
     def __iadd__(self, other):

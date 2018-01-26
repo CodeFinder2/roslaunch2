@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#  Author: Adrian Böckenkamp
+# License: BSD (https://opensource.org/licenses/BSD-3-Clause)
+#    Date: 26/01/2018
+
 import copy
 import lxml.etree
 
@@ -108,13 +115,15 @@ Delete
         self.add(other)
         return self
 
-    def add_env_variables_to_nodes(self, environment_variable_dict={}):
+    def add_env_variables_to_nodes(self, environment_variable_dict=None):
         """
         Traverses the whole tree of this composer object and searches for instances of environment.EnvironmentVariable.
         Copy each EnvironmentVariable to all subsequent node.Node instances that has not defined it on their own.
         :param environment_variable_dict: Dictionary of instances of environment.EnvironmentVariable that are valid for
                                           composer (dictionary keys are the environment variable names)
         """
+        if environment_variable_dict is None:
+            environment_variable_dict = {}
         from environment import EnvironmentVariable
         from group import Group
         from node import Node
