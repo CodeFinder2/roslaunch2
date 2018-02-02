@@ -87,7 +87,7 @@ def _argument_parser(parents=None):
     return parser
 
 
-def launch(launch_obj, dry_run=False):
+def start(launch_obj, dry_run=False):
     """
     Generates a temporary roslaunch XML file from the given roslaunch2 Launch instance and passes it over to roslaunch.
     Returns after roslaunch has terminated and temporary files have been removed.
@@ -118,14 +118,15 @@ def launch(launch_obj, dry_run=False):
     Machine.cleanup()
 
 
-def launch_async(launch_obj):
+def start_async(launch_obj):
     """
-    Call method launch() in a separate process and returns without waiting for roslaunch to terminate.
+    Call method start() in a separate process and returns without waiting for roslaunch to terminate.
+
     :param launch_obj: Instance of class launch.Launch
     :return: Instance of class multiprocessing.Process
     """
     from multiprocessing import Process
-    p = Process(target=roslaunch2.launch, args=(launch_obj, False))
+    p = Process(target=roslaunch2.start, args=(launch_obj, False))
     p.start()
     # Call p.terminate() to shutdown roslaunch
     # and p.join() to wait until roslaunch has terminated.
@@ -136,6 +137,7 @@ def main(command_line_args=None):
     """
     Defines the core logic (= Python based dynamic launch files) of roslaunch2. It does NOT create any
     launch modules or the like.
+
     :param command_line_args: List with command line arguments as strings
     :return: None
     """
@@ -187,4 +189,4 @@ def main(command_line_args=None):
         return
 
     launch_tree = m.main()
-    roslaunch2.launch(launch_obj=launch_tree, dry_run=args.dry_run)
+    roslaunch2.start(launch_obj=launch_tree, dry_run=args.dry_run)
