@@ -91,6 +91,7 @@ def launch(launch_obj, dry_run=False):
     """
     Generates a temporary roslaunch XML file from the given roslaunch2 Launch instance and passes it over to roslaunch.
     Returns after roslaunch has terminated and temporary files have been removed.
+
     :param launch_obj: Instance of class launch.Launch
     :param dry_run: If Only print generated XML (default: False)
     """

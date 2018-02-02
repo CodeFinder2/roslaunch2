@@ -16,7 +16,7 @@ import roslaunch2.logger
 class Package:
     """
     Encapsulates a ROS package and its ability to find files in the package directory structure. A caching mechanism is
-    used to speedup *find() commands.
+    used to speedup `*find()` commands.
     """
     __pkg_cache = {}
     __dir_cache = {}
@@ -31,7 +31,7 @@ class Package:
     @staticmethod
     def get_paths_to_file(start_dir, file_comp):
         """
-        Searches for file_comp in $start_dir recursively (also using a cache for speedup).
+        Searches for file_comp in `start_dir` recursively (also using a cache for speedup).
 
         :param start_dir: root directory where to start the search
         :param file_comp: file path component (like some/dir/myfile.xml) name to search for

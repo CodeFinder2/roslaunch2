@@ -79,7 +79,7 @@ class Composer(object):
     def __init__(self, valid_types):
         """
         Constructs the object.
-Delete
+
         :param valid_types: tuple-convertible list of types that are allowed to be added to this composer
         """
         self.children = []
@@ -119,6 +119,7 @@ Delete
         """
         Traverses the whole tree of this composer object and searches for instances of environment.EnvironmentVariable.
         Copy each EnvironmentVariable to all subsequent node.Node instances that has not defined it on their own.
+
         :param environment_variable_dict: Dictionary of instances of environment.EnvironmentVariable that are valid for
                                           composer (dictionary keys are the environment variable names)
         """

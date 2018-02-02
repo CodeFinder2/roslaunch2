@@ -36,8 +36,8 @@ roslaunch2.launch module
     :undoc-members:
     :show-inheritance:
 
-roslaunch2.logging module
--------------------------
+roslaunch2.logger module
+------------------------
 
 .. automodule:: roslaunch2.logger
     :members:

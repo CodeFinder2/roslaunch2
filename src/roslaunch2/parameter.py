@@ -122,10 +122,11 @@ class LaunchParameter(argparse.ArgumentParser):
         """
         Generates a command line option named --name that loads parameters from a yaml file given by
         'path/value.yaml' where value is the actual command line value of ``--name``.
+
         :param name: Name of the command line option
         :param path: Path of the .yaml file
         :param only_parse_known_args: If True unknown arguments from yaml file are ignored
-               otherwise parsing fails with unknown arguments in yaml file
+                                      otherwise parsing fails with unknown arguments in yaml file
         """
         self.ros_argument_group.add_argument('--' + name, action=load_from_file(path, only_parse_known_args),
                                              default='', nargs=1,
