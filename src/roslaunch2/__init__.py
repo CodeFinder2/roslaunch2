@@ -120,7 +120,9 @@ def start(launch_obj, dry_run=False):
 
 def start_async(launch_obj):
     """
-    Call method start() in a separate process and returns without waiting for roslaunch to terminate.
+    Call method start() in a separate process and returns without waiting for roslaunch to terminate. If p is the
+    returned object, call p.terminate() to shutdown roslaunch and p.join() to wait until roslaunch has terminated.
+    TODO: verify if events (on_initialize, on_terminate) and cleanup (Machine.cleanup()) are correctly triggered here
 
     :param launch_obj: Instance of class launch.Launch
     :return: Instance of class multiprocessing.Process
@@ -128,8 +130,6 @@ def start_async(launch_obj):
     from multiprocessing import Process
     p = Process(target=roslaunch2.start, args=(launch_obj, False))
     p.start()
-    # Call p.terminate() to shutdown roslaunch
-    # and p.join() to wait until roslaunch has terminated.
     return p
 
 

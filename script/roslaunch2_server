@@ -18,7 +18,7 @@ __version__ = '0.1'
 class Server:
     """
     This class represents the roslaunch2 server required to be launched on remote computers that should run
-    node remotely using roslaunch2.
+    nodes remotely using roslaunch2.
     """
     def __init__(self):
         """
@@ -65,7 +65,7 @@ class Server:
     def get_ip_address():
         """
         Returns the IP address of the primary network adapter having internet access. This is used to bound the server.
-        (By using localhost, other cannot connect to the server.)
+        (By using localhost, others cannot connect to the server.)
 
         :return:
         """
