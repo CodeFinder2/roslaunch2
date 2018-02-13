@@ -109,8 +109,6 @@ def start(launch_obj, dry_run=False):
         except Exception:
             pass
         utils.silent_remove(ftmp.name)
-        # Delete created (temporary) env-loader script files:
-        Machine.cleanup()
     else:
         print(content)
     on_terminate.fire()
@@ -122,7 +120,6 @@ def start_async(launch_obj):
     """
     Call method start() in a separate process and returns without waiting for roslaunch to terminate. If p is the
     returned object, call p.terminate() to shutdown roslaunch and p.join() to wait until roslaunch has terminated.
-    TODO: verify if events (on_initialize, on_terminate) and cleanup (Machine.cleanup()) are correctly triggered here
 
     :param launch_obj: Instance of class launch.Launch
     :return: Instance of class multiprocessing.Process
