@@ -122,7 +122,7 @@ class Path(Resolvable):
     """
     Represents a path of a local or remote system. For example, if a node *may* be executed on another machine
     (depending on some condition) and that machine may be selected "dynamically" on some other condition, a path must be
-    resolved if the final machine is known. This process is encapsulated in this class.
+    resolved when the final machine is known. This process is encapsulated in this class.
     """
     def __init__(self, path, pkg=None):
         Resolvable.__init__(self, path)
