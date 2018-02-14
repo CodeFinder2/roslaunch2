@@ -27,11 +27,11 @@ class Server:
         self.machine_address = Server.get_ip_address()
         self.reg_db = {}
         roslaunch2.logger.log('This is the roslaunch2 PyRO server v{:s}, '
-                              '(C) Copyright by Adrian Böckenkamp 2017.\n'.format(__version__))
+                              '(C) Copyright by Adrian Böckenkamp 2018.\n'.format(__version__))
         Pyro4.config.REQUIRE_EXPOSE = True
 
         if not Server.is_name_server_running():
-            roslaunch2.logger.critical("- Cannot find a running PyRO name server, please start it with:\n"
+            roslaunch2.logger.critical("cannot find a running PyRO name server, please start it with:\n"
                                        "  $ python -m Pyro4.naming -n $(hostname -I | grep -o '^\S*')\n")
         else:
             roslaunch2.logger.log('- Name server found.')
