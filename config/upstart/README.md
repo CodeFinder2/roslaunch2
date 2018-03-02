@@ -8,7 +8,7 @@ See [*Upstart HowTo*](https://help.ubuntu.com/community/UbuntuBootupHowto) or `m
 ```
 sudo cp $(rospack find roslaunch2)/config/upstart/roslaunch2-pyro-name-server.conf /etc/init/
 ```
-- Update list of available upstart jobs: `initctl reload-configuration`
+- Update list of available upstart jobs: `sudo initctl reload-configuration`
 - Test if you can run it with: `sudo initctl start roslaunch2-pyro-name-server`. This should show something like (different PID):
 > roslaunch2-pyro-name-server start/running, process 5114
 -  Then either `sudo initctl status roslaunch2-pyro-name-server` or `sudo initctl list` should show the same entry. Note that those commands without `sudo` only show a subset of jobs, apparently without our `roslaunch2-pyro-name-server`.
@@ -39,7 +39,7 @@ start on started network-services
 - Then, type:
 ```
 sudo cp $(rospack find roslaunch2)/config/upstart/roslaunch2-server.conf /etc/init/
-initctl reload-configuration
+sudo initctl reload-configuration
 sudo initctl start roslaunch2-server
 sudo reboot
 # After reboot:
