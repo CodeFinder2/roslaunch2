@@ -87,14 +87,19 @@ def _argument_parser(parents=None):
     return parser
 
 
-def start(launch_obj, dry_run=False):
+def start(launch_obj, dry_run=False, silent=False):
     """
     Generates a temporary roslaunch XML file from the given roslaunch2 Launch instance and passes it over to roslaunch.
     Returns after roslaunch has terminated and temporary files have been removed.
 
     :param launch_obj: Instance of class launch.Launch
     :param dry_run: If Only print generated XML (default: False)
+    :param silent: Hide roslaunch output
     """
+    if silent:
+        import sys
+        import os
+        sys.stdout = open(os.devnull, 'w')
     content = launch_obj.generate()
     if not dry_run:
         import tempfile
@@ -116,16 +121,17 @@ def start(launch_obj, dry_run=False):
     Machine.cleanup()
 
 
-def start_async(launch_obj):
+def start_async(launch_obj, silent=False):
     """
     Call method start() in a separate process and returns without waiting for roslaunch to terminate. If p is the
     returned object, call p.terminate() to shutdown roslaunch and p.join() to wait until roslaunch has terminated.
 
     :param launch_obj: Instance of class launch.Launch
+    :param silent: Hide roslaunch output
     :return: Instance of class multiprocessing.Process
     """
     from multiprocessing import Process
-    p = Process(target=roslaunch2.start, args=(launch_obj, False))
+    p = Process(target=roslaunch2.start, args=(launch_obj, False, silent))
     p.start()
     return p
 
