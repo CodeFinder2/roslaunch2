@@ -48,13 +48,13 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
         remapable.Remapable.__init__(self)
         interfaces.Composable.__init__(self)
         interfaces.Composer.__init__(self, [parameter.Parameter, environment.EnvironmentVariable])
+        self._pkg = package.Package(pkg) if type(pkg) is str else pkg
         if pkg and not node_type:
-            node_type = pkg
+            node_type = str(self._pkg)
         if not name:
             name = node_type
         if not pkg:
             raise ValueError("pkg='{}' cannot be empty or None.".format(pkg))
-        self._pkg = package.Package(pkg) if type(pkg) is str else pkg
         self._node = node_type  # equals the 'type' attribute in XML
         self.name = name
         self.args = args
