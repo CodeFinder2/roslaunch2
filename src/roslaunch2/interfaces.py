@@ -14,7 +14,6 @@ class GeneratorBase(object):
     Represents the interface for classes that can generate its XML representation for roslaunch. You need to implement
     the generate() method for this to work.
     """
-
     def __init__(self):
         """
         Does nothing.
@@ -49,9 +48,11 @@ class GeneratorBase(object):
 
     def generate(self, root, machines, pkg):  # generates XML output
         """
-        Generates a roslaunch compatible XML representation of this object.
+        Generates a roslaunch compatible XML representation of this object. This method is automatically invoked by the
+        roslaunch2 tool, There's no need for you to call it manually.
+
         :return: the return value can be used arbitrarily (for an example, see node.Runnable); however, finally, a
-        string (see Launch impl.) must be returned which is the XML representation of the roslaunch file
+                 string (see Launch impl.) must be returned which is the XML representation of the roslaunch file
         """
         raise NotImplementedError('generate() not implemented in "{}" yet.'.format(self.__class__.__name__))
 

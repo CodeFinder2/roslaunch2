@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 26/01/2018
+#    Date: 13/03/2018
 
 # Import all submodules typically used in launch modules:
 from group import *
@@ -67,6 +67,12 @@ def _strip_args(launch_path):
 
 
 def _argument_parser(parents=None):
+    """
+    Defines the command line argument parser for roslaunch2.
+
+    :param parents: Parents of argparse.ArgumentParser (not needed in most of the cases)
+    :return: argparse.ArgumentParser instance
+    """
     if parents is None:
         parents = []
     parser = argparse.ArgumentParser(description='roslaunch2 - Python based launch files for ROS (1)',

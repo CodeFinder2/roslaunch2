@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 26/01/2018
+#    Date: 13/03/2018
 
 import warnings
 import lxml.etree
@@ -33,9 +33,18 @@ class Output(enum.IntEnum):
 
 class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
     """
-    Encapsulates the common attributes and methods of a <node> and <test> tag/class.
+    Encapsulates the common attributes and methods of a <node> and <test> tag/class (internal base class).
     """
     def __init__(self, tag_name, pkg, node_type=None, name=None, args=None):
+        """
+        Initializes the Runnable object.
+
+        :param tag_name: Name of XML tag
+        :param pkg: Name of package containing the node/test; must be valid
+        :param node_type: Type of the node/test (executable); will be set to pkg if None
+        :param name: Optional name of the instance within roslaunch; will be set to node_type if None
+        :param args: Optional command line arguments
+        """
         remapable.Remapable.__init__(self)
         interfaces.Composable.__init__(self)
         interfaces.Composer.__init__(self, [parameter.Parameter, environment.EnvironmentVariable])
@@ -56,20 +65,39 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
 
     @property
     def pkg(self):
+        """
+        Returns the associated package.
+
+        :return: roslaunch2.package.Package instance
+        """
         return self._pkg
 
     @property
     def node(self):
+        """
+        Node type (aka executable name).
+
+        :return: String representing the node's type
+        """
         return self._node
 
     @pkg.setter
     def pkg(self, value):
+        """
+        Allows to change the package, this Runnable belongs to.
+        :param value: package.Package instance or ROS package name
+        """
         if not value:
             raise ValueError("pkg='{}' cannot be empty or None.".format(value))
         self._pkg = package.Package(value) if type(value) is str else value
 
     @node.setter
     def node(self, value):
+        """
+        Allows to change the node executable name.
+        :param value: New executable name
+
+        """
         if not value:
             raise ValueError("node='{}' cannot be empty or None.".format(value))
         self._node = value
@@ -82,6 +110,11 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
         return '{:s}@{:s}: {:s}'.format(self.node, self.pkg, self.name)
 
     def add(self, param):
+        """
+        Adds the parameter to the node's parameter set.
+
+        :param param: New parameter, can be any object derived from parameter.Parameter
+        """
         for p in self.children:
             if param == p:
                 raise ValueError("Parameter '{}' already added.".format(str(param)))
@@ -89,21 +122,41 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
         interfaces.Composer.add(self, param)
 
     def clear_params(self, clear=None):
+        """
+        Sets the clear_params flag as provided by roslaunch, see, e. g., http://wiki.ros.org/roslaunch/XML/node
+        :param clear: True to clear all parameter before the node is started
+        """
         self.clear_params = clear
 
     def set_namespace(self, ns=None):
+        """
+        Sets the node's namespace. Can also be achieved using the Group class.
+
+        :param ns: Name of namespace
+        """
         self.ns = ns
 
     def debug(self, separate_window=True, auto_run=True):
         """
-        Add gdb debug prefix to this node.
+        Adds a gdb debug prefix to this node.
         See http://wiki.ros.org/roslaunch/Tutorials/Roslaunch%20Nodes%20in%20Valgrind%20or%20GDB
+
+        :param separate_window: True to launch the node in a separate window using xterm
+        :param auto_run: True to automatically start the node within gdb (otherwise, type "run" and press enter")
         """
         sw = 'xterm -e ' if separate_window else ''
         ar = '-ex run ' if auto_run else ''
         self.prefix = '{}gdb {}--args'.format(sw, ar)
 
     def generate(self, root, machines, pkg):
+        """
+        Appends the underlying roslaunch XML code to the given root object.
+
+        :param root: XML root element object
+        :param machines: list of machines currently known in the launch module (may still contain duplicates)
+        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,
+               e. g., ServerParameter.generate())
+        """
         elem = lxml.etree.SubElement(root, self.__tag_name)
         remapable.Remapable.generate(self, elem, machines, self._pkg)
 
@@ -119,9 +172,18 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
 
 class Node(Runnable):
     """
-    For starting ROS nodes, equals <node>.
+    For starting ROS nodes, equals <node>, see http://wiki.ros.org/roslaunch/XML/node
     """
     def __init__(self, pkg, node_type=None, name=None, output=Output.Screen, args=None):
+        """
+        Initializes the ROS node to be launched.
+
+        :param pkg: Name of ROS package or package.Package instance
+        :param node_type: Type of node executable; will be set to pkg.name() if empty
+        :param name: Name of node instance when running; will be set to node_type
+        :param output: Output flag to define where logging commands should be forwarded to
+        :param args: Optional command line arguments
+        """
         Runnable.__init__(self, 'node', pkg, node_type, name, args)
         assert not output or type(output) == Output
         self.output = output
@@ -132,28 +194,60 @@ class Node(Runnable):
 
     @property
     def required(self):
+        """
+        Retrieves the required flag.
+        :return: True if node is required, False otherwise
+        """
         return self._required
 
     @required.setter
     def required(self, value):
+        """
+        Sets the required flag, effectively (if True) requiring the node to be running. If the node dies, roslaunch will
+        terminate the entire launch.
+
+        :param value: New required flag
+        """
         if value and self._respawn:
             raise ValueError('Cannot set both required and respawn to True (incompatible).')
         self._required = value
 
     @property
     def respawn(self):
+        """
+        Retrieves the respawn flag.
+        :return: True if node is respawn when it terminates, False otherwise
+        """
         return self._respawn
 
     @respawn.setter
     def respawn(self, value):
+        """
+        Sets the respawn flag, effectively (if True) restarting the node if killed.
+
+        :param value: New respawn flag
+        """
         if value and self._required:
             raise ValueError('Cannot set both required and respawn to True (incompatible).')
         self._respawn = value
 
     def start_on(self, machine_object):
+        """
+        Allows to start the node on a specific machine.
+
+        :param machine_object: New machine object to be used for starting self remotely
+        """
         self.machine = machine_object
 
     def generate(self, root, machines, pkg):
+        """
+        Appends the underlying roslaunch XML code to the given root object.
+
+        :param root: XML root element object
+        :param machines: list of machines currently known in the launch module (may still contain duplicates)
+        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,
+               e. g., ServerParameter.generate())
+        """
         # If a set of machines was assigned to this node, it's now time to select the final
         # machine this node gets executed on.
         if isinstance(self.machine, machine.MachinePool):

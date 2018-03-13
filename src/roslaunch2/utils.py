@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 26/01/2018
+#    Date: 13/03/2018
 
 import string
 import random
@@ -133,15 +133,12 @@ class Observable(object):
 
         :param callback: Python function to be executed ("callback") when the event is being triggered
         :param kwargs: Optional additional parameters for the callback, may be None / ignored
-        :return: None
         """
         self.callbacks.append((callback, kwargs))
 
     def fire(self):
         """
         Triggers the event (typically only used by the enitity defining the event, i. e., roslaunch2 here).
-
-        :return: None
         """
         for fn, kwargs in self.callbacks:
             fn(**kwargs)

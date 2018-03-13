@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 26/01/2018
+#    Date: 13/03/2018
 
 import rospkg
 import os
@@ -24,6 +24,9 @@ class Package:
 
     @staticmethod
     def invalidate_cache():
+        """
+        Invalidates the package, directory and file cache for finding packages, enforcing re-lookups.
+        """
         Package.__pkg_cache = {}
         Package.__dir_cache = {}
         Package.__find_cache = {}
@@ -57,20 +60,43 @@ class Package:
 
     @staticmethod
     def __get_pkg_path_cached(name):
+        """
+        Tries to find the given package name in the cache. If its not present in the cache, the cache is updated by a
+        (slower) filesystem lookup.
+
+        :param name: Name of ROS package
+        :return: Path to package
+        """
         if name not in Package.__pkg_cache:
             Package.__pkg_cache[name] = rospkg.RosPack().get_path(name)  # may throws rospkg.ResourceNotFound
         return Package.__pkg_cache[name]
 
     def __init__(self, name=None):
+        """
+        Initializes the ROS package given its name. The path to the package will automatically be resolved on
+        construction.
+
+        :param name: Name of ROS package
+        """
         self.name = name
         self.path = Package.__get_pkg_path_cached(name)
 
     @Pyro4.expose
     def get_name(self):
+        """
+        Returns the package name.
+
+        :return: ROS package name
+        """
         return self.name
 
     @Pyro4.expose
     def set_name(self, name):
+        """
+        Updates/sets the package name.
+
+        :param name: ROS package name
+        """
         self.name = name
         self.path = Package.__get_pkg_path_cached(name)
 
@@ -78,6 +104,11 @@ class Package:
 
     @Pyro4.expose
     def get_path(self):
+        """
+        Retrieves the package path.
+
+        :return: ROS package path
+        """
         return self.path
 
     def _set_path(self, pkg_path):  # not exposed to Pyro!
@@ -165,6 +196,13 @@ class Package:
 
     @staticmethod
     def import_launch_module(full_module_path):
+        """
+        Rather internal helper function for important a Python module (i. e., a roslaunch2 launch module/file).
+        This function handles all various cases related to different versions of Python.
+
+        :param full_module_path: Full path to module file
+        :return: Handle to imported module (like "foo" in "import bar as foo")
+        """
         if sys.version_info < (2, 4):  # Python < 2.4 is not supported
             raise RuntimeError('Must use Python version >= 2.4!')
         if not os.path.isfile(full_module_path):

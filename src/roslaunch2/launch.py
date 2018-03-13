@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 26/01/2018
+#    Date: 13/03/2018
 
 import warnings
 import lxml.etree
@@ -20,6 +20,13 @@ class Launch(interfaces.Composable, interfaces.Composer, remapable.Remapable):
     Represents the root object of a launch module, similiar to roslaunch's <launch> tag.
     """
     def __init__(self, deprecation_message=None):
+        """
+        Initializes the Launch object, optionally allowing/showing an deprecation message for the constructed launch
+        module.
+
+        :param deprecation_message: If not None, the str-converted message is shown as a deprecation warning which may
+               be useful to indicate that the launch module has been replaced by another module
+        """
         interfaces.Composable.__init__(self)
         interfaces.Composer.__init__(self, None)  # everything can be put into Launch
         remapable.Remapable.__init__(self)

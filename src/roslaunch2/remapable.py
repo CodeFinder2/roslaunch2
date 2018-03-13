@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 26/01/2018
+#    Date: 13/03/2018
 
 from lxml import etree
 
@@ -43,6 +43,14 @@ class Remapable(interfaces.GeneratorBase):
         self.to_name = list()
 
     def generate(self, root, machines, pkg):
+        """
+        Appends the underlying roslaunch XML code to the given root object.
+
+        :param root: XML root element object
+        :param machines: list of machines currently known in the launch module (may still contain duplicates)
+        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,
+               e. g., ServerParameter.generate())
+        """
         if self.from_name and self.to_name:
             for fn, tn in zip(self.from_name, self.to_name):
                 elem = etree.SubElement(root, 'remap')

@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 26/01/2018
+#    Date: 13/03/2018
 
 import lxml.etree
 import getpass
@@ -24,6 +24,16 @@ class Machine(interfaces.GeneratorBase):
     __generated_env_loaders = []
 
     def __init__(self, address, user, env_loader=None, name=None, password=None, timeout=None):
+        """
+        Initializes the Machine object.
+
+        :param address: IP address or hostname of machine to be used for remote launching
+        :param user: User name of remote machine
+        :param env_loader: Optional env-loader script path on the local machine
+        :param name: Unique name of machine object, can bet set to None to generate it automatically
+        :param password: ssh password for connecting (it is advised to use public-key auth.)
+        :param timeout: Optional timeout for connecting
+        """
         interfaces.GeneratorBase.__init__(self)
         if not address or not user:
             raise ValueError("address='{}' and/or user='{}' cannot be empty or None.".format(address, user))
@@ -38,6 +48,7 @@ class Machine(interfaces.GeneratorBase):
     def name(self):
         """
         Return the set machine name (self.__name) if set or generate name as hash of all relevant members.
+
         :return: Machine name as string
         """
         if self.__name is None:
@@ -46,6 +57,11 @@ class Machine(interfaces.GeneratorBase):
         return self.__name
 
     def __resolve_setup(self):
+        """
+        Resolve hostname if necessary and test if we should run on the local machine.
+
+        :return: (IP addr, local_flag) tuple
+        """
         addr = self.address
         # Always use IP addresses as PYRONAMEs:
         try:
@@ -57,10 +73,24 @@ class Machine(interfaces.GeneratorBase):
         return addr, local
 
     def resolve(self, what):
+        """
+        Resolves the given object on the machine (convenience function).
+
+        :param what: Object adhering to the remote.Resolvable interface
+        :return: Resolved data
+        """
         addr, local = self.__resolve_setup()
         return what.resolve(addr, self.user, local)
 
     def remote(self, object_name=None):
+        """
+        Allows one to remote execute a method on the given machine. For instance, m.remote().cpu_count() retrieves the
+        number of CPUs on the machine "m".
+
+        :param object_name: Pyro-exposed fully-qualified class instance name; can be empty to default to the roslaunch2
+               API (roslaunch2.remote.API)
+        :return: Object instance that allows to run methods locally or remotely depending on self
+        """
         if not object_name:
             object_name = 'roslaunch2.remote.API'  # default to the roslaunch2 API
 
@@ -77,6 +107,11 @@ class Machine(interfaces.GeneratorBase):
         return Pyro4.Proxy('PYRONAME:{:s}.{:s}.{:s}'.format(addr, self.user, object_name))
 
     def set_loader(self, script_path=None):
+        """
+        Sets the env-loader script.
+
+        :param script_path: Script path to the env-loader (must be valid on the remote host)
+        """
         self.env_loader = script_path
 
     def __eq__(self, other):
@@ -102,11 +137,18 @@ class Machine(interfaces.GeneratorBase):
 
         :param name: Name of variable (should be unique)
         :param value: value to be assigned to the variable (converted to str)
-        :return:
         """
         self.env_vars[name] = str(value)
 
     def generate(self, root, machines, pkg):
+        """
+        Appends the underlying roslaunch XML code to the given root object.
+
+        :param root: XML root element object
+        :param machines: list of machines currently known in the launch module (may still contain duplicates)
+        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,
+               e. g., ServerParameter.generate())
+        """
         elem = lxml.etree.Element('machine')
         root.insert(0, elem)  # insert at the top to make them usable in subsequent nodes
         interfaces.GeneratorBase.to_attr(elem, 'name', self.name(), str)
@@ -126,6 +168,14 @@ class Machine(interfaces.GeneratorBase):
 
     @staticmethod
     def resolve_if(what, machine_obj, pkg):
+        """
+        Tries to resolve "what" on the given "machine_obj", possibly relating to "pkg"
+
+        :param what: Data sleeve to be resolved (should adhere to remote.Resolvable)
+        :param machine_obj: Object of machine.Machine to be used for resolving
+        :param pkg: ROS package instance
+        :return: Resolved data or "what" (unchanged) if not resolvable
+        """
         if isinstance(what, remote.Resolvable):
             # Set package for resolving paths to provided pkg if not already set on construction:
             if isinstance(what, remote.Path):
@@ -140,6 +190,9 @@ class Machine(interfaces.GeneratorBase):
 
     @staticmethod
     def cleanup():
+        """
+        Cleans up all env-loader script files generated remotely during the launch.
+        """
         for obj_addr in Machine.__generated_env_loaders:
             with Pyro4.Proxy(obj_addr) as remote_object:
                 remote_object.cleanup()
@@ -166,19 +219,37 @@ class MachinePool(list):
                 raise ValueError('Unknown strategy in machine pool!')
 
     def __init__(self, select_strategy=Strategy.LeastLoadAverage, *args):
+        """
+        Initializes the MachinePool.
+
+        :param select_strategy: Strategy flag to select() a new machine
+        :param args: Arguments to be passed to the underlying list constructor (e. g., Machine objects)
+        """
         list.__init__(self, *args)
         self.strategy = select_strategy
 
     def by_address(self, address):
+        """
+        Returns the machine with the given address.
+
+        :param address: User name to query
+        :return: machine.Machine object or None if nothing was found
+        """
         return [m for m in self if m.address == address]
 
     def by_user(self, user):
+        """
+        Returns the machine with the given user name.
+
+        :param user: User name to query
+        :return: machine.Machine object or None if nothing was found
+        """
         return [m for m in self if m.user == user]
 
     def select(self):
         """
         Selects a machine for starting a node based on the current strategy. Note that this just considers the load on
-        the machines in the pool when none of nodes has actually been started (roslaunch XML generation step).
+        the machines in the pool when none of the nodes has actually been started (roslaunch XML generation step).
 
         :return: current optimal Machine object selected for execution
         """

@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 26/01/2018
+#    Date: 13/03/2018
 
 import lxml.etree
 import warnings
@@ -14,9 +14,23 @@ import machine
 
 class EnvironmentVariable(interfaces.GeneratorBase, interfaces.Composable):
     """
-    Note: this class cannot be used inside a Machine object (deprecated since ROS Fuerte).
+    Represents an environment variable (<env> tag in roslaunch), see http://wiki.ros.org/roslaunch/XML/env
+    This class cannot be used inside a Machine object (deprecated since ROS Fuerte). However, you can use this
+    class to create remote env. variables by setting the "value" to an resolvable object, see remote.py. Also note that
+    env. variables are being propagated to nodes if they are added to Groups or Launch objects, see
+    Composer.add_env_variables_to_nodes() for more information. For instance:
+    root += EnvironmentVariable('ROSCONSOLE_CONFIG_FILE', Path('/config/rosconsole.cfg', pkg))
+    (assuming "root" is a "Launch" object), would cause the env. variable to be added to all nodes started afterwards.
+    If one of these nodes is started on system A, and another one is launched on system B, the env. variable will be
+    resolved remotely on theses systems A and B respectively (given the "pkg" where the path relates to).
     """
     def __init__(self, name, value):
+        """
+        Initializes the environment variable with the given name and value.
+
+        :param name: Name of environment variable
+        :param value: Actual value
+        """
         interfaces.GeneratorBase.__init__(self)
         interfaces.Composable.__init__(self)
         self.name = name

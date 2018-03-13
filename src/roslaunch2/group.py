@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 26/01/2018
+#    Date: 13/03/2018
 
 import lxml.etree
 import warnings
@@ -47,7 +47,6 @@ class Group(remapable.Remapable, interfaces.Composer, interfaces.Composable):
 
         :param machine_object: Machine object to be used for launching remotely; a roslaunch2_server needs to be running
                on that machine
-        :return: None
         """
         self.machine = machine_object
 
@@ -59,7 +58,6 @@ class Group(remapable.Remapable, interfaces.Composer, interfaces.Composable):
         :param machines: list of machines currently known in the launch module (may still contain duplicates)
         :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,
                e. g., ServerParameter.generate())
-        :return: None
         """
         if self.name:  # exclude the group if namespace is empty
             elem = lxml.etree.SubElement(root, 'group')

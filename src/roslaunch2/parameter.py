@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 26/01/2018
+#    Date: 13/03/2018
 
 import lxml.etree
 import warnings
@@ -19,6 +19,8 @@ import enum
 
 def load_from_file(path, only_parse_known_args):
     """
+    Loads parameters from the given YAML file.
+
     :param path: Prefix to given file name argument
     :param only_parse_known_args: If True unknown arguments from yaml file are ignored,
                                   otherwise parsing fails with unknown arguments in yaml file
@@ -104,7 +106,6 @@ class LaunchParameter(argparse.ArgumentParser):
                ``False`` if the flag is provided
         :param short_name: Optional string: Short command line parameter name
         :param kwargs: dictionary of parameters for the launch module, possibly containing name
-        :return: None
         """
         if short_name:
             if len(short_name) == 1:
@@ -161,16 +162,22 @@ class Parameter(interfaces.GeneratorBase, interfaces.Composable):
             warnings.warn("'{}' parameter has been created but never add()ed."
                           .format(str(self)), Warning, 2)
 
-    def generate(self, root, machines, pkg):
-        raise NotImplementedError('generate() not implemented in "{}" yet.'.format(self.__class__.__name__))
-
 
 class ServerParameter(Parameter):
     """
     For setting parameters on the ROS parameter server. Equals the ``<param>`` tag.
     """
-
     def __init__(self, name, value, textfile=None, binfile=None, command=None):
+        """
+        Initializes the parameter object that is loaded to the ROS parameter server.
+
+        :param name: Name of ROS parameter
+        :param value: Value of the parameter
+        :param textfile: Optional path to a text-based file whose content will be read and stored as a string
+        :param binfile: Optional path to a binary file whose content will be read and stored as a base64-encoded XML-RPC
+               binary object
+        :param command: String of a command whose output will be read and stored as a string
+        """
         Parameter.__init__(self)
         self.name = name
         self.value = value
@@ -188,6 +195,12 @@ class ServerParameter(Parameter):
 
     @staticmethod
     def type_to_str(o):
+        """
+        Converts the Python type to the underlying roslaunch type string representation.
+
+        :param o: Objects whose type should be converted
+        :return: String representing the roslaunch type of o
+        """
         if type(o) == str:
             return 'str'
         elif type(o) == int:
@@ -202,7 +215,13 @@ class ServerParameter(Parameter):
     @staticmethod
     def set(name, default, **kwargs):
         """
-        Convenience method.
+        Convenience method for setting a server parameter with an optional default, possibly extracting it from the
+        provided dictionary kwargs.
+
+        :param name: Name of parameter
+        :param default: Default value for the parameter
+        :param kwargs: additional arguments; if kwargs[name] exists, that value is used (otherwise, "default" is used)
+        :return: parameter.ServerParameter instance
         """
         if name in kwargs:  # get value from dict item named 'name' as well
             return ServerParameter(name, kwargs[name])
@@ -210,6 +229,14 @@ class ServerParameter(Parameter):
             return ServerParameter(name, default)
 
     def generate(self, root, starting_machine, pkg):
+        """
+        Appends the underlying roslaunch XML code to the given root object.
+
+        :param root: XML root element object
+        :param machines: list of machines currently known in the launch module (may still contain duplicates)
+        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,
+               e. g., ServerParameter.generate())
+        """
         elem = lxml.etree.SubElement(root, 'param')
         interfaces.GeneratorBase.to_attr(elem, 'name', self.name, str)
         self.value = machine.Machine.resolve_if(self.value, starting_machine, pkg)
@@ -257,6 +284,14 @@ class FileParameter(Parameter):
                self.value == other.value and self.ns == other.ns
 
     def generate(self, root, starting_machine, pkg):
+        """
+        Appends the underlying roslaunch XML code to the given root object.
+
+        :param root: XML root element object
+        :param machines: list of machines currently known in the launch module (may still contain duplicates)
+        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,
+               e. g., ServerParameter.generate())
+        """
         elem = lxml.etree.SubElement(root, 'rosparam')
         interfaces.GeneratorBase.to_attr(elem, 'command', self.command, FileCommand)
         interfaces.GeneratorBase.to_attr(elem, 'param', self.param, str)
