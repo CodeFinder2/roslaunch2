@@ -71,15 +71,20 @@ class Package:
             Package.__pkg_cache[name] = rospkg.RosPack().get_path(name)  # may throws rospkg.ResourceNotFound
         return Package.__pkg_cache[name]
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, silent=False):
         """
         Initializes the ROS package given its name. The path to the package will automatically be resolved on
         construction.
 
         :param name: Name of ROS package
+        :param silent: True if no exceptions should be thrown if the package was not found
         """
         self.name = name
-        self.path = Package.__get_pkg_path_cached(name)
+        try:
+            self.path = Package.__get_pkg_path_cached(name)
+        except rospkg.ResourceNotFound:
+            if not silent:
+                raise
 
     @Pyro4.expose
     def get_name(self):
@@ -116,6 +121,12 @@ class Package:
             self.path = pkg_path
         else:
             self.path = None
+
+    def __nonzero__(self):
+        return bool(self.path)  # for Python 2.x
+
+    def __bool__(self):
+        return self.__nonzero__()  # for Python 3.x
 
     path = property(get_path, _set_path)
 
