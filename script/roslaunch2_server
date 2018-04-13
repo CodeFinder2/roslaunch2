@@ -3,14 +3,16 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 26/01/2018
+#    Date: 13/04/2018
 
 import Pyro4
 import socket
 import Pyro4.naming
 import getpass
+import os
+import inspect
+import sys
 import roslaunch2
-import roslaunch2.remote
 
 __version__ = '0.1'
 
@@ -43,7 +45,28 @@ class Server:
         self.register_remote_class(roslaunch2.package.Package)
         self.register_remote_class(roslaunch2.remote.API)
         self.register_remote_class(roslaunch2.remote.Internals)
-        roslaunch2.logger.log('- Registered the following types on this machine:')
+
+        # Load custom plugins (if any):
+        plugin_dir = os.environ['ROSLAUNCH2_PLUGINS'] if 'ROSLAUNCH2_PLUGINS' in os.environ else None
+        plugin_count = 0
+        if plugin_dir and os.path.exists(plugin_dir):
+            # Hot-patch PYTHONPATH to find . imports:
+            search_path = os.path.dirname(os.path.abspath(plugin_dir))
+            if search_path not in sys.path:
+                sys.path.append(search_path)
+            roslaunch2.logger.log("- Loading plugins from {:s} ...".format(plugin_dir))
+            for file in os.listdir(plugin_dir):
+                if file.endswith(".py"):
+                    module = roslaunch2.Package.import_launch_module(file)
+                    # Get all classes from the module:
+                    clsmembers = inspect.getmembers(module, inspect.isclass)
+                    for cls in clsmembers:
+                        self.register_remote_class(cls[1])
+                    plugin_count += len(clsmembers)
+        elif plugin_dir and not os.path.exists(plugin_dir):
+            roslaunch2.logger.warning('cannot find plugin directory {:s}'.format(plugin_dir))
+
+        roslaunch2.logger.log('- Registered the following types on this machine ({:d} plugin(s)):'.format(plugin_count))
         for k in self.reg_db:
             roslaunch2.logger.log('  * {:s} -> {:s}'.format(k, self.reg_db[k]))
 
