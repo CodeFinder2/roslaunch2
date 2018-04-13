@@ -10,7 +10,7 @@ import os
 import sys
 import Pyro4
 
-import roslaunch2.logger
+import logger
 
 
 class Package:
@@ -171,7 +171,7 @@ class Package:
             return True
         else:
             if warn:
-                roslaunch2.logging.warning("Node '{}' in package '{}' not found.".format(node_name, self.name))
+                logger.warning("Node '{}' in package '{}' not found.".format(node_name, self.name))
             return False
 
     @staticmethod
@@ -257,7 +257,7 @@ class Package:
             return dir_path
         f = Package.get_paths_to_file(self.path, path_comp)
         if len(f) > 1:
-            print("Found {} files, unique selection impossible (using first).".format(', '.join(f)))
+            logger.log("Found {} files, unique selection impossible (using first).".format(', '.join(f)))
         if not f:
             if not silent:
                 raise IOError("No files like '{}' found in '{}'.".format(path_comp, self.name))
