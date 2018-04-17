@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<launch>
+  <arg name="ns" default="/" /> <!-- argument for this launch file -->
+  <group ns="$(arg ns)" > <!-- put node in a namespace -->
+    <node name="fake_localization" pkg="fake_localization"
+          type="fake_localization" respawn="false" output="screen" >
+      <param name="global_frame_id" value="$(arg ns)map" />
+      <param name="odom_frame_id" value="$(arg ns)odom" />
+      <param name="base_frame_id" value="$(arg ns)base_link" />
+    </node>
+  </group>
+</launch>
