@@ -137,7 +137,7 @@ def start_async(launch_obj, silent=False):
     :return: Instance of class multiprocessing.Process
     """
     from multiprocessing import Process
-    p = Process(target=roslaunch2.start, args=(launch_obj, False, silent))
+    p = Process(target=start, args=(launch_obj, False, silent))
     p.start()
     return p
 
@@ -168,9 +168,9 @@ def main(command_line_args=None):
     if args.package:
         try:
             args.launchfile = Package(args.package).find(args.launchfile)
-        except IOError:
-            critical("Launch module '{:s}' not found in package '{:s}'.".format(
-                     args.launchfile, args.package))
+        except rospkg.ResourceNotFound as ex:
+            critical("Launch module '{:s}' not found in package '{:s}', searched in: \n- {:s}".format(
+                     args.launchfile, args.package, '\n- '.join(ex.ros_paths)))
             return
 
     # Import the launch module, generate the content, write it to a launch file and invoke 'roslaunch':
@@ -198,4 +198,4 @@ def main(command_line_args=None):
         return
 
     launch_tree = m.main()
-    roslaunch2.start(launch_obj=launch_tree, dry_run=args.dry_run)
+    start(launch_obj=launch_tree, dry_run=args.dry_run)
