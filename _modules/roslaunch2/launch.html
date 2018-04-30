@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>roslaunch2.launch &mdash; roslaunch2 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="roslaunch2 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="roslaunch2" href="../roslaunch2.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" accesskey="U">roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for roslaunch2.launch</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1">#  Author: Adrian Böckenkamp</span>
+<span class="c1"># License: BSD (https://opensource.org/licenses/BSD-3-Clause)</span>
+<span class="c1">#    Date: 13/03/2018</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">lxml.etree</span>
+
+<span class="kn">import</span> <span class="nn">interfaces</span>
+<span class="kn">import</span> <span class="nn">machine</span>
+<span class="kn">import</span> <span class="nn">remapable</span>
+<span class="kn">import</span> <span class="nn">node</span>
+<span class="kn">import</span> <span class="nn">group</span>
+
+
+<div class="viewcode-block" id="Launch"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.launch.Launch">[docs]</a><span class="k">class</span> <span class="nc">Launch</span><span class="p">(</span><span class="n">interfaces</span><span class="o">.</span><span class="n">Composable</span><span class="p">,</span> <span class="n">interfaces</span><span class="o">.</span><span class="n">Composer</span><span class="p">,</span> <span class="n">remapable</span><span class="o">.</span><span class="n">Remapable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents the root object of a launch module, similiar to roslaunch&#39;s &lt;launch&gt; tag.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deprecation_message</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the Launch object, optionally allowing/showing an deprecation message for the constructed launch</span>
+<span class="sd">        module.</span>
+
+<span class="sd">        :param deprecation_message: If not None, the str-converted message is shown as a deprecation warning which may</span>
+<span class="sd">               be useful to indicate that the launch module has been replaced by another module</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">Composable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">Composer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>  <span class="c1"># everything can be put into Launch</span>
+        <span class="n">remapable</span><span class="o">.</span><span class="n">Remapable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">machine</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">deprecation_message</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">deprecation_message</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Launch.start_on"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.launch.Launch.start_on">[docs]</a>    <span class="k">def</span> <span class="nf">start_on</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_object</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows to start all nodes added to this launch object to be launched on the given machine. However, if a node</span>
+<span class="sd">        has already been assigned a specific machine object, the given machine_object is ignored for that node. Also,</span>
+<span class="sd">        groups with their own machine object will precede machine_object.</span>
+
+<span class="sd">        :param machine_object: Machine object to be used for launching remotely; a roslaunch2_server needs to be running</span>
+<span class="sd">               on that machine</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">machine</span> <span class="o">=</span> <span class="n">machine_object</span></div>
+
+<div class="viewcode-block" id="Launch.add"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.launch.Launch.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows to add other objects of type Launch, Group, Node, Test, etc. to the launch module.</span>
+
+<span class="sd">        :param other: Object to be added</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">machine</span><span class="o">.</span><span class="n">Machine</span><span class="p">):</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Machines shouldn&#39;t be add()ed explicitly (skipping {})&quot;</span> \
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="ne">Warning</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Launch</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">other</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Launch.generate"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.launch.Launch.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">machines</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">pkg</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the underlying roslaunch XML code.</span>
+
+<span class="sd">        :param root: XML root element object</span>
+<span class="sd">        :param machines: list of machines currently known in the launch module (may still contain duplicates)</span>
+<span class="sd">        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,</span>
+<span class="sd">               e. g., ServerParameter.generate())</span>
+<span class="sd">        :return: string representation in UTF-8 encoding containing the generated XML code if generate() was called on</span>
+<span class="sd">                 the top level (i. e., the Launch object was not nested as a part of anther launch module; in such cases</span>
+<span class="sd">                 None is returned)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_env_variables_to_nodes</span><span class="p">()</span>
+        <span class="c1"># Work around this issue (order of boolean expressions matters!):</span>
+        <span class="c1"># http://stackoverflow.com/questions/20129996/why-does-boolxml-etree-elementtree-element-evaluate-to-false</span>
+        <span class="n">first_call</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">None</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">root</span>
+        <span class="k">if</span> <span class="n">first_call</span><span class="p">:</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s1">&#39;launch&#39;</span><span class="p">)</span>
+            <span class="n">machines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">remapable</span><span class="o">.</span><span class="n">Remapable</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">machines</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">machine</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">Node</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">Group</span><span class="p">)</span> <span class="ow">or</span>
+               <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Launch</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">child</span><span class="o">.</span><span class="n">machine</span><span class="p">:</span>  <span class="c1"># see comment in group.py</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">start_on</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">)</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">machines</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">first_call</span><span class="p">:</span>
+            <span class="c1"># Machines currently insert themselves at the beginning (for simplicity):</span>
+            <span class="n">machines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">machines</span><span class="p">))</span>  <span class="c1"># make unique based on machine names</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">machines</span><span class="p">:</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">pretty_print</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                           <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">,</span> <span class="n">standalone</span><span class="o">=</span><span class="s1">&#39;yes&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" >roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, Adrian Böckenkamp.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

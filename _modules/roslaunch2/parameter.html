@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>roslaunch2.parameter &mdash; roslaunch2 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="roslaunch2 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="roslaunch2" href="../roslaunch2.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" accesskey="U">roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for roslaunch2.parameter</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1">#  Author: Adrian Böckenkamp</span>
+<span class="c1"># License: BSD (https://opensource.org/licenses/BSD-3-Clause)</span>
+<span class="c1">#    Date: 13/03/2018</span>
+
+<span class="kn">import</span> <span class="nn">lxml.etree</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+<span class="kn">import</span> <span class="nn">interfaces</span>
+<span class="kn">import</span> <span class="nn">machine</span>
+<span class="kn">import</span> <span class="nn">logger</span>
+<span class="kn">import</span> <span class="nn">enum</span>
+
+
+<div class="viewcode-block" id="load_from_file"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.load_from_file">[docs]</a><span class="k">def</span> <span class="nf">load_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">only_parse_known_args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads parameters from the given YAML file.</span>
+
+<span class="sd">    :param path: Prefix to given file name argument</span>
+<span class="sd">    :param only_parse_known_args: If True unknown arguments from yaml file are ignored,</span>
+<span class="sd">                                  otherwise parsing fails with unknown arguments in yaml file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">LoadFromFile</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+        <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">option_string</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;Invalid file name argument.&quot;</span>
+
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.yaml&#39;</span><span class="p">):</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;{:s}.yaml&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">file</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">only_parse_known_args</span><span class="p">:</span>
+                            <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">([</span><span class="s1">&#39;--{:s}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)],</span> <span class="n">namespace</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">([</span><span class="s1">&#39;--{:s}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)],</span> <span class="n">namespace</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">yaml</span><span class="o">.</span><span class="n">YAMLError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Cannot load parameters from file &#39;{:s}&#39;.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">LoadFromFile</span></div>
+
+
+<div class="viewcode-block" id="LaunchParameter"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.LaunchParameter">[docs]</a><span class="k">class</span> <span class="nc">LaunchParameter</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a parameter for a launch module. For example, this can influence whether to select simulator A or B.</span>
+<span class="sd">    These parameters are NOT consumed by ROS nodes (refer to ``ServerParameter`` and ``FileParameter`` in such cases).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">launch_parameter_list</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Static list collection all LaunchParameter instances.</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">epilog</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">parents</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">HelpFormatter</span><span class="p">,</span> <span class="n">prefix_chars</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span>
+                 <span class="n">fromfile_prefix_chars</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">argument_default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">conflict_handler</span><span class="o">=</span><span class="s1">&#39;resolve&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">parents</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">parents</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prog</span><span class="p">,</span> <span class="nb">str</span><span class="p">(),</span> <span class="n">description</span><span class="p">,</span> <span class="n">epilog</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">parents</span><span class="p">,</span>
+                                         <span class="n">formatter_class</span><span class="p">,</span> <span class="n">prefix_chars</span><span class="p">,</span> <span class="n">fromfile_prefix_chars</span><span class="p">,</span>
+                                         <span class="n">argument_default</span><span class="p">,</span> <span class="n">conflict_handler</span><span class="p">,</span> <span class="n">add_help</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ros_argument_group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;ROS launch module arguments&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LaunchParameter.add"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.LaunchParameter.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">help_text</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">short_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a command line option for the current launch module named ``--name`` with the given ``help_text``.</span>
+<span class="sd">        Additionally, the default value is retrieved from ``kwargs[name]`` if that key exists. If not, the provided</span>
+<span class="sd">        default  value is set. This way, command line options have the highest precedence, followed by parameters passed</span>
+<span class="sd">        by the kwargs parameter of a launch module&#39;s ``main()`` function. If neither of which are set, the provided</span>
+<span class="sd">        default value is set.</span>
+
+<span class="sd">        :param name: command line parameter name and key to retrieve (fallback) default in kwargs</span>
+<span class="sd">        :param help_text: help text of command line option</span>
+<span class="sd">        :param default: final default value if neither a command line argument nor the key in kwargs is given</span>
+<span class="sd">        :param short_name: Optional string: Short command line parameter name</span>
+<span class="sd">        :param kwargs: dictionary of parameters for the launch module, possibly containing name</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">short_name</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">short_name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">sn</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="n">short_name</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sn</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span> <span class="o">+</span> <span class="n">short_name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ros_argument_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="n">sn</span><span class="p">,</span> <span class="s1">&#39;--&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                                 <span class="n">default</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="n">default</span><span class="p">,</span>
+                                                 <span class="n">help</span><span class="o">=</span><span class="n">help_text</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">default</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ros_argument_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="n">default</span><span class="p">,</span>
+                                             <span class="n">help</span><span class="o">=</span><span class="n">help_text</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">default</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="LaunchParameter.add_flag"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.LaunchParameter.add_flag">[docs]</a>    <span class="k">def</span> <span class="nf">add_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">help_text</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">store</span><span class="p">,</span> <span class="n">short_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a command line flag for the current launch module named ``--name`` with the given ``help_text``.</span>
+<span class="sd">        Additionally, the default value is retrieved from ``kwargs[name]`` if that key exists. If not, the provided</span>
+<span class="sd">        default value is set. This way, command line flags have the highest precedence, followed by parameters passed by</span>
+<span class="sd">        the kwargs parameter of a launch module&#39;s ``main()`` function. If neither of which are set, the provided default</span>
+<span class="sd">        value is set.</span>
+
+<span class="sd">        :param name: command line parameter name and key to retrieve (fallback) default in kwargs</span>
+<span class="sd">        :param help_text: help text of command line option</span>
+<span class="sd">        :param default: final default value if neither a command line argument nor the key in kwargs is given</span>
+<span class="sd">        :param store: ``True`` to store ``True`` of the flag is set / provided on the command line, ``False`` to store</span>
+<span class="sd">               ``False`` if the flag is provided</span>
+<span class="sd">        :param short_name: Optional string: Short command line parameter name</span>
+<span class="sd">        :param kwargs: dictionary of parameters for the launch module, possibly containing name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">short_name</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">short_name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">sn</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="n">short_name</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sn</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span> <span class="o">+</span> <span class="n">short_name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ros_argument_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="n">sn</span><span class="p">,</span> <span class="s1">&#39;--&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                                 <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span> <span class="k">if</span> <span class="n">store</span> <span class="k">else</span> <span class="s1">&#39;store_false&#39;</span><span class="p">,</span>
+                                                 <span class="n">default</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="n">default</span><span class="p">,</span>
+                                                 <span class="n">help</span><span class="o">=</span><span class="n">help_text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ros_argument_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span> <span class="k">if</span> <span class="n">store</span> <span class="k">else</span> <span class="s1">&#39;store_false&#39;</span><span class="p">,</span>
+                                             <span class="n">default</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="n">default</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">help_text</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LaunchParameter.add_parameter_file"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.LaunchParameter.add_parameter_file">[docs]</a>    <span class="k">def</span> <span class="nf">add_parameter_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">only_parse_known_args</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a command line option named --name that loads parameters from a yaml file given by</span>
+<span class="sd">        &#39;path/value.yaml&#39; where value is the actual command line value of ``--name``.</span>
+
+<span class="sd">        :param name: Name of the command line option</span>
+<span class="sd">        :param path: Path of the .yaml file</span>
+<span class="sd">        :param only_parse_known_args: If True unknown arguments from yaml file are ignored</span>
+<span class="sd">                                      otherwise parsing fails with unknown arguments in yaml file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ros_argument_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">load_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">only_parse_known_args</span><span class="p">),</span>
+                                             <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Load parameters from file &#39;&lt;{:s}&gt;.yaml&#39;.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span></div>
+
+<div class="viewcode-block" id="LaunchParameter.get_args"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.LaunchParameter.get_args">[docs]</a>    <span class="k">def</span> <span class="nf">get_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse the previously defined command line arguments using ``add()`` or ``add_argument()``. Ignores unknown</span>
+<span class="sd">        arguments. Parameters are always parsed from ``sys.argv`` and may overlap with parameters from other</span>
+<span class="sd">        (used / included) launch modules and/or with arguments of roslaunch.</span>
+
+<span class="sd">        :return: detected / known arguments. If an argument is named ``--name``, then ``args.name`` contains the value</span>
+<span class="sd">                 whereby ``args`` is the value returned by this method</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">launch_parameter_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">known_args</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">known_args</span></div></div>
+
+
+<div class="viewcode-block" id="Parameter"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.Parameter">[docs]</a><span class="k">class</span> <span class="nc">Parameter</span><span class="p">(</span><span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="p">,</span> <span class="n">interfaces</span><span class="o">.</span><span class="n">Composable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for ROS node parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">Composable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rooted</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c1"># True if object has been add()ed to a parent</span>
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rooted</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;&#39;{}&#39; parameter has been created but never add()ed.&quot;</span>
+                          <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)),</span> <span class="ne">Warning</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ServerParameter"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.ServerParameter">[docs]</a><span class="k">class</span> <span class="nc">ServerParameter</span><span class="p">(</span><span class="n">Parameter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For setting parameters on the ROS parameter server. Equals the ``&lt;param&gt;`` tag.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">textfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">binfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the parameter object that is loaded to the ROS parameter server.</span>
+
+<span class="sd">        :param name: Name of ROS parameter</span>
+<span class="sd">        :param value: Value of the parameter</span>
+<span class="sd">        :param textfile: Optional path to a text-based file whose content will be read and stored as a string</span>
+<span class="sd">        :param binfile: Optional path to a binary file whose content will be read and stored as a base64-encoded XML-RPC</span>
+<span class="sd">               binary object</span>
+<span class="sd">        :param command: String of a command whose output will be read and stored as a string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Parameter</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">textfile</span> <span class="o">=</span> <span class="n">textfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">binfile</span> <span class="o">=</span> <span class="n">binfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="n">command</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>  <span class="c1"># different types are never equal</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ServerParameter.type_to_str"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.ServerParameter.type_to_str">[docs]</a>    <span class="k">def</span> <span class="nf">type_to_str</span><span class="p">(</span><span class="n">o</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the Python type to the underlying roslaunch type string representation.</span>
+
+<span class="sd">        :param o: Objects whose type should be converted</span>
+<span class="sd">        :return: String representing the roslaunch type of o</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;str&#39;</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;int&#39;</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;double&#39;</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;bool&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;{} (value: {}) not supported in roslaunch.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">o</span><span class="p">),</span> <span class="n">o</span><span class="p">))</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ServerParameter.set"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.ServerParameter.set">[docs]</a>    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convenience method for setting a server parameter with an optional default, possibly extracting it from the</span>
+<span class="sd">        provided dictionary kwargs.</span>
+
+<span class="sd">        :param name: Name of parameter</span>
+<span class="sd">        :param default: Default value for the parameter</span>
+<span class="sd">        :param kwargs: additional arguments; if kwargs[name] exists, that value is used (otherwise, &quot;default&quot; is used)</span>
+<span class="sd">        :return: parameter.ServerParameter instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>  <span class="c1"># get value from dict item named &#39;name&#39; as well</span>
+            <span class="k">return</span> <span class="n">ServerParameter</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># escalate to default value</span>
+            <span class="k">return</span> <span class="n">ServerParameter</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ServerParameter.generate"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.ServerParameter.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">starting_machine</span><span class="p">,</span> <span class="n">pkg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Appends the underlying roslaunch XML code to the given root object.</span>
+
+<span class="sd">        :param root: XML root element object</span>
+<span class="sd">        :param machines: list of machines currently known in the launch module (may still contain duplicates)</span>
+<span class="sd">        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,</span>
+<span class="sd">               e. g., ServerParameter.generate())</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">elem</span> <span class="o">=</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;param&#39;</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">Machine</span><span class="o">.</span><span class="n">resolve_if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">starting_machine</span><span class="p">,</span> <span class="n">pkg</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="n">ServerParameter</span><span class="o">.</span><span class="n">type_to_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="FileCommand"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.FileCommand">[docs]</a><span class="k">class</span> <span class="nc">FileCommand</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">IntEnum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defines file operations / commands to be used with ``FileParameter``. This allows, e. g., to load a set of</span>
+<span class="sd">    parameters from a given .yaml file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Load</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">Dump</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">Delete</span> <span class="o">=</span> <span class="mi">3</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">FileCommand</span><span class="o">.</span><span class="n">Load</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;load&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">FileCommand</span><span class="o">.</span><span class="n">Dump</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;dump&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">FileCommand</span><span class="o">.</span><span class="n">Delete</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;delete&#39;</span></div>
+
+
+<div class="viewcode-block" id="FileParameter"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.FileParameter">[docs]</a><span class="k">class</span> <span class="nc">FileParameter</span><span class="p">(</span><span class="n">Parameter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Used for loading, dumping or deleting YAML files to/from the ROS parameter server.</span>
+<span class="sd">    Equals the ``&lt;rosparam&gt;`` tag.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">file_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ns</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">Parameter</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">command</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">command</span><span class="p">)</span> <span class="o">==</span> <span class="n">FileCommand</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="n">command</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">param</span> <span class="o">=</span> <span class="n">param</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ns</span> <span class="o">=</span> <span class="n">ns</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>  <span class="c1"># different types are never equal</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">command</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">file_path</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">param</span> <span class="ow">and</span> \
+               <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">value</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ns</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">ns</span>
+
+<div class="viewcode-block" id="FileParameter.generate"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.parameter.FileParameter.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">starting_machine</span><span class="p">,</span> <span class="n">pkg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Appends the underlying roslaunch XML code to the given root object.</span>
+
+<span class="sd">        :param root: XML root element object</span>
+<span class="sd">        :param machines: list of machines currently known in the launch module (may still contain duplicates)</span>
+<span class="sd">        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,</span>
+<span class="sd">               e. g., ServerParameter.generate())</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">elem</span> <span class="o">=</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;rosparam&#39;</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;command&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">FileCommand</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;param&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;ns&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="n">elem</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" >roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, Adrian Böckenkamp.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

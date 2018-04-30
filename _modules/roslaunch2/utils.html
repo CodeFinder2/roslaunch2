@@ -1,0 +1,239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>roslaunch2.utils &mdash; roslaunch2 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="roslaunch2 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="roslaunch2" href="../roslaunch2.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" accesskey="U">roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for roslaunch2.utils</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1">#  Author: Adrian Böckenkamp</span>
+<span class="c1"># License: BSD (https://opensource.org/licenses/BSD-3-Clause)</span>
+<span class="c1">#    Date: 13/03/2018</span>
+
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">errno</span>
+
+<span class="c1">#: Separator for communication (topic, services) and tf (frame) names</span>
+<span class="n">ROS_NAME_SEP</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span>
+
+
+<div class="viewcode-block" id="anon"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.utils.anon">[docs]</a><span class="k">def</span> <span class="nf">anon</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates random ROS names.</span>
+
+<span class="sd">    Generates a random ROS name (see also http://wiki.ros.org/Names). Clearly, the longer the</span>
+<span class="sd">    name, the smaller the probability of a name collision.</span>
+
+<span class="sd">    :param length: number of characters in the generated name</span>
+<span class="sd">    :return: random name with [A-Z,a-z,0-9]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">id_gen</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">chars</span><span class="o">=</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_uppercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a random ROS name (e. g., valid for ROS nodes) with the given size and containing</span>
+<span class="sd">        the specified set of characters.</span>
+
+<span class="sd">        :param size: length of generated name</span>
+<span class="sd">        :param chars: types of characters to use for generation</span>
+<span class="sd">        :return: generated random name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">chars</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">length</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;ROS names should be longer than 1 character.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;{0}{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">id_gen</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">chars</span><span class="o">=</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_uppercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">),</span> <span class="n">id_gen</span><span class="p">(</span><span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="silent_remove"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.utils.silent_remove">[docs]</a><span class="k">def</span> <span class="nf">silent_remove</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove the file given by path and do not fail if the file does not exist.</span>
+
+<span class="sd">    :param path: path to file which should be deleted silently</span>
+<span class="sd">    :return: Returns True if the file was removed, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">ose</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ose</span><span class="o">.</span><span class="n">errno</span> <span class="o">!=</span> <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">:</span>  <span class="c1"># errno.ENOENT = no such file or directory</span>
+            <span class="k">raise</span>  <span class="c1"># re-raise exception if a different error occurred</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span></div>
+
+
+<div class="viewcode-block" id="merge_dicts"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.utils.merge_dicts">[docs]</a><span class="k">def</span> <span class="nf">merge_dicts</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given two dicts, merge them into a new dict as a shallow copy. Values in y that are also already present in x will</span>
+<span class="sd">    overwrite them. This is supplied to be compatible with Python 2.x, see also</span>
+<span class="sd">    http://stackoverflow.com/questions/38987/how-to-merge-two-python-dictionaries-in-a-single-expression</span>
+
+<span class="sd">    :param x: first dict to merge</span>
+<span class="sd">    :param y: second dict to merge</span>
+<span class="sd">    :return: merged dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">z</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">z</span></div>
+
+
+<div class="viewcode-block" id="clean_name"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.utils.clean_name">[docs]</a><span class="k">def</span> <span class="nf">clean_name</span><span class="p">(</span><span class="n">ros_name</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">ROS_NAME_SEP</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Removes successive duplicates of c from the given ros_name.</span>
+
+<span class="sd">    :param ros_name: Name (string) to process</span>
+<span class="sd">    :param c: character whose successive occurrences should be removed</span>
+<span class="sd">    :return: processed string (or unchanged ros_name if nothing needs to be done)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">c</span> <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="n">c</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">ros_name</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="tf_join"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.utils.tf_join">[docs]</a><span class="k">def</span> <span class="nf">tf_join</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Combines the partial frame IDs left and right to a new combined valid frame IDs. According to tf2</span>
+<span class="sd">    design, preceding slashes will be stripped.</span>
+
+<span class="sd">    :param left: partial frame ID to put leftmost (e. g., a parent frame ID)</span>
+<span class="sd">    :param right: partial frame ID to put rightmost (e. g., a child frame ID)</span>
+<span class="sd">    :return: combined frame ID (e. g., &quot;parent1/child0&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Join left and right, and get rid of successive occurrences of ROS_NAME_SEP:</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">clean_name</span><span class="p">(</span><span class="n">ROS_NAME_SEP</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">]),</span> <span class="n">ROS_NAME_SEP</span><span class="p">)</span>
+    <span class="c1"># Remove a possibly preceding ROS_NAME_SEP:</span>
+    <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">ROS_NAME_SEP</span><span class="p">)</span> <span class="k">else</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="ros_join"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.utils.ros_join">[docs]</a><span class="k">def</span> <span class="nf">ros_join</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">force_global</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Behaves much like tf_join but is intended to work on ROS names (like topics, services, namespaces).</span>
+<span class="sd">    Allows to force the creation of a global name.</span>
+
+<span class="sd">    :param left: partial name to put leftmost</span>
+<span class="sd">    :param right: partial name to put rightmost, can also be a list of names</span>
+<span class="sd">    :param force_global: True to ensure / force the resulting name to be in the global namespace (not advised, but</span>
+<span class="sd">                         useful/required in rare cases). If left is already global, the resulting name remains global.</span>
+<span class="sd">    :return: combined ROS name</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">right</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">right</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">clean_name</span><span class="p">(</span><span class="n">ROS_NAME_SEP</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">left</span><span class="p">]</span> <span class="o">+</span> <span class="n">right</span><span class="p">),</span> <span class="n">ROS_NAME_SEP</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">clean_name</span><span class="p">(</span><span class="n">ROS_NAME_SEP</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">]),</span> <span class="n">ROS_NAME_SEP</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ROS_NAME_SEP</span> <span class="o">+</span> <span class="n">res</span> <span class="k">if</span> <span class="n">force_global</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">res</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">ROS_NAME_SEP</span><span class="p">)</span> <span class="k">else</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="Observable"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.utils.Observable">[docs]</a><span class="k">class</span> <span class="nc">Observable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Allows to create observable events (like the termination of roslaunch) to register custom actions in case such</span>
+<span class="sd">    events are being triggered.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="Observable.subscribe"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.utils.Observable.subscribe">[docs]</a>    <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows to register a custom action to be executed if the associated event (= object of this class) fires.</span>
+
+<span class="sd">        :param callback: Python function to be executed (&quot;callback&quot;) when the event is being triggered</span>
+<span class="sd">        :param kwargs: Optional additional parameters for the callback, may be None / ignored</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">callback</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Observable.fire"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.utils.Observable.fire">[docs]</a>    <span class="k">def</span> <span class="nf">fire</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Triggers the event (typically only used by the enitity defining the event, i. e., roslaunch2 here).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">fn</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span><span class="p">:</span>
+            <span class="n">fn</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" >roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, Adrian Böckenkamp.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

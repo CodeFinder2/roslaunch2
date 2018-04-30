@@ -1,0 +1,385 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>roslaunch2.package &mdash; roslaunch2 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="roslaunch2 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="roslaunch2" href="../roslaunch2.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" accesskey="U">roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for roslaunch2.package</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1">#  Author: Adrian Böckenkamp</span>
+<span class="c1"># License: BSD (https://opensource.org/licenses/BSD-3-Clause)</span>
+<span class="c1">#    Date: 13/03/2018</span>
+
+<span class="kn">import</span> <span class="nn">rospkg</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">Pyro4</span>
+
+<span class="kn">import</span> <span class="nn">logger</span>
+
+
+<div class="viewcode-block" id="Package"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package">[docs]</a><span class="k">class</span> <span class="nc">Package</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encapsulates a ROS package and its ability to find files in the package directory structure. A caching mechanism is</span>
+<span class="sd">    used to speedup `*find()` commands.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__pkg_cache</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">__dir_cache</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">__find_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Package.invalidate_cache"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package.invalidate_cache">[docs]</a>    <span class="k">def</span> <span class="nf">invalidate_cache</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Invalidates the package, directory and file cache for finding packages, enforcing re-lookups.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Package</span><span class="o">.</span><span class="n">__pkg_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">Package</span><span class="o">.</span><span class="n">__dir_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">Package</span><span class="o">.</span><span class="n">__find_cache</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Package.get_paths_to_file"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package.get_paths_to_file">[docs]</a>    <span class="k">def</span> <span class="nf">get_paths_to_file</span><span class="p">(</span><span class="n">start_dir</span><span class="p">,</span> <span class="n">file_comp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Searches for file_comp in `start_dir` recursively (also using a cache for speedup).</span>
+
+<span class="sd">        :param start_dir: root directory where to start the search</span>
+<span class="sd">        :param file_comp: file path component (like some/dir/myfile.xml) name to search for</span>
+<span class="sd">        :return: Set of files found (with their full path)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">file_comp</span><span class="p">)</span>
+        <span class="n">dir_comp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">file_comp</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">start_dir</span> <span class="ow">in</span> <span class="n">Package</span><span class="o">.</span><span class="n">__dir_cache</span><span class="p">:</span>  <span class="c1"># use cached file listing of $start_dir</span>
+            <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">file_set</span> <span class="ow">in</span> <span class="n">Package</span><span class="o">.</span><span class="n">__dir_cache</span><span class="p">[</span><span class="n">start_dir</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">a_file</span> <span class="ow">in</span> <span class="n">file_set</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">a_file</span> <span class="o">==</span> <span class="n">file_name</span> <span class="ow">and</span> <span class="n">root</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">dir_comp</span><span class="p">):</span>
+                        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">a_file</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># crawl the file system at $start_dir (and cache for future requests)</span>
+            <span class="n">cache_entry</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">file_set</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">start_dir</span><span class="p">):</span>
+                <span class="n">cache_entry</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">root</span><span class="p">,</span> <span class="n">file_set</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">a_file</span> <span class="ow">in</span> <span class="n">file_set</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">a_file</span> <span class="o">==</span> <span class="n">file_name</span> <span class="ow">and</span> <span class="n">root</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">dir_comp</span><span class="p">):</span>
+                        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">a_file</span><span class="p">))</span>
+            <span class="n">Package</span><span class="o">.</span><span class="n">__dir_cache</span><span class="p">[</span><span class="n">start_dir</span><span class="p">]</span> <span class="o">=</span> <span class="n">cache_entry</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__get_pkg_path_cached</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tries to find the given package name in the cache. If its not present in the cache, the cache is updated by a</span>
+<span class="sd">        (slower) filesystem lookup.</span>
+
+<span class="sd">        :param name: Name of ROS package</span>
+<span class="sd">        :return: Path to package</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">Package</span><span class="o">.</span><span class="n">__pkg_cache</span><span class="p">:</span>
+            <span class="n">Package</span><span class="o">.</span><span class="n">__pkg_cache</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">rospkg</span><span class="o">.</span><span class="n">RosPack</span><span class="p">()</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># may throws rospkg.ResourceNotFound</span>
+        <span class="k">return</span> <span class="n">Package</span><span class="o">.</span><span class="n">__pkg_cache</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the ROS package given its name. The path to the package will automatically be resolved on</span>
+<span class="sd">        construction.</span>
+
+<span class="sd">        :param name: Name of ROS package</span>
+<span class="sd">        :param silent: True if no exceptions should be thrown if the package was not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">Package</span><span class="o">.</span><span class="n">__get_pkg_path_cached</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">rospkg</span><span class="o">.</span><span class="n">ResourceNotFound</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+                <span class="k">raise</span>
+
+    <span class="nd">@Pyro4.expose</span>
+<div class="viewcode-block" id="Package.get_name"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the package name.</span>
+
+<span class="sd">        :return: ROS package name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
+
+    <span class="nd">@Pyro4.expose</span>
+<div class="viewcode-block" id="Package.set_name"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package.set_name">[docs]</a>    <span class="k">def</span> <span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates/sets the package name.</span>
+
+<span class="sd">        :param name: ROS package name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">Package</span><span class="o">.</span><span class="n">__get_pkg_path_cached</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_name</span><span class="p">,</span> <span class="n">set_name</span><span class="p">)</span>
+
+    <span class="nd">@Pyro4.expose</span>
+<div class="viewcode-block" id="Package.get_path"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package.get_path">[docs]</a>    <span class="k">def</span> <span class="nf">get_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the package path.</span>
+
+<span class="sd">        :return: ROS package path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkg_path</span><span class="p">):</span>  <span class="c1"># not exposed to Pyro!</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">pkg_path</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="fm">__nonzero__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>  <span class="c1"># for Python 2.x</span>
+
+    <span class="k">def</span> <span class="nf">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__nonzero__</span><span class="p">()</span>  <span class="c1"># for Python 3.x</span>
+
+    <span class="n">path</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_path</span><span class="p">,</span> <span class="n">_set_path</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Package.valid"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package.valid">[docs]</a>    <span class="k">def</span> <span class="nf">valid</span><span class="p">(</span><span class="n">pkg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tests whether pkg is a valid ROS package on the current system.</span>
+
+<span class="sd">        :param pkg: Name of ROS package (type: str) or a valid package.Package object)</span>
+<span class="sd">        :return: Path to pkg if valid or None if not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pkg</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">pkg</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pkg</span><span class="p">,</span> <span class="n">Package</span><span class="p">):</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">pkg</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot process type {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">pkg</span><span class="p">))))</span>
+            <span class="k">return</span> <span class="n">Package</span><span class="o">.</span><span class="n">__get_pkg_path_cached</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">rospkg</span><span class="o">.</span><span class="n">ResourceNotFound</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span></div>
+
+<div class="viewcode-block" id="Package.has_node"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package.has_node">[docs]</a>    <span class="k">def</span> <span class="nf">has_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_name</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tests if a ROS node actually exists.</span>
+
+<span class="sd">        This method checks whether a ROS node named $node_name exists in the current ROS package.</span>
+
+<span class="sd">        :param node_name: name of ROS node to test</span>
+<span class="sd">        :param warn: True if a warning about the missing node should be emitted</span>
+<span class="sd">        :return: True if node exists, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pkg</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;../..&#39;</span><span class="p">)</span>
+        <span class="c1"># Just consider files that are executable:</span>
+        <span class="k">if</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">Package</span><span class="o">.</span><span class="n">get_paths_to_file</span><span class="p">(</span><span class="n">pkg</span><span class="p">,</span> <span class="n">node_name</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">)]:</span>
+            <span class="c1"># if len(res) &gt; 1:</span>
+            <span class="c1">#     log.warning(&quot;Found {} executable files named {}, assuming existence.&quot;</span>
+            <span class="c1">#                 .format(len(res), node_name, res[0]))</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">warn</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Node &#39;{}&#39; in package &#39;{}&#39; not found.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">False</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Package.include"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package.include">[docs]</a>    <span class="k">def</span> <span class="nf">include</span><span class="p">(</span><span class="n">pkg_name</span><span class="p">,</span> <span class="n">path_comp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Like use() but static for convenience.</span>
+
+<span class="sd">        :param pkg_name: Name of ROS package to be used for search of path_comp</span>
+<span class="sd">        :param path_comp: (partial) path or file name to launch module (if it does not end with .pyl, this is added</span>
+<span class="sd">               automatically)</span>
+<span class="sd">        :param kwargs: optional arguments to be passed to the main() function of the launch module</span>
+<span class="sd">        :return: GeneratorBase object as returned by the main() function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">pkg_name</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span>
+        <span class="k">return</span> <span class="n">Package</span><span class="p">(</span><span class="n">pkg_name</span><span class="p">)</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">path_comp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Package.use"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package.use">[docs]</a>    <span class="k">def</span> <span class="nf">use</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_comp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Imports (aka uses) the content of a launch module located in the current package (self).</span>
+
+<span class="sd">        :param path_comp: (partial) path or file name to launch module (if it does not end with .pyl, this is added</span>
+<span class="sd">               automatically)</span>
+<span class="sd">        :param kwargs: optional arguments to be passed to the main() function of the launch module</span>
+<span class="sd">        :return: GeneratorBase object as returned by the main() function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">path_comp</span><span class="p">)[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">path_comp</span> <span class="o">+=</span> <span class="s1">&#39;.pyl&#39;</span>
+        <span class="n">mod_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">path_comp</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mod_path</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Launch module &#39;{:s}&#39; in package &#39;{:s}&#39; not found.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path_comp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">Package</span><span class="o">.</span><span class="n">import_launch_module</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Package.import_launch_module"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package.import_launch_module">[docs]</a>    <span class="k">def</span> <span class="nf">import_launch_module</span><span class="p">(</span><span class="n">full_module_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rather internal helper function for important a Python module (i. e., a roslaunch2 launch module/file).</span>
+<span class="sd">        This function handles all various cases related to different versions of Python.</span>
+
+<span class="sd">        :param full_module_path: Full path to module file</span>
+<span class="sd">        :return: Handle to imported module (like &quot;foo&quot; in &quot;import bar as foo&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>  <span class="c1"># Python &lt; 2.4 is not supported</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Must use Python version &gt;= 2.4!&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">full_module_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Launch module &#39;{:s}&#39; not found.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">full_module_path</span><span class="p">))</span>
+        <span class="n">module_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">full_module_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Hot-patch PYTHONPATH to find . imports:</span>
+        <span class="n">search_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">module_name</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">search_path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">search_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>  <span class="c1"># Python 2.x and 3.x where x &lt; 3</span>
+            <span class="kn">import</span> <span class="nn">imp</span>
+            <span class="k">return</span> <span class="n">imp</span><span class="o">.</span><span class="n">load_source</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">full_module_path</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>  <span class="c1"># Python 3.3 and 3.4</span>
+            <span class="kn">import</span> <span class="nn">importlib.machinery</span>
+            <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">machinery</span><span class="o">.</span><span class="n">SourceFileLoader</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">full_module_path</span><span class="p">)</span><span class="o">.</span><span class="n">load_module</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>  <span class="c1"># Python 3.5+</span>
+            <span class="kn">import</span> <span class="nn">importlib.util</span>
+            <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">full_module_path</span><span class="p">)</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">m</span></div>
+
+    <span class="nd">@Pyro4.expose</span>
+<div class="viewcode-block" id="Package.find"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_comp</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Searches for a file or directory in the current package (self).</span>
+
+<span class="sd">        :param path_comp: (partial) path or file name</span>
+<span class="sd">        :param silent: if True return None when nothing is found, otherwise an IOError is raised in</span>
+<span class="sd">                       case of failure</span>
+<span class="sd">        :return: first found file (full path) or None if silent==True and nothing found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">path_comp</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">Package</span><span class="o">.</span><span class="n">__find_cache</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Package</span><span class="o">.</span><span class="n">__find_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path_comp</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span>
+        <span class="n">dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">path_comp</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">path_comp</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span> <span class="k">else</span> <span class="n">path_comp</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dir_path</span><span class="p">):</span>
+            <span class="n">Package</span><span class="o">.</span><span class="n">__find_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">dir_path</span>
+            <span class="k">return</span> <span class="n">dir_path</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">Package</span><span class="o">.</span><span class="n">get_paths_to_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">path_comp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Found {} files, unique selection impossible (using first).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">f</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;No files like &#39;{}&#39; found in &#39;{}&#39;.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path_comp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+        <span class="n">Package</span><span class="o">.</span><span class="n">__find_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+    <span class="nd">@Pyro4.expose</span>
+<div class="viewcode-block" id="Package.selective_find"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.package.Package.selective_find">[docs]</a>    <span class="k">def</span> <span class="nf">selective_find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_comp_options</span><span class="p">,</span> <span class="n">path_comp_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Searches for a set of files or directories in the current package (self). Tries to find any</span>
+<span class="sd">        path from the path_comp_options list starting at the first element. Once a path is found</span>
+<span class="sd">        the search for the remaining paths is canceled and the found path is returned.</span>
+
+<span class="sd">        :param path_comp_options: list of (partial) path or file names</span>
+<span class="sd">        :param path_comp_prefix: prefix to each element of path_comp_options</span>
+<span class="sd">        :param silent: if True return None when nothing is found, otherwise an IOError is raised in</span>
+<span class="sd">                       case of failure</span>
+<span class="sd">        :return: first found file (full path) or None if silent==True and nothing found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">path_comp</span> <span class="ow">in</span> <span class="n">path_comp_options</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">path_comp</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_comp_prefix</span><span class="p">,</span> <span class="n">path_comp</span><span class="p">),</span> <span class="n">silent</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">path</span>
+        <span class="c1"># Nothing found</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;None of the queried files found in &#39;{}&#39;.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" >roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, Adrian Böckenkamp.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

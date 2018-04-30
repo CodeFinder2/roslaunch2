@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>roslaunch2.environment &mdash; roslaunch2 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="roslaunch2 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="roslaunch2" href="../roslaunch2.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" accesskey="U">roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for roslaunch2.environment</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1">#  Author: Adrian Böckenkamp</span>
+<span class="c1"># License: BSD (https://opensource.org/licenses/BSD-3-Clause)</span>
+<span class="c1">#    Date: 13/03/2018</span>
+
+<span class="kn">import</span> <span class="nn">lxml.etree</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">interfaces</span>
+<span class="kn">import</span> <span class="nn">machine</span>
+
+
+<div class="viewcode-block" id="EnvironmentVariable"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.environment.EnvironmentVariable">[docs]</a><span class="k">class</span> <span class="nc">EnvironmentVariable</span><span class="p">(</span><span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="p">,</span> <span class="n">interfaces</span><span class="o">.</span><span class="n">Composable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents an environment variable (&lt;env&gt; tag in roslaunch), see http://wiki.ros.org/roslaunch/XML/env</span>
+<span class="sd">    This class cannot be used inside a Machine object (deprecated since ROS Fuerte). However, you can use this</span>
+<span class="sd">    class to create remote env. variables by setting the &quot;value&quot; to an resolvable object, see remote.py. Also note that</span>
+<span class="sd">    env. variables are being propagated to nodes if they are added to Groups or Launch objects, see</span>
+<span class="sd">    Composer.add_env_variables_to_nodes() for more information. For instance:</span>
+<span class="sd">    root += EnvironmentVariable(&#39;ROSCONSOLE_CONFIG_FILE&#39;, Path(&#39;/config/rosconsole.cfg&#39;, pkg))</span>
+<span class="sd">    (assuming &quot;root&quot; is a &quot;Launch&quot; object), would cause the env. variable to be added to all nodes started afterwards.</span>
+<span class="sd">    If one of these nodes is started on system A, and another one is launched on system B, the env. variable will be</span>
+<span class="sd">    resolved remotely on theses systems A and B respectively (given the &quot;pkg&quot; where the path relates to).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the environment variable with the given name and value.</span>
+
+<span class="sd">        :param name: Name of environment variable</span>
+<span class="sd">        :param value: Actual value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">Composable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;EnvironmentVariable (&lt;env&gt; tag) is deprecated since Fuerte. Use env-loader instead.&quot;</span><span class="p">,</span>
+                      <span class="ne">DeprecationWarning</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rooted</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;{} has been created but never add()ed.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)),</span> <span class="ne">Warning</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EnvironmentVariable.generate"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.environment.EnvironmentVariable.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">starting_machine</span><span class="p">,</span> <span class="n">pkg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the underlying roslaunch XML code.</span>
+
+<span class="sd">        :param root: XML root element object</span>
+<span class="sd">        :param starting_machine: May be set to a machine.Machine object where the environment variable should be</span>
+<span class="sd">               resolved on</span>
+<span class="sd">        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,</span>
+<span class="sd">               e. g., ServerParameter.generate())</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">elem</span> <span class="o">=</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;env&#39;</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">starting_machine</span><span class="p">,</span> <span class="n">machine</span><span class="o">.</span><span class="n">Machine</span><span class="p">):</span>
+            <span class="n">starting_machine</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">Localhost</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">Machine</span><span class="o">.</span><span class="n">resolve_if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">starting_machine</span><span class="p">,</span> <span class="n">pkg</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" >roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, Adrian Böckenkamp.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

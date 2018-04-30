@@ -1,0 +1,307 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>roslaunch2.remote &mdash; roslaunch2 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="roslaunch2 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="roslaunch2" href="../roslaunch2.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" accesskey="U">roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for roslaunch2.remote</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1">#  Author: Adrian Böckenkamp</span>
+<span class="c1"># License: BSD (https://opensource.org/licenses/BSD-3-Clause)</span>
+<span class="c1">#    Date: 13/03/2018</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">Pyro4</span>
+<span class="kn">import</span> <span class="nn">utils</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+
+<span class="kn">import</span> <span class="nn">package</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;API&quot;</span><span class="p">,</span> <span class="s2">&quot;Resolvable&quot;</span><span class="p">,</span> <span class="s2">&quot;Path&quot;</span><span class="p">,</span> <span class="s2">&quot;Variable&quot;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">Internals</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Contains various internal function used by the internals of roslaunch2. These functions should not be used from</span>
+<span class="sd">    outside.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__created_temp_files</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@Pyro4.expose</span>
+    <span class="k">def</span> <span class="nf">get_env_loader</span><span class="p">(</span><span class="n">env_vars</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate an env-loader script on the current machine given the current environment of the started</span>
+<span class="sd">        roslaunch2_server.</span>
+
+<span class="sd">        :param env_vars: Manually added environment variables that need to be available remotely</span>
+<span class="sd">        :return: Path to generated env. script</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">shell_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;SHELL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">shell_name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot determine / parse default shell.&#39;</span><span class="p">)</span>
+        <span class="c1"># Create a temporary env-loader script which sets all environment variables that are currently set:</span>
+        <span class="n">ftmp</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;-roslaunch2-temp-env.sh&#39;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="c1"># Remember the file path for proper cleanups when the launch file exits:</span>
+        <span class="n">Internals</span><span class="o">.</span><span class="n">__created_temp_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ftmp</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="s1">&#39;#!/usr/bin/env {:s}</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">shell_name</span><span class="p">)</span>
+        <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;export {:s}=&quot;{:s}&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">])</span>
+        <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1"># Manually added environment variables (using roslaunch2.machine.Machine.set_env_var()):</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;export {:s}=&quot;{:s}&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">env_vars</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">env_vars</span><span class="p">])</span>
+        <span class="n">content</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">exec &quot;$@&quot;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+        <span class="n">ftmp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">ftmp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">ftmp</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="mi">0</span><span class="n">o744</span><span class="p">)</span>  <span class="c1"># make it executable (set X bit)</span>
+        <span class="k">return</span> <span class="n">ftmp</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@Pyro4.expose</span>
+    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deletes all remotely created env-loader scripts.</span>
+
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">Internals</span><span class="o">.</span><span class="n">__created_temp_files</span><span class="p">:</span>
+            <span class="n">utils</span><span class="o">.</span><span class="n">silent_remove</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">Internals</span><span class="o">.</span><span class="n">__created_temp_files</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+<div class="viewcode-block" id="API"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.remote.API">[docs]</a><span class="k">class</span> <span class="nc">API</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides an API that can be used locally and remotely (via the PyRO backend) on other robots / machines. For</span>
+<span class="sd">    example, it can be used to query the value of a remote environment variable or the number of CPU cores.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@Pyro4.expose</span>
+<div class="viewcode-block" id="API.load_avg"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.remote.API.load_avg">[docs]</a>    <span class="k">def</span> <span class="nf">load_avg</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the number of processes in the system run queue averaged over the last 1, 5, and 15 minutes or raises</span>
+<span class="sd">        OSError if the load average was unobtainable.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">getloadavg</span><span class="p">()</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@Pyro4.expose</span>
+<div class="viewcode-block" id="API.memory_stats"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.remote.API.memory_stats">[docs]</a>    <span class="k">def</span> <span class="nf">memory_stats</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines the physical system-wide total (index 0) and available (index 1) memory (RAM) in bytes.</span>
+
+<span class="sd">        :return: tuple (total, available) memory in bytes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">psutil</span>
+        <span class="k">return</span> <span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># total and available memory in bytes</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@Pyro4.expose</span>
+<div class="viewcode-block" id="API.env"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.remote.API.env">[docs]</a>    <span class="k">def</span> <span class="nf">env</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines the current value of the environment variable.</span>
+
+<span class="sd">        :param name: Name of environment variable whose value should be queried</span>
+<span class="sd">        :param optional: If True (default, None is returned if the variable does not exist; else, an exception is raised</span>
+<span class="sd">        :return: Value of env. variable or None if not existing and optional=True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="ow">and</span> <span class="n">optional</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)]</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@Pyro4.expose</span>
+<div class="viewcode-block" id="API.cpu_count"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.remote.API.cpu_count">[docs]</a>    <span class="k">def</span> <span class="nf">cpu_count</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines the number of CPUs</span>
+<span class="sd">        :return: number of (Linux: online) CPUs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">multiprocessing</span>
+            <span class="k">return</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">NotImplementedError</span><span class="p">):</span>
+            <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="Resolvable"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.remote.Resolvable">[docs]</a><span class="k">class</span> <span class="nc">Resolvable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents the interface for data that is just given as a &quot;shell&quot; or &quot;sleeve&quot; and still needs to be filled with the</span>
+<span class="sd">    correct information of the target (remote) system. The latter process is denoted as resolving the data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+
+<div class="viewcode-block" id="Resolvable.resolve"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.remote.Resolvable.resolve">[docs]</a>    <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">local_only</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the actual data from the given remote system. (It may also simply be the current local host).</span>
+
+<span class="sd">        :param address: IP address of the (remote) system to query</span>
+<span class="sd">        :param user: User name required to contact the correct roslaunch2 server instance</span>
+<span class="sd">        :param local_only: True do resolve locally (equals a normal Python method call), False to query remotely</span>
+<span class="sd">        :return: Resolved value of data of interest</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;resolve() not implemented in &quot;{}&quot; yet.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="Path"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.remote.Path">[docs]</a><span class="k">class</span> <span class="nc">Path</span><span class="p">(</span><span class="n">Resolvable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a (ROS package) path of a local or remote system. For example, if a node *may* be executed on another</span>
+<span class="sd">    machine (depending on some condition) and that machine may be selected &quot;dynamically&quot; on some other condition, a path</span>
+<span class="sd">    must be resolved when the final machine is known. This process is encapsulated in this class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">pkg</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the resolvable path.</span>
+
+<span class="sd">        :param path: Entire path or partial (ROS package related) path</span>
+<span class="sd">        :param pkg: ROS package name, the path relates to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Resolvable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pkg</span> <span class="o">=</span> <span class="n">package</span><span class="o">.</span><span class="n">Package</span><span class="p">(</span><span class="n">pkg</span><span class="p">)</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pkg</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span> <span class="k">else</span> <span class="n">pkg</span>
+
+<div class="viewcode-block" id="Path.set_package"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.remote.Path.set_package">[docs]</a>    <span class="k">def</span> <span class="nf">set_package</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the ROS package path this path is referring to.</span>
+
+<span class="sd">        :param pkg: ROS package name, the path relates to</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pkg</span><span class="p">:</span>  <span class="c1"># retain pkg initialized in ctor if already set (no overwrites)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pkg</span> <span class="o">=</span> <span class="n">package</span><span class="o">.</span><span class="n">Package</span><span class="p">(</span><span class="n">pkg</span><span class="p">)</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pkg</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span> <span class="k">else</span> <span class="n">pkg</span></div>
+
+<div class="viewcode-block" id="Path.resolve"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.remote.Path.resolve">[docs]</a>    <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">local_only</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resolves the path.</span>
+
+<span class="sd">        :param address: IP address of the (remote) system to query</span>
+<span class="sd">        :param user: User name required to contact the correct roslaunch2 server instance</span>
+<span class="sd">        :param local_only: True do resolve locally (equals a normal Python method call), False to query remotely</span>
+<span class="sd">        :return: Resolved path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">local_only</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pkg</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">Pyro4</span><span class="o">.</span><span class="n">Proxy</span><span class="p">(</span><span class="s1">&#39;PYRONAME:{:s}.{:s}.roslaunch2.package.Package&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">user</span><span class="p">))</span> <span class="k">as</span> <span class="n">remote_object</span><span class="p">:</span>
+            <span class="n">remote_object</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pkg</span><span class="p">))</span>  <span class="c1"># just the package name</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">remote_object</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>  <span class="c1"># convert from unicode to str</span></div></div>
+
+
+<div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.remote.Variable">[docs]</a><span class="k">class</span> <span class="nc">Variable</span><span class="p">(</span><span class="n">Resolvable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents an environment variable that is resolved on the localhost or remotely, depending on where the information</span>
+<span class="sd">    is needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the resolvable environment variable.</span>
+
+<span class="sd">        :param name: Name of environment variable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Resolvable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Variable.resolve"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.remote.Variable.resolve">[docs]</a>    <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">local_only</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resolves the environment variable.</span>
+
+<span class="sd">        :param address: IP address of the (remote) system to query</span>
+<span class="sd">        :param user: User name required to contact the correct roslaunch2 server instance</span>
+<span class="sd">        :param local_only: True do resolve locally (equals a normal Python method call), False to query remotely</span>
+<span class="sd">        :return: Resolved environment variable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">local_only</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">API</span><span class="o">.</span><span class="n">env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">Pyro4</span><span class="o">.</span><span class="n">Proxy</span><span class="p">(</span><span class="s1">&#39;PYRONAME:{:s}.{:s}.roslaunch2.remote.API&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">user</span><span class="p">))</span> <span class="k">as</span> <span class="n">remote_object</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">remote_object</span><span class="o">.</span><span class="n">env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" >roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, Adrian Böckenkamp.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

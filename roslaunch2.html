@@ -1,0 +1,1866 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>roslaunch2 package &mdash; roslaunch2 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="roslaunch2 0.0.1 documentation" href="index.html" />
+    <link rel="up" title="src" href="modules.html" />
+    <link rel="prev" title="src" href="modules.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="src"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">src</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="roslaunch2-package">
+<h1>roslaunch2 package<a class="headerlink" href="#roslaunch2-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-roslaunch2.environment">
+<span id="roslaunch2-environment-module"></span><h2>roslaunch2.environment module<a class="headerlink" href="#module-roslaunch2.environment" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="roslaunch2.environment.EnvironmentVariable">
+<em class="property">class </em><code class="descclassname">roslaunch2.environment.</code><code class="descname">EnvironmentVariable</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/environment.html#EnvironmentVariable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.environment.EnvironmentVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.interfaces.GeneratorBase" title="roslaunch2.interfaces.GeneratorBase"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.interfaces.GeneratorBase</span></code></a>, <a class="reference internal" href="#roslaunch2.interfaces.Composable" title="roslaunch2.interfaces.Composable"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.interfaces.Composable</span></code></a></p>
+<p>Represents an environment variable (&lt;env&gt; tag in roslaunch), see <a class="reference external" href="http://wiki.ros.org/roslaunch/XML/env">http://wiki.ros.org/roslaunch/XML/env</a>
+This class cannot be used inside a Machine object (deprecated since ROS Fuerte). However, you can use this
+class to create remote env. variables by setting the &#8220;value&#8221; to an resolvable object, see remote.py. Also note that
+env. variables are being propagated to nodes if they are added to Groups or Launch objects, see
+Composer.add_env_variables_to_nodes() for more information. For instance:
+root += EnvironmentVariable(&#8216;ROSCONSOLE_CONFIG_FILE&#8217;, Path(&#8216;/config/rosconsole.cfg&#8217;, pkg))
+(assuming &#8220;root&#8221; is a &#8220;Launch&#8221; object), would cause the env. variable to be added to all nodes started afterwards.
+If one of these nodes is started on system A, and another one is launched on system B, the env. variable will be
+resolved remotely on theses systems A and B respectively (given the &#8220;pkg&#8221; where the path relates to).</p>
+<dl class="method">
+<dt id="roslaunch2.environment.EnvironmentVariable.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>root</em>, <em>starting_machine</em>, <em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/environment.html#EnvironmentVariable.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.environment.EnvironmentVariable.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates the underlying roslaunch XML code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>root</strong> &#8211; XML root element object</li>
+<li><strong>starting_machine</strong> &#8211; May be set to a machine.Machine object where the environment variable should be
+resolved on</li>
+<li><strong>pkg</strong> &#8211; Package object, if none (else None); this is used / required on lower levels of the generation (see,
+e. g., ServerParameter.generate())</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2.group">
+<span id="roslaunch2-group-module"></span><h2>roslaunch2.group module<a class="headerlink" href="#module-roslaunch2.group" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="roslaunch2.group.Group">
+<em class="property">class </em><code class="descclassname">roslaunch2.group.</code><code class="descname">Group</code><span class="sig-paren">(</span><em>namespace</em>, <em>ignore_content=False</em>, <em>clear_params=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/group.html#Group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.group.Group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.remapable.Remapable" title="roslaunch2.remapable.Remapable"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.remapable.Remapable</span></code></a>, <a class="reference internal" href="#roslaunch2.interfaces.Composer" title="roslaunch2.interfaces.Composer"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.interfaces.Composer</span></code></a>, <a class="reference internal" href="#roslaunch2.interfaces.Composable" title="roslaunch2.interfaces.Composable"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.interfaces.Composable</span></code></a></p>
+<p>For grouping nodes in namespaces, equals &lt;group ns=&#8221;namespace&#8221;&gt; ... &lt;/group&gt;.</p>
+<dl class="method">
+<dt id="roslaunch2.group.Group.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>root</em>, <em>machines</em>, <em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/group.html#Group.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.group.Group.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates the underlying roslaunch XML code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>root</strong> &#8211; XML root element object</li>
+<li><strong>machines</strong> &#8211; list of machines currently known in the launch module (may still contain duplicates)</li>
+<li><strong>pkg</strong> &#8211; Package object, if none (else None); this is used / required on lower levels of the generation (see,
+e. g., ServerParameter.generate())</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.group.Group.start_on">
+<code class="descname">start_on</code><span class="sig-paren">(</span><em>machine_object</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/group.html#Group.start_on"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.group.Group.start_on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows to start all nodes added to this group to be launched on the given machine. However, if a node has
+already been assigned a specific machine object, the given machine_object is ignored for that node.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>machine_object</strong> &#8211; Machine object to be used for launching remotely; a roslaunch2_server needs to be running
+on that machine</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2.interfaces">
+<span id="roslaunch2-interfaces-module"></span><h2>roslaunch2.interfaces module<a class="headerlink" href="#module-roslaunch2.interfaces" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="roslaunch2.interfaces.Composable">
+<em class="property">class </em><code class="descclassname">roslaunch2.interfaces.</code><code class="descname">Composable</code><a class="reference internal" href="_modules/roslaunch2/interfaces.html#Composable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.interfaces.Composable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Represents the interface for objects of classes that can be added to Composer instances. They remember if they have
+already been added to show a warning about created but unused objects. An example is the ServerParameter class which
+cannot contain any other core type of the roslaunch2 hierarchy.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="roslaunch2.interfaces.Composer">
+<em class="property">class </em><code class="descclassname">roslaunch2.interfaces.</code><code class="descname">Composer</code><span class="sig-paren">(</span><em>valid_types</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/interfaces.html#Composer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.interfaces.Composer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Represents the interface for objects of classes allowing to contain other objects. An example is the Node class
+which can contain Parameter objects.</p>
+<dl class="method">
+<dt id="roslaunch2.interfaces.Composer.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/interfaces.html#Composer.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.interfaces.Composer.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows to compose objects of type Composable by adding them to this internal list. This is used to create a
+hierarchy of objects. For example, a Launch object can contain a Group. Both are Composer objects. It throws an
+assertion if you try to add objects that are not allowed (can be defined in the constructor).</p>
+<p>Note that objects are deep-copied so that they can be altered after adding them without chaning the added
+object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> &#8211; Object to be added to this composer</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.interfaces.Composer.add_env_variables_to_nodes">
+<code class="descname">add_env_variables_to_nodes</code><span class="sig-paren">(</span><em>environment_variable_dict=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/interfaces.html#Composer.add_env_variables_to_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.interfaces.Composer.add_env_variables_to_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Traverses the whole tree of this composer object and searches for instances of environment.EnvironmentVariable.
+Copy each EnvironmentVariable to all subsequent node.Node instances that has not defined it on their own.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>environment_variable_dict</strong> &#8211; Dictionary of instances of environment.EnvironmentVariable that are valid for
+composer (dictionary keys are the environment variable names)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="roslaunch2.interfaces.GeneratorBase">
+<em class="property">class </em><code class="descclassname">roslaunch2.interfaces.</code><code class="descname">GeneratorBase</code><a class="reference internal" href="_modules/roslaunch2/interfaces.html#GeneratorBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.interfaces.GeneratorBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Represents the interface for classes that can generate its XML representation for roslaunch. You need to implement
+the generate() method for this to work.</p>
+<dl class="method">
+<dt id="roslaunch2.interfaces.GeneratorBase.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>root</em>, <em>machines</em>, <em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/interfaces.html#GeneratorBase.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.interfaces.GeneratorBase.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a roslaunch compatible XML representation of this object. This method is automatically invoked by the
+roslaunch2 tool, There&#8217;s no need for you to call it manually.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the return value can be used arbitrarily (for an example, see node.Runnable); however, finally, a
+string (see Launch impl.) must be returned which is the XML representation of the roslaunch file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="roslaunch2.interfaces.GeneratorBase.to_attr">
+<em class="property">static </em><code class="descname">to_attr</code><span class="sig-paren">(</span><em>elem</em>, <em>name</em>, <em>value</em>, <em>expected_type=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/interfaces.html#GeneratorBase.to_attr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.interfaces.GeneratorBase.to_attr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an XML-based element from the given attribute name and assigned the given value (i. e.
+&lt;foo name=&#8221;value&#8221;/&gt;). Optionally verifies value against the expected_type if not None. No attribute is create
+if the value is None in order to use roslaunch&#8217; default.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>elem</strong> &#8211; XML element where the attribute should be set</li>
+<li><strong>name</strong> &#8211; Name of attribute</li>
+<li><strong>value</strong> &#8211; Value of attribute</li>
+<li><strong>expected_type</strong> &#8211; Expected type that value should have (None to disable this check, e. g., where the type
+is not known a priori)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2.launch">
+<span id="roslaunch2-launch-module"></span><h2>roslaunch2.launch module<a class="headerlink" href="#module-roslaunch2.launch" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="roslaunch2.launch.Launch">
+<em class="property">class </em><code class="descclassname">roslaunch2.launch.</code><code class="descname">Launch</code><span class="sig-paren">(</span><em>deprecation_message=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/launch.html#Launch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.launch.Launch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.interfaces.Composable" title="roslaunch2.interfaces.Composable"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.interfaces.Composable</span></code></a>, <a class="reference internal" href="#roslaunch2.interfaces.Composer" title="roslaunch2.interfaces.Composer"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.interfaces.Composer</span></code></a>, <a class="reference internal" href="#roslaunch2.remapable.Remapable" title="roslaunch2.remapable.Remapable"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.remapable.Remapable</span></code></a></p>
+<p>Represents the root object of a launch module, similiar to roslaunch&#8217;s &lt;launch&gt; tag.</p>
+<dl class="method">
+<dt id="roslaunch2.launch.Launch.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/launch.html#Launch.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.launch.Launch.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows to add other objects of type Launch, Group, Node, Test, etc. to the launch module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> &#8211; Object to be added</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.launch.Launch.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>root=None</em>, <em>machines=None</em>, <em>pkg=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/launch.html#Launch.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.launch.Launch.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates the underlying roslaunch XML code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>root</strong> &#8211; XML root element object</li>
+<li><strong>machines</strong> &#8211; list of machines currently known in the launch module (may still contain duplicates)</li>
+<li><strong>pkg</strong> &#8211; Package object, if none (else None); this is used / required on lower levels of the generation (see,
+e. g., ServerParameter.generate())</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">string representation in UTF-8 encoding containing the generated XML code if generate() was called on
+the top level (i. e., the Launch object was not nested as a part of anther launch module; in such cases
+None is returned)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.launch.Launch.start_on">
+<code class="descname">start_on</code><span class="sig-paren">(</span><em>machine_object</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/launch.html#Launch.start_on"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.launch.Launch.start_on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows to start all nodes added to this launch object to be launched on the given machine. However, if a node
+has already been assigned a specific machine object, the given machine_object is ignored for that node. Also,
+groups with their own machine object will precede machine_object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>machine_object</strong> &#8211; Machine object to be used for launching remotely; a roslaunch2_server needs to be running
+on that machine</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2.logger">
+<span id="roslaunch2-logger-module"></span><h2>roslaunch2.logger module<a class="headerlink" href="#module-roslaunch2.logger" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="roslaunch2.logger.critical">
+<code class="descclassname">roslaunch2.logger.</code><code class="descname">critical</code><span class="sig-paren">(</span><em>args</em>, <em>exit_code=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/logger.html#critical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.logger.critical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a critical error message. After such errors, the script exits with the given code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>args</strong> &#8211; data to be printed</li>
+<li><strong>exit_code</strong> &#8211; code to be used when exiting the program</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.logger.error">
+<code class="descclassname">roslaunch2.logger.</code><code class="descname">error</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/logger.html#error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.logger.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print an error, added for completeness.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> &#8211; data to be printed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.logger.init_logger">
+<code class="descclassname">roslaunch2.logger.</code><code class="descname">init_logger</code><span class="sig-paren">(</span><em>want_colors=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/logger.html#init_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.logger.init_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the logging system.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>want_colors</strong> &#8211; True to allow colored output, False to disable it</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.logger.log">
+<code class="descclassname">roslaunch2.logger.</code><code class="descname">log</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/logger.html#log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.logger.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a message w/o any prefix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> &#8211; data to be printed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.logger.warning">
+<code class="descclassname">roslaunch2.logger.</code><code class="descname">warning</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/logger.html#warning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.logger.warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a warning, added for completeness. Please prefer warnings.warn().</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> &#8211; data to be printed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2.machine">
+<span id="roslaunch2-machine-module"></span><h2>roslaunch2.machine module<a class="headerlink" href="#module-roslaunch2.machine" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="roslaunch2.machine.Machine">
+<em class="property">class </em><code class="descclassname">roslaunch2.machine.</code><code class="descname">Machine</code><span class="sig-paren">(</span><em>address</em>, <em>user</em>, <em>env_loader=None</em>, <em>name=None</em>, <em>password=None</em>, <em>timeout=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#Machine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.Machine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.interfaces.GeneratorBase" title="roslaunch2.interfaces.GeneratorBase"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.interfaces.GeneratorBase</span></code></a></p>
+<p>For defining (remote) machines to launch on, equals the &lt;machine&gt; tag.</p>
+<dl class="staticmethod">
+<dt id="roslaunch2.machine.Machine.cleanup">
+<em class="property">static </em><code class="descname">cleanup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#Machine.cleanup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.Machine.cleanup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cleans up all env-loader script files generated remotely during the launch.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.machine.Machine.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>root</em>, <em>machines</em>, <em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#Machine.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.Machine.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends the underlying roslaunch XML code to the given root object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>root</strong> &#8211; XML root element object</li>
+<li><strong>machines</strong> &#8211; list of machines currently known in the launch module (may still contain duplicates)</li>
+<li><strong>pkg</strong> &#8211; Package object, if none (else None); this is used / required on lower levels of the generation (see,
+e. g., ServerParameter.generate())</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.machine.Machine.name">
+<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#Machine.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.Machine.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the set machine name (self.__name) if set or generate name as hash of all relevant members.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Machine name as string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.machine.Machine.remote">
+<code class="descname">remote</code><span class="sig-paren">(</span><em>object_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#Machine.remote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.Machine.remote" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows one to remote execute a method on the given machine. For instance, m.remote().cpu_count() retrieves the
+number of CPUs on the machine &#8220;m&#8221;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>object_name</strong> &#8211; Pyro-exposed fully-qualified class instance name; can be empty to default to the roslaunch2
+API (roslaunch2.remote.API)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Object instance that allows to run methods locally or remotely depending on self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.machine.Machine.resolve">
+<code class="descname">resolve</code><span class="sig-paren">(</span><em>what</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#Machine.resolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.Machine.resolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolves the given object on the machine (convenience function).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>what</strong> &#8211; Object adhering to the remote.Resolvable interface</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Resolved data</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="roslaunch2.machine.Machine.resolve_if">
+<em class="property">static </em><code class="descname">resolve_if</code><span class="sig-paren">(</span><em>what</em>, <em>machine_obj</em>, <em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#Machine.resolve_if"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.Machine.resolve_if" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to resolve &#8220;what&#8221; on the given &#8220;machine_obj&#8221;, possibly relating to &#8220;pkg&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>what</strong> &#8211; Data sleeve to be resolved (should adhere to remote.Resolvable)</li>
+<li><strong>machine_obj</strong> &#8211; Object of machine.Machine to be used for resolving</li>
+<li><strong>pkg</strong> &#8211; ROS package instance</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Resolved data or &#8220;what&#8221; (unchanged) if not resolvable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.machine.Machine.set_env_var">
+<code class="descname">set_env_var</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#Machine.set_env_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.Machine.set_env_var" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines an environment variable on this machine iff the env-loader is generated automatically
+and the machine does not equal Localhost.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> &#8211; Name of variable (should be unique)</li>
+<li><strong>value</strong> &#8211; value to be assigned to the variable (converted to str)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.machine.Machine.set_loader">
+<code class="descname">set_loader</code><span class="sig-paren">(</span><em>script_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#Machine.set_loader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.Machine.set_loader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the env-loader script.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>script_path</strong> &#8211; Script path to the env-loader (must be valid on the remote host)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="roslaunch2.machine.MachinePool">
+<em class="property">class </em><code class="descclassname">roslaunch2.machine.</code><code class="descname">MachinePool</code><span class="sig-paren">(</span><em>select_strategy=&lt;Strategy.LeastLoadAverage: 1&gt;</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#MachinePool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.MachinePool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a></p>
+<p>Represents a set of machines to choose from when a new ROS node should be started based on a configurable criterion.</p>
+<dl class="class">
+<dt id="roslaunch2.machine.MachinePool.Strategy">
+<em class="property">class </em><code class="descname">Strategy</code><a class="reference internal" href="_modules/roslaunch2/machine.html#MachinePool.Strategy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.MachinePool.Strategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/enum.html#enum.IntEnum" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></a></p>
+<dl class="attribute">
+<dt id="roslaunch2.machine.MachinePool.Strategy.LeastLoadAverage">
+<code class="descname">LeastLoadAverage</code><em class="property"> = &lt;Strategy.LeastLoadAverage: 1&gt;</em><a class="headerlink" href="#roslaunch2.machine.MachinePool.Strategy.LeastLoadAverage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="roslaunch2.machine.MachinePool.Strategy.LeastMemoryUsage">
+<code class="descname">LeastMemoryUsage</code><em class="property"> = &lt;Strategy.LeastMemoryUsage: 2&gt;</em><a class="headerlink" href="#roslaunch2.machine.MachinePool.Strategy.LeastMemoryUsage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.machine.MachinePool.by_address">
+<code class="descclassname">MachinePool.</code><code class="descname">by_address</code><span class="sig-paren">(</span><em>address</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#MachinePool.by_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.MachinePool.by_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the machine with the given address.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>address</strong> &#8211; User name to query</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">machine.Machine object or None if nothing was found</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.machine.MachinePool.by_user">
+<code class="descclassname">MachinePool.</code><code class="descname">by_user</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#MachinePool.by_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.MachinePool.by_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the machine with the given user name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> &#8211; User name to query</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">machine.Machine object or None if nothing was found</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.machine.MachinePool.select">
+<code class="descclassname">MachinePool.</code><code class="descname">select</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/machine.html#MachinePool.select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.machine.MachinePool.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selects a machine for starting a node based on the current strategy. Note that this just considers the load on
+the machines in the pool when none of the nodes has actually been started (roslaunch XML generation step).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">current optimal Machine object selected for execution</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2.node">
+<span id="roslaunch2-node-module"></span><h2>roslaunch2.node module<a class="headerlink" href="#module-roslaunch2.node" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="roslaunch2.node.Node">
+<em class="property">class </em><code class="descclassname">roslaunch2.node.</code><code class="descname">Node</code><span class="sig-paren">(</span><em>pkg</em>, <em>node_type=None</em>, <em>name=None</em>, <em>output=&lt;Output.Screen: 1&gt;</em>, <em>args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/node.html#Node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.node.Node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.node.Runnable" title="roslaunch2.node.Runnable"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.node.Runnable</span></code></a></p>
+<p>For starting ROS nodes, equals &lt;node&gt;, see <a class="reference external" href="http://wiki.ros.org/roslaunch/XML/node">http://wiki.ros.org/roslaunch/XML/node</a></p>
+<dl class="method">
+<dt id="roslaunch2.node.Node.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>root</em>, <em>machines</em>, <em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/node.html#Node.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.node.Node.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends the underlying roslaunch XML code to the given root object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>root</strong> &#8211; XML root element object</li>
+<li><strong>machines</strong> &#8211; list of machines currently known in the launch module (may still contain duplicates)</li>
+<li><strong>pkg</strong> &#8211; Package object, if none (else None); this is used / required on lower levels of the generation (see,
+e. g., ServerParameter.generate())</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="roslaunch2.node.Node.required">
+<code class="descname">required</code><a class="headerlink" href="#roslaunch2.node.Node.required" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the required flag.
+:return: True if node is required, False otherwise</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="roslaunch2.node.Node.respawn">
+<code class="descname">respawn</code><a class="headerlink" href="#roslaunch2.node.Node.respawn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the respawn flag.
+:return: True if node is respawn when it terminates, False otherwise</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.node.Node.start_on">
+<code class="descname">start_on</code><span class="sig-paren">(</span><em>machine_object</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/node.html#Node.start_on"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.node.Node.start_on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows to start the node on a specific machine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>machine_object</strong> &#8211; New machine object to be used for starting self remotely</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="roslaunch2.node.Output">
+<em class="property">class </em><code class="descclassname">roslaunch2.node.</code><code class="descname">Output</code><a class="reference internal" href="_modules/roslaunch2/node.html#Output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.node.Output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/enum.html#enum.IntEnum" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></a></p>
+<p>Possible output targets for ROS logging commands (e. g., ROS_INFO()).</p>
+<dl class="attribute">
+<dt id="roslaunch2.node.Output.Log">
+<code class="descname">Log</code><em class="property"> = &lt;Output.Log: 2&gt;</em><a class="headerlink" href="#roslaunch2.node.Output.Log" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="roslaunch2.node.Output.Screen">
+<code class="descname">Screen</code><em class="property"> = &lt;Output.Screen: 1&gt;</em><a class="headerlink" href="#roslaunch2.node.Output.Screen" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="roslaunch2.node.Runnable">
+<em class="property">class </em><code class="descclassname">roslaunch2.node.</code><code class="descname">Runnable</code><span class="sig-paren">(</span><em>tag_name</em>, <em>pkg</em>, <em>node_type=None</em>, <em>name=None</em>, <em>args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/node.html#Runnable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.node.Runnable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.remapable.Remapable" title="roslaunch2.remapable.Remapable"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.remapable.Remapable</span></code></a>, <a class="reference internal" href="#roslaunch2.interfaces.Composable" title="roslaunch2.interfaces.Composable"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.interfaces.Composable</span></code></a>, <a class="reference internal" href="#roslaunch2.interfaces.Composer" title="roslaunch2.interfaces.Composer"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.interfaces.Composer</span></code></a></p>
+<p>Encapsulates the common attributes and methods of a &lt;node&gt; and &lt;test&gt; tag/class (internal base class).</p>
+<dl class="method">
+<dt id="roslaunch2.node.Runnable.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>param</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/node.html#Runnable.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.node.Runnable.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the parameter to the node&#8217;s parameter set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>param</strong> &#8211; New parameter, can be any object derived from parameter.Parameter</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.node.Runnable.clear_params">
+<code class="descname">clear_params</code><span class="sig-paren">(</span><em>clear=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/node.html#Runnable.clear_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.node.Runnable.clear_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the clear_params flag as provided by roslaunch, see, e. g., <a class="reference external" href="http://wiki.ros.org/roslaunch/XML/node">http://wiki.ros.org/roslaunch/XML/node</a>
+:param clear: True to clear all parameter before the node is started</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.node.Runnable.debug">
+<code class="descname">debug</code><span class="sig-paren">(</span><em>separate_window=True</em>, <em>auto_run=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/node.html#Runnable.debug"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.node.Runnable.debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a gdb debug prefix to this node.
+See <a class="reference external" href="http://wiki.ros.org/roslaunch/Tutorials/Roslaunch%20Nodes%20in%20Valgrind%20or%20GDB">http://wiki.ros.org/roslaunch/Tutorials/Roslaunch%20Nodes%20in%20Valgrind%20or%20GDB</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>separate_window</strong> &#8211; True to launch the node in a separate window using xterm</li>
+<li><strong>auto_run</strong> &#8211; True to automatically start the node within gdb (otherwise, type &#8220;run&#8221; and press enter&#8221;)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.node.Runnable.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>root</em>, <em>machines</em>, <em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/node.html#Runnable.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.node.Runnable.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends the underlying roslaunch XML code to the given root object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>root</strong> &#8211; XML root element object</li>
+<li><strong>machines</strong> &#8211; list of machines currently known in the launch module (may still contain duplicates)</li>
+<li><strong>pkg</strong> &#8211; Package object, if none (else None); this is used / required on lower levels of the generation (see,
+e. g., ServerParameter.generate())</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="roslaunch2.node.Runnable.node">
+<code class="descname">node</code><a class="headerlink" href="#roslaunch2.node.Runnable.node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Node type (aka executable name).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">String representing the node&#8217;s type</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="roslaunch2.node.Runnable.pkg">
+<code class="descname">pkg</code><a class="headerlink" href="#roslaunch2.node.Runnable.pkg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the associated package.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">roslaunch2.package.Package instance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.node.Runnable.set_namespace">
+<code class="descname">set_namespace</code><span class="sig-paren">(</span><em>ns=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/node.html#Runnable.set_namespace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.node.Runnable.set_namespace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the node&#8217;s namespace. Can also be achieved using the Group class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ns</strong> &#8211; Name of namespace</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2.package">
+<span id="roslaunch2-package-module"></span><h2>roslaunch2.package module<a class="headerlink" href="#module-roslaunch2.package" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="roslaunch2.package.Package">
+<em class="property">class </em><code class="descclassname">roslaunch2.package.</code><code class="descname">Package</code><span class="sig-paren">(</span><em>name=None</em>, <em>silent=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encapsulates a ROS package and its ability to find files in the package directory structure. A caching mechanism is
+used to speedup <cite>*find()</cite> commands.</p>
+<dl class="method">
+<dt id="roslaunch2.package.Package.find">
+<code class="descname">find</code><span class="sig-paren">(</span><em>path_comp</em>, <em>silent=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches for a file or directory in the current package (self).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>path_comp</strong> &#8211; (partial) path or file name</li>
+<li><strong>silent</strong> &#8211; if True return None when nothing is found, otherwise an IOError is raised in
+case of failure</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">first found file (full path) or None if silent==True and nothing found</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.package.Package.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the package name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">ROS package name</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.package.Package.get_path">
+<code class="descname">get_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package.get_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package.get_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the package path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">ROS package path</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="roslaunch2.package.Package.get_paths_to_file">
+<em class="property">static </em><code class="descname">get_paths_to_file</code><span class="sig-paren">(</span><em>start_dir</em>, <em>file_comp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package.get_paths_to_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package.get_paths_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches for file_comp in <cite>start_dir</cite> recursively (also using a cache for speedup).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>start_dir</strong> &#8211; root directory where to start the search</li>
+<li><strong>file_comp</strong> &#8211; file path component (like some/dir/myfile.xml) name to search for</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Set of files found (with their full path)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.package.Package.has_node">
+<code class="descname">has_node</code><span class="sig-paren">(</span><em>node_name</em>, <em>warn=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package.has_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package.has_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests if a ROS node actually exists.</p>
+<p>This method checks whether a ROS node named $node_name exists in the current ROS package.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>node_name</strong> &#8211; name of ROS node to test</li>
+<li><strong>warn</strong> &#8211; True if a warning about the missing node should be emitted</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True if node exists, False otherwise</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="roslaunch2.package.Package.import_launch_module">
+<em class="property">static </em><code class="descname">import_launch_module</code><span class="sig-paren">(</span><em>full_module_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package.import_launch_module"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package.import_launch_module" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rather internal helper function for important a Python module (i. e., a roslaunch2 launch module/file).
+This function handles all various cases related to different versions of Python.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>full_module_path</strong> &#8211; Full path to module file</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Handle to imported module (like &#8220;foo&#8221; in &#8220;import bar as foo&#8221;)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="roslaunch2.package.Package.include">
+<em class="property">static </em><code class="descname">include</code><span class="sig-paren">(</span><em>pkg_name</em>, <em>path_comp</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package.include"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package.include" title="Permalink to this definition">¶</a></dt>
+<dd><p>Like use() but static for convenience.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pkg_name</strong> &#8211; Name of ROS package to be used for search of path_comp</li>
+<li><strong>path_comp</strong> &#8211; (partial) path or file name to launch module (if it does not end with .pyl, this is added
+automatically)</li>
+<li><strong>kwargs</strong> &#8211; optional arguments to be passed to the main() function of the launch module</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">GeneratorBase object as returned by the main() function</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="roslaunch2.package.Package.invalidate_cache">
+<em class="property">static </em><code class="descname">invalidate_cache</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package.invalidate_cache"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package.invalidate_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invalidates the package, directory and file cache for finding packages, enforcing re-lookups.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="roslaunch2.package.Package.name">
+<code class="descname">name</code><a class="headerlink" href="#roslaunch2.package.Package.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the package name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">ROS package name</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="roslaunch2.package.Package.path">
+<code class="descname">path</code><a class="headerlink" href="#roslaunch2.package.Package.path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the package path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">ROS package path</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.package.Package.selective_find">
+<code class="descname">selective_find</code><span class="sig-paren">(</span><em>path_comp_options</em>, <em>path_comp_prefix=''</em>, <em>silent=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package.selective_find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package.selective_find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches for a set of files or directories in the current package (self). Tries to find any
+path from the path_comp_options list starting at the first element. Once a path is found
+the search for the remaining paths is canceled and the found path is returned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>path_comp_options</strong> &#8211; list of (partial) path or file names</li>
+<li><strong>path_comp_prefix</strong> &#8211; prefix to each element of path_comp_options</li>
+<li><strong>silent</strong> &#8211; if True return None when nothing is found, otherwise an IOError is raised in
+case of failure</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">first found file (full path) or None if silent==True and nothing found</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.package.Package.set_name">
+<code class="descname">set_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package.set_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package.set_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates/sets the package name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> &#8211; ROS package name</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.package.Package.use">
+<code class="descname">use</code><span class="sig-paren">(</span><em>path_comp</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package.use"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package.use" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports (aka uses) the content of a launch module located in the current package (self).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>path_comp</strong> &#8211; (partial) path or file name to launch module (if it does not end with .pyl, this is added
+automatically)</li>
+<li><strong>kwargs</strong> &#8211; optional arguments to be passed to the main() function of the launch module</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">GeneratorBase object as returned by the main() function</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="roslaunch2.package.Package.valid">
+<em class="property">static </em><code class="descname">valid</code><span class="sig-paren">(</span><em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/package.html#Package.valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.package.Package.valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests whether pkg is a valid ROS package on the current system.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pkg</strong> &#8211; Name of ROS package (type: str) or a valid package.Package object)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Path to pkg if valid or None if not found</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2.parameter">
+<span id="roslaunch2-parameter-module"></span><h2>roslaunch2.parameter module<a class="headerlink" href="#module-roslaunch2.parameter" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="roslaunch2.parameter.FileCommand">
+<em class="property">class </em><code class="descclassname">roslaunch2.parameter.</code><code class="descname">FileCommand</code><a class="reference internal" href="_modules/roslaunch2/parameter.html#FileCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.FileCommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/enum.html#enum.IntEnum" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></a></p>
+<p>Defines file operations / commands to be used with <code class="docutils literal"><span class="pre">FileParameter</span></code>. This allows, e. g., to load a set of
+parameters from a given .yaml file.</p>
+<dl class="attribute">
+<dt id="roslaunch2.parameter.FileCommand.Delete">
+<code class="descname">Delete</code><em class="property"> = &lt;FileCommand.Delete: 3&gt;</em><a class="headerlink" href="#roslaunch2.parameter.FileCommand.Delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="roslaunch2.parameter.FileCommand.Dump">
+<code class="descname">Dump</code><em class="property"> = &lt;FileCommand.Dump: 2&gt;</em><a class="headerlink" href="#roslaunch2.parameter.FileCommand.Dump" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="roslaunch2.parameter.FileCommand.Load">
+<code class="descname">Load</code><em class="property"> = &lt;FileCommand.Load: 1&gt;</em><a class="headerlink" href="#roslaunch2.parameter.FileCommand.Load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="roslaunch2.parameter.FileParameter">
+<em class="property">class </em><code class="descclassname">roslaunch2.parameter.</code><code class="descname">FileParameter</code><span class="sig-paren">(</span><em>value=None</em>, <em>command=None</em>, <em>file_path=None</em>, <em>param=None</em>, <em>ns=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/parameter.html#FileParameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.FileParameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.parameter.Parameter" title="roslaunch2.parameter.Parameter"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.parameter.Parameter</span></code></a></p>
+<p>Used for loading, dumping or deleting YAML files to/from the ROS parameter server.
+Equals the <code class="docutils literal"><span class="pre">&lt;rosparam&gt;</span></code> tag.</p>
+<dl class="method">
+<dt id="roslaunch2.parameter.FileParameter.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>root</em>, <em>starting_machine</em>, <em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/parameter.html#FileParameter.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.FileParameter.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends the underlying roslaunch XML code to the given root object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>root</strong> &#8211; XML root element object</li>
+<li><strong>machines</strong> &#8211; list of machines currently known in the launch module (may still contain duplicates)</li>
+<li><strong>pkg</strong> &#8211; Package object, if none (else None); this is used / required on lower levels of the generation (see,
+e. g., ServerParameter.generate())</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="roslaunch2.parameter.LaunchParameter">
+<em class="property">class </em><code class="descclassname">roslaunch2.parameter.</code><code class="descname">LaunchParameter</code><span class="sig-paren">(</span><em>prog=None</em>, <em>description=None</em>, <em>epilog=None</em>, <em>version=None</em>, <em>parents=None</em>, <em>formatter_class=&lt;class 'argparse.HelpFormatter'&gt;</em>, <em>prefix_chars='-'</em>, <em>fromfile_prefix_chars=None</em>, <em>argument_default=None</em>, <em>conflict_handler='resolve'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/parameter.html#LaunchParameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.LaunchParameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.ArgumentParser" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">argparse.ArgumentParser</span></code></a></p>
+<p>Represents a parameter for a launch module. For example, this can influence whether to select simulator A or B.
+These parameters are NOT consumed by ROS nodes (refer to <code class="docutils literal"><span class="pre">ServerParameter</span></code> and <code class="docutils literal"><span class="pre">FileParameter</span></code> in such cases).</p>
+<dl class="method">
+<dt id="roslaunch2.parameter.LaunchParameter.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>name</em>, <em>help_text</em>, <em>default</em>, <em>short_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/parameter.html#LaunchParameter.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.LaunchParameter.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a command line option for the current launch module named <code class="docutils literal"><span class="pre">--name</span></code> with the given <code class="docutils literal"><span class="pre">help_text</span></code>.
+Additionally, the default value is retrieved from <code class="docutils literal"><span class="pre">kwargs[name]</span></code> if that key exists. If not, the provided
+default  value is set. This way, command line options have the highest precedence, followed by parameters passed
+by the kwargs parameter of a launch module&#8217;s <code class="docutils literal"><span class="pre">main()</span></code> function. If neither of which are set, the provided
+default value is set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> &#8211; command line parameter name and key to retrieve (fallback) default in kwargs</li>
+<li><strong>help_text</strong> &#8211; help text of command line option</li>
+<li><strong>default</strong> &#8211; final default value if neither a command line argument nor the key in kwargs is given</li>
+<li><strong>short_name</strong> &#8211; Optional string: Short command line parameter name</li>
+<li><strong>kwargs</strong> &#8211; dictionary of parameters for the launch module, possibly containing name</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.parameter.LaunchParameter.add_flag">
+<code class="descname">add_flag</code><span class="sig-paren">(</span><em>name</em>, <em>help_text</em>, <em>default</em>, <em>store</em>, <em>short_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/parameter.html#LaunchParameter.add_flag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.LaunchParameter.add_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a command line flag for the current launch module named <code class="docutils literal"><span class="pre">--name</span></code> with the given <code class="docutils literal"><span class="pre">help_text</span></code>.
+Additionally, the default value is retrieved from <code class="docutils literal"><span class="pre">kwargs[name]</span></code> if that key exists. If not, the provided
+default value is set. This way, command line flags have the highest precedence, followed by parameters passed by
+the kwargs parameter of a launch module&#8217;s <code class="docutils literal"><span class="pre">main()</span></code> function. If neither of which are set, the provided default
+value is set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> &#8211; command line parameter name and key to retrieve (fallback) default in kwargs</li>
+<li><strong>help_text</strong> &#8211; help text of command line option</li>
+<li><strong>default</strong> &#8211; final default value if neither a command line argument nor the key in kwargs is given</li>
+<li><strong>store</strong> &#8211; <code class="docutils literal"><span class="pre">True</span></code> to store <code class="docutils literal"><span class="pre">True</span></code> of the flag is set / provided on the command line, <code class="docutils literal"><span class="pre">False</span></code> to store
+<code class="docutils literal"><span class="pre">False</span></code> if the flag is provided</li>
+<li><strong>short_name</strong> &#8211; Optional string: Short command line parameter name</li>
+<li><strong>kwargs</strong> &#8211; dictionary of parameters for the launch module, possibly containing name</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.parameter.LaunchParameter.add_parameter_file">
+<code class="descname">add_parameter_file</code><span class="sig-paren">(</span><em>name</em>, <em>path</em>, <em>only_parse_known_args=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/parameter.html#LaunchParameter.add_parameter_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.LaunchParameter.add_parameter_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a command line option named &#8211;name that loads parameters from a yaml file given by
+&#8216;path/value.yaml&#8217; where value is the actual command line value of <code class="docutils literal"><span class="pre">--name</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> &#8211; Name of the command line option</li>
+<li><strong>path</strong> &#8211; Path of the .yaml file</li>
+<li><strong>only_parse_known_args</strong> &#8211; If True unknown arguments from yaml file are ignored
+otherwise parsing fails with unknown arguments in yaml file</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.parameter.LaunchParameter.get_args">
+<code class="descname">get_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/parameter.html#LaunchParameter.get_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.LaunchParameter.get_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the previously defined command line arguments using <code class="docutils literal"><span class="pre">add()</span></code> or <code class="docutils literal"><span class="pre">add_argument()</span></code>. Ignores unknown
+arguments. Parameters are always parsed from <code class="docutils literal"><span class="pre">sys.argv</span></code> and may overlap with parameters from other
+(used / included) launch modules and/or with arguments of roslaunch.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">detected / known arguments. If an argument is named <code class="docutils literal"><span class="pre">--name</span></code>, then <code class="docutils literal"><span class="pre">args.name</span></code> contains the value
+whereby <code class="docutils literal"><span class="pre">args</span></code> is the value returned by this method</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="roslaunch2.parameter.LaunchParameter.launch_parameter_list">
+<code class="descname">launch_parameter_list</code><em class="property"> = []</em><a class="headerlink" href="#roslaunch2.parameter.LaunchParameter.launch_parameter_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="roslaunch2.parameter.Parameter">
+<em class="property">class </em><code class="descclassname">roslaunch2.parameter.</code><code class="descname">Parameter</code><a class="reference internal" href="_modules/roslaunch2/parameter.html#Parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.Parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.interfaces.GeneratorBase" title="roslaunch2.interfaces.GeneratorBase"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.interfaces.GeneratorBase</span></code></a>, <a class="reference internal" href="#roslaunch2.interfaces.Composable" title="roslaunch2.interfaces.Composable"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.interfaces.Composable</span></code></a></p>
+<p>Base class for ROS node parameters.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="roslaunch2.parameter.ServerParameter">
+<em class="property">class </em><code class="descclassname">roslaunch2.parameter.</code><code class="descname">ServerParameter</code><span class="sig-paren">(</span><em>name</em>, <em>value</em>, <em>textfile=None</em>, <em>binfile=None</em>, <em>command=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/parameter.html#ServerParameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.ServerParameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.parameter.Parameter" title="roslaunch2.parameter.Parameter"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.parameter.Parameter</span></code></a></p>
+<p>For setting parameters on the ROS parameter server. Equals the <code class="docutils literal"><span class="pre">&lt;param&gt;</span></code> tag.</p>
+<dl class="method">
+<dt id="roslaunch2.parameter.ServerParameter.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>root</em>, <em>starting_machine</em>, <em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/parameter.html#ServerParameter.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.ServerParameter.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends the underlying roslaunch XML code to the given root object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>root</strong> &#8211; XML root element object</li>
+<li><strong>machines</strong> &#8211; list of machines currently known in the launch module (may still contain duplicates)</li>
+<li><strong>pkg</strong> &#8211; Package object, if none (else None); this is used / required on lower levels of the generation (see,
+e. g., ServerParameter.generate())</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="roslaunch2.parameter.ServerParameter.set">
+<em class="property">static </em><code class="descname">set</code><span class="sig-paren">(</span><em>name</em>, <em>default</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/parameter.html#ServerParameter.set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.ServerParameter.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method for setting a server parameter with an optional default, possibly extracting it from the
+provided dictionary kwargs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> &#8211; Name of parameter</li>
+<li><strong>default</strong> &#8211; Default value for the parameter</li>
+<li><strong>kwargs</strong> &#8211; additional arguments; if kwargs[name] exists, that value is used (otherwise, &#8220;default&#8221; is used)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">parameter.ServerParameter instance</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="roslaunch2.parameter.ServerParameter.type_to_str">
+<em class="property">static </em><code class="descname">type_to_str</code><span class="sig-paren">(</span><em>o</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/parameter.html#ServerParameter.type_to_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.ServerParameter.type_to_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the Python type to the underlying roslaunch type string representation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>o</strong> &#8211; Objects whose type should be converted</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">String representing the roslaunch type of o</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.parameter.load_from_file">
+<code class="descclassname">roslaunch2.parameter.</code><code class="descname">load_from_file</code><span class="sig-paren">(</span><em>path</em>, <em>only_parse_known_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/parameter.html#load_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.parameter.load_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads parameters from the given YAML file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>path</strong> &#8211; Prefix to given file name argument</li>
+<li><strong>only_parse_known_args</strong> &#8211; If True unknown arguments from yaml file are ignored,
+otherwise parsing fails with unknown arguments in yaml file</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2.remapable">
+<span id="roslaunch2-remapable-module"></span><h2>roslaunch2.remapable module<a class="headerlink" href="#module-roslaunch2.remapable" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="roslaunch2.remapable.Remapable">
+<em class="property">class </em><code class="descclassname">roslaunch2.remapable.</code><code class="descname">Remapable</code><a class="reference internal" href="_modules/roslaunch2/remapable.html#Remapable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remapable.Remapable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.interfaces.GeneratorBase" title="roslaunch2.interfaces.GeneratorBase"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.interfaces.GeneratorBase</span></code></a></p>
+<p>Represents the capability of being &lt;remap&gt;able.</p>
+<dl class="method">
+<dt id="roslaunch2.remapable.Remapable.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>root</em>, <em>machines</em>, <em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remapable.html#Remapable.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remapable.Remapable.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends the underlying roslaunch XML code to the given root object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>root</strong> &#8211; XML root element object</li>
+<li><strong>machines</strong> &#8211; list of machines currently known in the launch module (may still contain duplicates)</li>
+<li><strong>pkg</strong> &#8211; Package object, if none (else None); this is used / required on lower levels of the generation (see,
+e. g., ServerParameter.generate())</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.remapable.Remapable.remap">
+<code class="descname">remap</code><span class="sig-paren">(</span><em>from_name</em>, <em>to_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remapable.html#Remapable.remap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remapable.Remapable.remap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remap the ROS name from_name (e. g., a topic) to the new name to_name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>from_name</strong> &#8211; Previous name</li>
+<li><strong>to_name</strong> &#8211; New ROS name</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.remapable.Remapable.unmap">
+<code class="descname">unmap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remapable.html#Remapable.unmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remapable.Remapable.unmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear all remappings added by remap().</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2.test">
+<span id="roslaunch2-test-module"></span><h2>roslaunch2.test module<a class="headerlink" href="#module-roslaunch2.test" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="roslaunch2.test.Test">
+<em class="property">class </em><code class="descclassname">roslaunch2.test.</code><code class="descname">Test</code><span class="sig-paren">(</span><em>pkg</em>, <em>node_type</em>, <em>test_name</em>, <em>args=None</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/test.html#Test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.test.Test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.node.Runnable" title="roslaunch2.node.Runnable"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.node.Runnable</span></code></a></p>
+<p>For starting ROS nodes as tests (see rostest), equals &lt;test&gt;.</p>
+<dl class="method">
+<dt id="roslaunch2.test.Test.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><em>root</em>, <em>machines</em>, <em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/test.html#Test.generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.test.Test.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends the underlying roslaunch XML code to the given root object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>root</strong> &#8211; XML root element object</li>
+<li><strong>machines</strong> &#8211; list of machines currently known in the launch module (may still contain duplicates)</li>
+<li><strong>pkg</strong> &#8211; Package object, if none (else None); this is used / required on lower levels of the generation (see,
+e. g., ServerParameter.generate())</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2.utils">
+<span id="roslaunch2-utils-module"></span><h2>roslaunch2.utils module<a class="headerlink" href="#module-roslaunch2.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="roslaunch2.utils.Observable">
+<em class="property">class </em><code class="descclassname">roslaunch2.utils.</code><code class="descname">Observable</code><a class="reference internal" href="_modules/roslaunch2/utils.html#Observable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.utils.Observable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Allows to create observable events (like the termination of roslaunch) to register custom actions in case such
+events are being triggered.</p>
+<dl class="method">
+<dt id="roslaunch2.utils.Observable.fire">
+<code class="descname">fire</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/utils.html#Observable.fire"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.utils.Observable.fire" title="Permalink to this definition">¶</a></dt>
+<dd><p>Triggers the event (typically only used by the enitity defining the event, i. e., roslaunch2 here).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.utils.Observable.subscribe">
+<code class="descname">subscribe</code><span class="sig-paren">(</span><em>callback</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/utils.html#Observable.subscribe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.utils.Observable.subscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows to register a custom action to be executed if the associated event (= object of this class) fires.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>callback</strong> &#8211; Python function to be executed (&#8220;callback&#8221;) when the event is being triggered</li>
+<li><strong>kwargs</strong> &#8211; Optional additional parameters for the callback, may be None / ignored</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="data">
+<dt id="roslaunch2.utils.ROS_NAME_SEP">
+<code class="descclassname">roslaunch2.utils.</code><code class="descname">ROS_NAME_SEP</code><em class="property"> = '/'</em><a class="headerlink" href="#roslaunch2.utils.ROS_NAME_SEP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Separator for communication (topic, services) and tf (frame) names</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.utils.anon">
+<code class="descclassname">roslaunch2.utils.</code><code class="descname">anon</code><span class="sig-paren">(</span><em>length=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/utils.html#anon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.utils.anon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates random ROS names.</p>
+<p>Generates a random ROS name (see also <a class="reference external" href="http://wiki.ros.org/Names">http://wiki.ros.org/Names</a>). Clearly, the longer the
+name, the smaller the probability of a name collision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>length</strong> &#8211; number of characters in the generated name</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">random name with [A-Z,a-z,0-9]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.utils.clean_name">
+<code class="descclassname">roslaunch2.utils.</code><code class="descname">clean_name</code><span class="sig-paren">(</span><em>ros_name</em>, <em>c='/'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/utils.html#clean_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.utils.clean_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes successive duplicates of c from the given ros_name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ros_name</strong> &#8211; Name (string) to process</li>
+<li><strong>c</strong> &#8211; character whose successive occurrences should be removed</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">processed string (or unchanged ros_name if nothing needs to be done)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.utils.merge_dicts">
+<code class="descclassname">roslaunch2.utils.</code><code class="descname">merge_dicts</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/utils.html#merge_dicts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.utils.merge_dicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given two dicts, merge them into a new dict as a shallow copy. Values in y that are also already present in x will
+overwrite them. This is supplied to be compatible with Python 2.x, see also
+<a class="reference external" href="http://stackoverflow.com/questions/38987/how-to-merge-two-python-dictionaries-in-a-single-expression">http://stackoverflow.com/questions/38987/how-to-merge-two-python-dictionaries-in-a-single-expression</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> &#8211; first dict to merge</li>
+<li><strong>y</strong> &#8211; second dict to merge</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">merged dictionary</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.utils.ros_join">
+<code class="descclassname">roslaunch2.utils.</code><code class="descname">ros_join</code><span class="sig-paren">(</span><em>left</em>, <em>right</em>, <em>force_global=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/utils.html#ros_join"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.utils.ros_join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Behaves much like tf_join but is intended to work on ROS names (like topics, services, namespaces).
+Allows to force the creation of a global name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>left</strong> &#8211; partial name to put leftmost</li>
+<li><strong>right</strong> &#8211; partial name to put rightmost, can also be a list of names</li>
+<li><strong>force_global</strong> &#8211; True to ensure / force the resulting name to be in the global namespace (not advised, but
+useful/required in rare cases). If left is already global, the resulting name remains global.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">combined ROS name</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.utils.silent_remove">
+<code class="descclassname">roslaunch2.utils.</code><code class="descname">silent_remove</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/utils.html#silent_remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.utils.silent_remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the file given by path and do not fail if the file does not exist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> &#8211; path to file which should be deleted silently</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Returns True if the file was removed, False otherwise.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.utils.tf_join">
+<code class="descclassname">roslaunch2.utils.</code><code class="descname">tf_join</code><span class="sig-paren">(</span><em>left</em>, <em>right</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/utils.html#tf_join"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.utils.tf_join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combines the partial frame IDs left and right to a new combined valid frame IDs. According to tf2
+design, preceding slashes will be stripped.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>left</strong> &#8211; partial frame ID to put leftmost (e. g., a parent frame ID)</li>
+<li><strong>right</strong> &#8211; partial frame ID to put rightmost (e. g., a child frame ID)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">combined frame ID (e. g., &#8220;parent1/child0&#8221;)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2.remote">
+<span id="roslaunch2-remote-module"></span><h2>roslaunch2.remote module<a class="headerlink" href="#module-roslaunch2.remote" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="roslaunch2.remote.API">
+<em class="property">class </em><code class="descclassname">roslaunch2.remote.</code><code class="descname">API</code><a class="reference internal" href="_modules/roslaunch2/remote.html#API"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remote.API" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides an API that can be used locally and remotely (via the PyRO backend) on other robots / machines. For
+example, it can be used to query the value of a remote environment variable or the number of CPU cores.</p>
+<dl class="staticmethod">
+<dt id="roslaunch2.remote.API.cpu_count">
+<em class="property">static </em><code class="descname">cpu_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remote.html#API.cpu_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remote.API.cpu_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the number of CPUs
+:return: number of (Linux: online) CPUs</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="roslaunch2.remote.API.env">
+<em class="property">static </em><code class="descname">env</code><span class="sig-paren">(</span><em>name</em>, <em>optional=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remote.html#API.env"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remote.API.env" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the current value of the environment variable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> &#8211; Name of environment variable whose value should be queried</li>
+<li><strong>optional</strong> &#8211; If True (default, None is returned if the variable does not exist; else, an exception is raised</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Value of env. variable or None if not existing and optional=True</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="roslaunch2.remote.API.load_avg">
+<em class="property">static </em><code class="descname">load_avg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remote.html#API.load_avg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remote.API.load_avg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of processes in the system run queue averaged over the last 1, 5, and 15 minutes or raises
+OSError if the load average was unobtainable.
+:return:</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="roslaunch2.remote.API.memory_stats">
+<em class="property">static </em><code class="descname">memory_stats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remote.html#API.memory_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remote.API.memory_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the physical system-wide total (index 0) and available (index 1) memory (RAM) in bytes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">tuple (total, available) memory in bytes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="roslaunch2.remote.Resolvable">
+<em class="property">class </em><code class="descclassname">roslaunch2.remote.</code><code class="descname">Resolvable</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remote.html#Resolvable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remote.Resolvable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Represents the interface for data that is just given as a &#8220;shell&#8221; or &#8220;sleeve&#8221; and still needs to be filled with the
+correct information of the target (remote) system. The latter process is denoted as resolving the data.</p>
+<dl class="method">
+<dt id="roslaunch2.remote.Resolvable.resolve">
+<code class="descname">resolve</code><span class="sig-paren">(</span><em>address</em>, <em>user</em>, <em>local_only</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remote.html#Resolvable.resolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remote.Resolvable.resolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the actual data from the given remote system. (It may also simply be the current local host).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>address</strong> &#8211; IP address of the (remote) system to query</li>
+<li><strong>user</strong> &#8211; User name required to contact the correct roslaunch2 server instance</li>
+<li><strong>local_only</strong> &#8211; True do resolve locally (equals a normal Python method call), False to query remotely</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Resolved value of data of interest</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="roslaunch2.remote.Path">
+<em class="property">class </em><code class="descclassname">roslaunch2.remote.</code><code class="descname">Path</code><span class="sig-paren">(</span><em>path</em>, <em>pkg=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remote.html#Path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remote.Path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.remote.Resolvable" title="roslaunch2.remote.Resolvable"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.remote.Resolvable</span></code></a></p>
+<p>Represents a (ROS package) path of a local or remote system. For example, if a node <em>may</em> be executed on another
+machine (depending on some condition) and that machine may be selected &#8220;dynamically&#8221; on some other condition, a path
+must be resolved when the final machine is known. This process is encapsulated in this class.</p>
+<dl class="method">
+<dt id="roslaunch2.remote.Path.resolve">
+<code class="descname">resolve</code><span class="sig-paren">(</span><em>address</em>, <em>user</em>, <em>local_only</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remote.html#Path.resolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remote.Path.resolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolves the path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>address</strong> &#8211; IP address of the (remote) system to query</li>
+<li><strong>user</strong> &#8211; User name required to contact the correct roslaunch2 server instance</li>
+<li><strong>local_only</strong> &#8211; True do resolve locally (equals a normal Python method call), False to query remotely</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Resolved path</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="roslaunch2.remote.Path.set_package">
+<code class="descname">set_package</code><span class="sig-paren">(</span><em>pkg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remote.html#Path.set_package"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remote.Path.set_package" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the ROS package path this path is referring to.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pkg</strong> &#8211; ROS package name, the path relates to</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="roslaunch2.remote.Variable">
+<em class="property">class </em><code class="descclassname">roslaunch2.remote.</code><code class="descname">Variable</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remote.html#Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remote.Variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#roslaunch2.remote.Resolvable" title="roslaunch2.remote.Resolvable"><code class="xref py py-class docutils literal"><span class="pre">roslaunch2.remote.Resolvable</span></code></a></p>
+<p>Represents an environment variable that is resolved on the localhost or remotely, depending on where the information
+is needed.</p>
+<dl class="method">
+<dt id="roslaunch2.remote.Variable.resolve">
+<code class="descname">resolve</code><span class="sig-paren">(</span><em>address</em>, <em>user</em>, <em>local_only</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/roslaunch2/remote.html#Variable.resolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#roslaunch2.remote.Variable.resolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolves the environment variable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>address</strong> &#8211; IP address of the (remote) system to query</li>
+<li><strong>user</strong> &#8211; User name required to contact the correct roslaunch2 server instance</li>
+<li><strong>local_only</strong> &#8211; True do resolve locally (equals a normal Python method call), False to query remotely</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Resolved environment variable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-roslaunch2">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-roslaunch2" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="roslaunch2.main">
+<code class="descclassname">roslaunch2.</code><code class="descname">main</code><span class="sig-paren">(</span><em>command_line_args=None</em><span class="sig-paren">)</span><a class="headerlink" href="#roslaunch2.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the core logic (= Python based dynamic launch files) of roslaunch2. It does NOT create any
+launch modules or the like.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>command_line_args</strong> &#8211; List with command line arguments as strings</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.start">
+<code class="descclassname">roslaunch2.</code><code class="descname">start</code><span class="sig-paren">(</span><em>launch_obj</em>, <em>dry_run=False</em>, <em>silent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#roslaunch2.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a temporary roslaunch XML file from the given roslaunch2 Launch instance and passes it over to roslaunch.
+Returns after roslaunch has terminated and temporary files have been removed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>launch_obj</strong> &#8211; Instance of class launch.Launch</li>
+<li><strong>dry_run</strong> &#8211; If Only print generated XML (default: False)</li>
+<li><strong>silent</strong> &#8211; Hide roslaunch output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="roslaunch2.start_async">
+<code class="descclassname">roslaunch2.</code><code class="descname">start_async</code><span class="sig-paren">(</span><em>launch_obj</em>, <em>silent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#roslaunch2.start_async" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call method start() in a separate process and returns without waiting for roslaunch to terminate. If p is the
+returned object, call p.terminate() to shutdown roslaunch and p.join() to wait until roslaunch has terminated.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>launch_obj</strong> &#8211; Instance of class launch.Launch</li>
+<li><strong>silent</strong> &#8211; Hide roslaunch output</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Instance of class multiprocessing.Process</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">roslaunch2 package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.environment">roslaunch2.environment module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.group">roslaunch2.group module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.interfaces">roslaunch2.interfaces module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.launch">roslaunch2.launch module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.logger">roslaunch2.logger module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.machine">roslaunch2.machine module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.node">roslaunch2.node module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.package">roslaunch2.package module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.parameter">roslaunch2.parameter module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.remapable">roslaunch2.remapable module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.test">roslaunch2.test module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.utils">roslaunch2.utils module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2.remote">roslaunch2.remote module</a></li>
+<li><a class="reference internal" href="#module-roslaunch2">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="previous chapter">src</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/roslaunch2.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="src"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >src</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, Adrian Böckenkamp.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

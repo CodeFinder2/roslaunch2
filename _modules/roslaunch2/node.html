@@ -1,0 +1,366 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>roslaunch2.node &mdash; roslaunch2 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="roslaunch2 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="roslaunch2" href="../roslaunch2.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" accesskey="U">roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for roslaunch2.node</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1">#  Author: Adrian Böckenkamp</span>
+<span class="c1"># License: BSD (https://opensource.org/licenses/BSD-3-Clause)</span>
+<span class="c1">#    Date: 13/03/2018</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">lxml.etree</span>
+<span class="kn">import</span> <span class="nn">enum</span>
+
+<span class="kn">import</span> <span class="nn">remapable</span>
+<span class="kn">import</span> <span class="nn">interfaces</span>
+<span class="kn">import</span> <span class="nn">package</span>
+<span class="kn">import</span> <span class="nn">machine</span>
+<span class="kn">import</span> <span class="nn">parameter</span>
+<span class="kn">import</span> <span class="nn">environment</span>
+
+
+<div class="viewcode-block" id="Output"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.node.Output">[docs]</a><span class="k">class</span> <span class="nc">Output</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">IntEnum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Possible output targets for ROS logging commands (e. g., ROS_INFO()).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Screen</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">Log</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">Output</span><span class="o">.</span><span class="n">Screen</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;screen&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">Output</span><span class="o">.</span><span class="n">Log</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;log&#39;</span></div>
+
+
+<div class="viewcode-block" id="Runnable"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.node.Runnable">[docs]</a><span class="k">class</span> <span class="nc">Runnable</span><span class="p">(</span><span class="n">remapable</span><span class="o">.</span><span class="n">Remapable</span><span class="p">,</span> <span class="n">interfaces</span><span class="o">.</span><span class="n">Composable</span><span class="p">,</span> <span class="n">interfaces</span><span class="o">.</span><span class="n">Composer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encapsulates the common attributes and methods of a &lt;node&gt; and &lt;test&gt; tag/class (internal base class).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag_name</span><span class="p">,</span> <span class="n">pkg</span><span class="p">,</span> <span class="n">node_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the Runnable object.</span>
+
+<span class="sd">        :param tag_name: Name of XML tag</span>
+<span class="sd">        :param pkg: Name of package containing the node/test; must be valid</span>
+<span class="sd">        :param node_type: Type of the node/test (executable); will be set to pkg if None</span>
+<span class="sd">        :param name: Optional name of the instance within roslaunch; will be set to node_type if None</span>
+<span class="sd">        :param args: Optional command line arguments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">remapable</span><span class="o">.</span><span class="n">Remapable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">Composable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">Composer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="n">parameter</span><span class="o">.</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">environment</span><span class="o">.</span><span class="n">EnvironmentVariable</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pkg</span> <span class="o">=</span> <span class="n">package</span><span class="o">.</span><span class="n">Package</span><span class="p">(</span><span class="n">pkg</span><span class="p">)</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pkg</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span> <span class="k">else</span> <span class="n">pkg</span>
+        <span class="k">if</span> <span class="n">pkg</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">node_type</span><span class="p">:</span>
+            <span class="n">node_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pkg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">node_type</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pkg</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;pkg=&#39;{}&#39; cannot be empty or None.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pkg</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_node</span> <span class="o">=</span> <span class="n">node_type</span>  <span class="c1"># equals the &#39;type&#39; attribute in XML</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_params</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ns</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c1"># equals the &#39;launch-prefix&#39; attribute in XML</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tag_name</span> <span class="o">=</span> <span class="n">tag_name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pkg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the associated package.</span>
+
+<span class="sd">        :return: roslaunch2.package.Package instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pkg</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">node</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Node type (aka executable name).</span>
+
+<span class="sd">        :return: String representing the node&#39;s type</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span>
+
+    <span class="nd">@pkg.setter</span>
+    <span class="k">def</span> <span class="nf">pkg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows to change the package, this Runnable belongs to.</span>
+<span class="sd">        :param value: package.Package instance or ROS package name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;pkg=&#39;{}&#39; cannot be empty or None.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pkg</span> <span class="o">=</span> <span class="n">package</span><span class="o">.</span><span class="n">Package</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span> <span class="k">else</span> <span class="n">value</span>
+
+    <span class="nd">@node.setter</span>
+    <span class="k">def</span> <span class="nf">node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows to change the node executable name.</span>
+<span class="sd">        :param value: New executable name</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;node=&#39;{}&#39; cannot be empty or None.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_node</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rooted</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;{} has been created but never add()ed.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)),</span> <span class="ne">Warning</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;{:s}@{:s}: {:s}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pkg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Runnable.add"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.node.Runnable.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds the parameter to the node&#39;s parameter set.</span>
+
+<span class="sd">        :param param: New parameter, can be any object derived from parameter.Parameter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">param</span> <span class="o">==</span> <span class="n">p</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Parameter &#39;{}&#39; already added.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">)))</span>
+
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">Composer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Runnable.clear_params"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.node.Runnable.clear_params">[docs]</a>    <span class="k">def</span> <span class="nf">clear_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the clear_params flag as provided by roslaunch, see, e. g., http://wiki.ros.org/roslaunch/XML/node</span>
+<span class="sd">        :param clear: True to clear all parameter before the node is started</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_params</span> <span class="o">=</span> <span class="n">clear</span></div>
+
+<div class="viewcode-block" id="Runnable.set_namespace"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.node.Runnable.set_namespace">[docs]</a>    <span class="k">def</span> <span class="nf">set_namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ns</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the node&#39;s namespace. Can also be achieved using the Group class.</span>
+
+<span class="sd">        :param ns: Name of namespace</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ns</span> <span class="o">=</span> <span class="n">ns</span></div>
+
+<div class="viewcode-block" id="Runnable.debug"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.node.Runnable.debug">[docs]</a>    <span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">separate_window</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">auto_run</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a gdb debug prefix to this node.</span>
+<span class="sd">        See http://wiki.ros.org/roslaunch/Tutorials/Roslaunch%20Nodes%20in%20Valgrind%20or%20GDB</span>
+
+<span class="sd">        :param separate_window: True to launch the node in a separate window using xterm</span>
+<span class="sd">        :param auto_run: True to automatically start the node within gdb (otherwise, type &quot;run&quot; and press enter&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sw</span> <span class="o">=</span> <span class="s1">&#39;xterm -e &#39;</span> <span class="k">if</span> <span class="n">separate_window</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="s1">&#39;-ex run &#39;</span> <span class="k">if</span> <span class="n">auto_run</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;{}gdb {}--args&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sw</span><span class="p">,</span> <span class="n">ar</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Runnable.generate"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.node.Runnable.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">machines</span><span class="p">,</span> <span class="n">pkg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Appends the underlying roslaunch XML code to the given root object.</span>
+
+<span class="sd">        :param root: XML root element object</span>
+<span class="sd">        :param machines: list of machines currently known in the launch module (may still contain duplicates)</span>
+<span class="sd">        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,</span>
+<span class="sd">               e. g., ServerParameter.generate())</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">elem</span> <span class="o">=</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tag_name</span><span class="p">)</span>
+        <span class="n">remapable</span><span class="o">.</span><span class="n">Remapable</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elem</span><span class="p">,</span> <span class="n">machines</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pkg</span><span class="p">)</span>
+
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;pkg&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pkg</span><span class="p">,</span> <span class="n">package</span><span class="o">.</span><span class="n">Package</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;clear_params&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">clear_params</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;args&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;ns&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;launch-prefix&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">elem</span></div></div>
+
+
+<div class="viewcode-block" id="Node"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.node.Node">[docs]</a><span class="k">class</span> <span class="nc">Node</span><span class="p">(</span><span class="n">Runnable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For starting ROS nodes, equals &lt;node&gt;, see http://wiki.ros.org/roslaunch/XML/node</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkg</span><span class="p">,</span> <span class="n">node_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">Output</span><span class="o">.</span><span class="n">Screen</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the ROS node to be launched.</span>
+
+<span class="sd">        :param pkg: Name of ROS package or package.Package instance</span>
+<span class="sd">        :param node_type: Type of node executable; will be set to pkg.name() if empty</span>
+<span class="sd">        :param name: Name of node instance when running; will be set to node_type</span>
+<span class="sd">        :param output: Output flag to define where logging commands should be forwarded to</span>
+<span class="sd">        :param args: Optional command line arguments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Runnable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;node&#39;</span><span class="p">,</span> <span class="n">pkg</span><span class="p">,</span> <span class="n">node_type</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">output</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">==</span> <span class="n">Output</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">output</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_respawn</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c1"># None -&gt; use roslaunch default</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">respawn_delay</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">machine</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_required</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the required flag.</span>
+<span class="sd">        :return: True if node is required, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_required</span>
+
+    <span class="nd">@required.setter</span>
+    <span class="k">def</span> <span class="nf">required</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the required flag, effectively (if True) requiring the node to be running. If the node dies, roslaunch will</span>
+<span class="sd">        terminate the entire launch.</span>
+
+<span class="sd">        :param value: New required flag</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_respawn</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot set both required and respawn to True (incompatible).&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_required</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">respawn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the respawn flag.</span>
+<span class="sd">        :return: True if node is respawn when it terminates, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_respawn</span>
+
+    <span class="nd">@respawn.setter</span>
+    <span class="k">def</span> <span class="nf">respawn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the respawn flag, effectively (if True) restarting the node if killed.</span>
+
+<span class="sd">        :param value: New respawn flag</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_required</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot set both required and respawn to True (incompatible).&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_respawn</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="Node.start_on"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.node.Node.start_on">[docs]</a>    <span class="k">def</span> <span class="nf">start_on</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_object</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows to start the node on a specific machine.</span>
+
+<span class="sd">        :param machine_object: New machine object to be used for starting self remotely</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">machine</span> <span class="o">=</span> <span class="n">machine_object</span></div>
+
+<div class="viewcode-block" id="Node.generate"><a class="viewcode-back" href="../../roslaunch2.html#roslaunch2.node.Node.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">machines</span><span class="p">,</span> <span class="n">pkg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Appends the underlying roslaunch XML code to the given root object.</span>
+
+<span class="sd">        :param root: XML root element object</span>
+<span class="sd">        :param machines: list of machines currently known in the launch module (may still contain duplicates)</span>
+<span class="sd">        :param pkg: Package object, if none (else None); this is used / required on lower levels of the generation (see,</span>
+<span class="sd">               e. g., ServerParameter.generate())</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If a set of machines was assigned to this node, it&#39;s now time to select the final</span>
+        <span class="c1"># machine this node gets executed on.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span> <span class="n">machine</span><span class="o">.</span><span class="n">MachinePool</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">machine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="o">.</span><span class="n">select</span><span class="p">()</span>
+        <span class="c1"># The following allows machine.Resolvable objects in self.args:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">Machine</span><span class="o">.</span><span class="n">resolve_if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pkg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">elem</span> <span class="o">=</span> <span class="n">Runnable</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">machines</span><span class="p">,</span> <span class="n">pkg</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;output&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">Output</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;respawn&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_respawn</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;machine&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span> <span class="n">machine</span><span class="o">.</span><span class="n">Machine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_respawn</span><span class="p">:</span>
+            <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;respawn_delay&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">respawn_delay</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">interfaces</span><span class="o">.</span><span class="n">GeneratorBase</span><span class="o">.</span><span class="n">to_attr</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;required&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_required</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">machines</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span>
+            <span class="n">machines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">)</span>
+        <span class="c1"># Generate parameter/environment tags and resolve paths / environment variables:</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pkg</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">roslaunch2 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../roslaunch2.html" >roslaunch2</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2017, Adrian Böckenkamp.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>
