@@ -1,14 +1,14 @@
 # Overview
-roslaunch2 is a (pure Python based) ROS package that facilitates writing versatile, flexible and dynamic launch configurations for the Robot Operating System (ROS 1) using Python, both for simulation and real hardware setups, as contrasted with the existing XML based launch file system of ROS, namely [roslaunch](http://wiki.ros.org/roslaunch). Note that roslaunch2 is not (yet) designed and developed for ROS 2 but for ROS 1 only although it may also inspire the development (of the launch system) of ROS 2. It is compatible with all ROS versions providing roslaunch which is used as its backend. roslaunch2 has been tested and heavily used on ROS Indigo, Jade, Kinetic, and Lunar; it also supports a “dry-mode” to generate launch files without ROS being installed at all. The key features of roslaunch2 are
+roslaunch2 is a (pure Python based) ROS package that facilitates writing **versatile, flexible and dynamic launch configurations for the Robot Operating System (ROS 1) using Python**, both for simulation and real hardware setups, as contrasted with the existing XML based launch file system of ROS, namely [roslaunch](http://wiki.ros.org/roslaunch). Note that roslaunch2 is not (yet) designed and developed for ROS 2 but for ROS 1 only although it may also inspire the development (of the launch system) of ROS 2. It is **compatible with all ROS versions providing roslaunch** which is used as its backend. roslaunch2 has been tested and heavily used on ROS Indigo, Jade, Kinetic, and Lunar; it also supports a “dry-mode” to generate launch files without ROS being installed at all. The **key features** of roslaunch2 are
 - versatile control structures (conditionals, loops),
 - extended support for launching and querying information remotely,
 - an easy-to-use API for also launching from Python based ROS nodes dynamically, as well as
 - basic load balancing capabilities for simulation setups.
 
-**More information and detailed examples** can be found in the "roslaunch2: Versatile, Flexible and Dynamic Launch Configurations for the Robot Operating System" chapter of the "Robot Operating System (ROS): The Complete Reference" book (volume 4) published by Springer.
+**More information and detailed examples** can be found in the "roslaunch2: Versatile, Flexible and Dynamic Launch Configurations for the Robot Operating System" chapter of the "Robot Operating System (ROS): The Complete Reference" book (volume 4) published by Springer. Please cite it (see below), if you find roslaunch2 useful for your work.
 
 # Example
-The following code shows a small example that launches the ['fake_localization'](http://wiki.ros.org/fake_localization) node if installed (taken from the example of the aforementioned chapter).
+The following code shows a **small working example** that launches the ['fake_localization'](http://wiki.ros.org/fake_localization) node if installed (taken from the example of the aforementioned chapter).
 ```Python
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -41,12 +41,26 @@ $ roslaunch2 roslaunch2 rl2-example.pyl
 ```
  
 # Documentation & Tutorials
-You may also want to have a look at the [documentation](https://codefinder2.github.io/roslaunch2/) and the [FAQ](https://github.com/CodeFinder2/roslaunch2/blob/master/doc/faq.md).
+You may also want to have a look at the [**documentation**](https://codefinder2.github.io/roslaunch2/) and the [FAQ](https://github.com/CodeFinder2/roslaunch2/blob/master/doc/faq.md).
 
 Setting up a [*systemd*](https://wiki.ubuntu.com/systemd) deamon (Ubuntu >= v15.10) for [Pyro](https://pythonhosted.org/Pyro4/) and the roslaunch2 server is described [here](https://github.com/CodeFinder2/roslaunch2/blob/master/config/systemd/README.md). [This guide](https://github.com/CodeFinder2/roslaunch2/blob/master/config/upstart/README.md) describes how to use [*upstart*](http://upstart.ubuntu.com/wiki/) (Ubuntu < v15.10) to automatically run the [Pyro name server](https://pythonhosted.org/Pyro4/nameserver.html) and the roslaunch2 server on boot.
 
-# License
-The entire code is BSD 3-Clause licenced, see [here](https://github.com/CodeFinder2/roslaunch2/blob/master/LICENSE). Thus, you can modifiy it, use it privately and commercially but you must retain a license and copyright notice when doing so.
+# License & Citing
+The entire code is **BSD 3-Clause licenced**, see [here](https://github.com/CodeFinder2/roslaunch2/blob/master/LICENSE). Thus, you can modifiy it, use it privately and commercially but you must retain a license and copyright notice when doing so. If you find this package useful, **please cite** the aforementioned book chapter with:
+```
+@incollection{Boeckenkamp:2019,
+  author      = {Adrian Böckenkamp},
+  title       = {roslaunch2: Versatile, Flexible and Dynamic Launch Configurations for the Robot Operating System},
+  editor      = {Anis Koubaa},
+  booktitle   = {Robot Operating System (ROS): The Complete Reference},
+  publisher   = {Springer International Publishing},
+  address     = {Heidelberg},
+  year        = 2019,
+  pages       = {TODO-TODO},
+  chapter     = TODO,
+  volume      = 4
+}
+```
 
 Copyright (c) 2018, Adrian Böckenkamp, Department of Computer Science VII, TU Dortmund University.
 
