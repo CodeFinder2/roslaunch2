@@ -5,7 +5,7 @@ roslaunch2 is a (pure Python based) ROS package that facilitates writing **versa
 - an easy-to-use API for also launching from Python based ROS nodes dynamically, as well as
 - basic load balancing capabilities for simulation setups.
 
-**More information and detailed examples** can be found in the "roslaunch2: Versatile, Flexible and Dynamic Launch Configurations for the Robot Operating System" chapter of the "Robot Operating System (ROS): The Complete Reference" book (volume 4) published by Springer. Please cite it (see below), if you find roslaunch2 useful for your work.
+**More information and detailed examples** can be found in the "roslaunch2: Versatile, Flexible and Dynamic Launch Configurations for the Robot Operating System" chapter of the "Robot Operating System (ROS): The Complete Reference" book (volume 4) published by Springer. [Please cite it (see below)](https://github.com/CodeFinder2/roslaunch2#license--citing), if you find roslaunch2 useful for your work.
 
 # Example
 The following code shows a **small working example** that launches the ['fake_localization'](http://wiki.ros.org/fake_localization) node if installed (taken from the example of the aforementioned chapter).
