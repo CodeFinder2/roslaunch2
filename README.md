@@ -50,20 +50,20 @@ To enable [tab completion support](https://en.wikipedia.org/wiki/Command-line_co
 # License & Citing
 The entire code is **BSD 3-Clause licenced**, see [here](https://github.com/CodeFinder2/roslaunch2/blob/master/LICENSE). Thus, you can modifiy it, use it privately and commercially but you must retain a license and copyright notice when doing so. If you find this package useful, **please cite** the aforementioned book chapter with (yet missing details will be added when  the publication process has been completed, stay tuned):
 ```
-@incollection{Boeckenkamp2019,
-  author      = {B{\"o}ckenkamp, Adrian},
-  title       = {{roslaunch2: Versatile, Flexible and Dynamic Launch Configurations for the Robot Operating System}},
-  editor      = {Koubaa, Anis},
-  booktitle   = {Robot Operating System (ROS): The Complete Reference},
-  publisher   = {Springer International Publishing},
-  address     = {Heidelberg},
-  year        = 2019,
-  volume      = 4,
-  pages       = {TODO-TODO},
-  chapter     = TODO,
-  isbn        = {TODO},
-  doi         = {TODO},
-  url         = {TODO}
+@INCOLLECTION{Boeckenkamp2019,
+	author      = {B{\"o}ckenkamp, Adrian},
+	title       = {{roslaunch2: Versatile, Flexible and Dynamic Launch Configurations for the Robot Operating System}},
+	editor      = {Koubaa, Anis},
+	booktitle   = {Robot Operating System (ROS): The Complete Reference},
+	publisher   = {Springer International Publishing},
+	address     = {Heidelberg},
+	year        = 2019,
+	volume      = 4,
+	pages       = {TODO-TODO},
+	chapter     = {TODO},
+	isbn        = {TODO},
+	doi         = {TODO},
+	url         = {TODO}
 }
 ```
 
