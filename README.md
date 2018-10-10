@@ -48,19 +48,22 @@ Setting up a [*systemd*](https://wiki.ubuntu.com/systemd) deamon (Ubuntu >= v15.
 To enable [tab completion support](https://en.wikipedia.org/wiki/Command-line_completion), you need to `source` the file `roslaunch2/config/roslaunch2_auto_completion.bash`.
 
 # License & Citing
-The entire code is **BSD 3-Clause licenced**, see [here](https://github.com/CodeFinder2/roslaunch2/blob/master/LICENSE). Thus, you can modifiy it, use it privately and commercially but you must retain a license and copyright notice when doing so. If you find this package useful, **please cite** the aforementioned book chapter with:
+The entire code is **BSD 3-Clause licenced**, see [here](https://github.com/CodeFinder2/roslaunch2/blob/master/LICENSE). Thus, you can modifiy it, use it privately and commercially but you must retain a license and copyright notice when doing so. If you find this package useful, **please cite** the aforementioned book chapter with (yet missing details will be added when  the publication process has been completed, stay tuned):
 ```
-@incollection{Boeckenkamp:2019,
-  author      = {Adrian B{\"o}ckenkamp},
+@incollection{Boeckenkamp2019,
+  author      = {B{\"o}ckenkamp, Adrian},
   title       = {{roslaunch2: Versatile, Flexible and Dynamic Launch Configurations for the Robot Operating System}},
-  editor      = {Anis Koubaa},
+  editor      = {Koubaa, Anis},
   booktitle   = {Robot Operating System (ROS): The Complete Reference},
   publisher   = {Springer International Publishing},
   address     = {Heidelberg},
   year        = 2019,
+  volume      = 4,
   pages       = {TODO-TODO},
   chapter     = TODO,
-  volume      = 4
+  isbn        = {TODO},
+  doi         = {TODO},
+  url         = {TODO}
 }
 ```
 
