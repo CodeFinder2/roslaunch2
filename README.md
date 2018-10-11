@@ -7,6 +7,16 @@ roslaunch2 is a (pure Python based) ROS package that facilitates writing **versa
 
 **More information and detailed examples** can be found in the "roslaunch2: Versatile, Flexible and Dynamic Launch Configurations for the Robot Operating System" chapter of the "Robot Operating System (ROS): The Complete Reference" book (volume 4) published by Springer. [Please cite it (see below)](https://github.com/CodeFinder2/roslaunch2#license--citing), if you find roslaunch2 useful for your work.
 
+# Installation
+Installing the *roslaunch2* package is straightforward and equal to installing any other ROS package from source / GitHub.
+1. Assuming, you already have a catkin workspace (see here how to setup one), change to that workspace's source directory: `cd ~/catkin_ws/src`
+2. Now, clone this repository to that `src` directory: `git clone https://github.com/CodeFinder2/roslaunch2.git`
+3. The package should be usable now. If not, run `catkin_make` once and ensure that the workspace is sourced in your shell.
+
+For more information, see also:
+- [Setting up a ROS package from Git](https://wiki.nps.edu/display/RC/Setting+up+a+ROS+package+from+Git)
+- [Installing Packages - Download and Build a Package from Source](https://ros-industrial.github.io/industrial_training/_source/session1/Installing-Existing-Packages.html#download-and-build-a-package-from-source)
+
 # Example
 The following code shows a **small working example** that launches the ['fake_localization'](http://wiki.ros.org/fake_localization) node if installed (taken from the example of the aforementioned chapter).
 ```Python
