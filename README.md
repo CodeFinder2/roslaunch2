@@ -16,9 +16,9 @@ roslaunch2 is a (pure Python based) ROS package that facilitates writing **versa
 
 # Installation <a name="install"/>
 Installing the *roslaunch2* package is straightforward and equal to installing any other ROS package from source / GitHub.
-1. Assuming, you already have a catkin workspace (see here how to setup one), change to that workspace's source directory: `cd ~/catkin_ws/src`
+1. Assuming, you already have a catkin workspace (see [here](http://wiki.ros.org/catkin/Tutorials/create_a_workspace) how to setup one), change to that workspace's source directory: `cd ~/catkin_ws/src`
 2. Now, clone this repository to that `src` directory: `git clone https://github.com/CodeFinder2/roslaunch2.git`
-3. The package should be usable now. If not, run `catkin_make` once and ensure that the workspace is sourced in your shell.
+3. The package should be usable now. If not, run `catkin_make` once and ensure that the workspace is [sourced in your shell](http://wiki.ros.org/catkin/Tutorials/create_a_workspace).
 
 For more information, see also:
 - [Setting up a ROS package from Git](https://wiki.nps.edu/display/RC/Setting+up+a+ROS+package+from+Git)
