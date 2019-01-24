@@ -142,6 +142,20 @@ def start_async(launch_obj, silent=False):
     return p
 
 
+def terminate(instance):
+    """
+    Terminates the given roslaunch2 instance (a multiprocessing.Process instance) and waits until it has exited. This is
+    just a convenient wrapper around multiprocessing.Process.terminate() and .join().
+
+    :param instance: Object returned by start_async() to be terminated
+    :return: None
+    """
+    from multiprocessing import Process
+    assert isinstance(instance, Process)
+    instance.terminate()
+    instance.join()
+
+
 def main(command_line_args=None):
     """
     Defines the core logic (= Python based dynamic launch files) of roslaunch2. It does NOT create any
