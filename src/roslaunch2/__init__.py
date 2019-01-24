@@ -130,7 +130,7 @@ def start(launch_obj, dry_run=False, silent=False):
 def start_async(launch_obj, silent=False):
     """
     Call method start() in a separate process and returns without waiting for roslaunch to terminate. If p is the
-    returned object, call p.terminate() to shutdown roslaunch and p.join() to wait until roslaunch has terminated.
+    returned object, call roslaunch2.terminate(p) to shutdown roslaunch(2) and wait until roslaunch has terminated.
 
     :param launch_obj: Instance of class launch.Launch
     :param silent: Hide roslaunch output
