@@ -149,6 +149,8 @@ def terminate(instance):
     :param instance: Object returned by start_async() to be terminated
     :return: None
     """
+    if instance is None:
+        return
     from multiprocessing import Process
     assert isinstance(instance, Process)
     import os
