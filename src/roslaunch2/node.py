@@ -15,6 +15,8 @@ import package
 import machine
 import parameter
 import environment
+import random
+import string
 
 
 class Output(enum.IntEnum):
@@ -56,7 +58,7 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
         if not pkg:
             raise ValueError("pkg='{}' cannot be empty or None.".format(pkg))
         self._node = node_type  # equals the 'type' attribute in XML
-        self.name = name
+        self.name = Runnable.make_valid_base_name(name)
         self.args = args
         self.clear_params = None
         self.ns = None
@@ -73,7 +75,9 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
         :param name: Name to be tested (str)
         :return: True if valid, False otherwise
         """
-        if name.find('~') > -1 or name.find('/') > -1:
+        if len(name) == 0:
+            return False
+        if name.find('~') > -1 or name.find('/') > -1 or not name[0].isalpha():
             return False
         for ch in name:
             if not ch.isalnum() and ch != '_':
@@ -83,13 +87,19 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
     @staticmethod
     def make_valid_base_name(name):
         """
-        Replaces any invalid characters in the given (base) name with a underscore to make it valid.
+        Replaces any invalid characters in the given (base) name with a underscore to make it valid. The first must be a
+        letter which is selected randomly if not already. In case of an empty name, a random 10-element is returned.
 
         :param cls: Class instance
         :param name: Name to be fixed (str)
-        :return: Patched base name (str)
+        :return: Patched/random base name (str), depending on the input
         """
+        if len(name) == 0:
+            import utils
+            return utils.anon(10)
         res = []
+        if not name[0].isalpha():
+            res.append(random.choice(string.ascii_letters))
         for ch in name:
             if not ch.isalnum() and ch != '_':
                 res.append('_')
