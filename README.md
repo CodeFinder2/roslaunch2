@@ -2,6 +2,7 @@
 * [Overview](#overview)
 * [Installation](#install)
 * [Example](#example)
+* [Getting started](#getting_started)
 * [Documentation & Tutorials](#docs)
 * [License & Citing](#cite)
 
@@ -57,15 +58,23 @@ You can run it with:
 $ roslaunch2 roslaunch2 rl2-example.pyl
 ```
 
+# Getting started <a name="getting_started"/>
+As you can see from the example, there must be a function called `main(**kwargs)` which defines what to launch. When a launch module is included (reused), this function (also) specifies what is included. The function must return an instance of  the`roslaunch2.launch.Launch` class which defines the hierarchy (nodes, parameters, namespaces, etc.) to be launched. Command line flags should be consumed using the `roslaunch2.parameter.LaunchParameter` class. When including launch files, it is also possible to pass parameters to the included launch module using `kwargs`. However, it is up to the included launch module to process/favour such parameters appropriately. `roslaunch2.parameter.ServerParameter` and `roslaunch2.parameter.FileParameter` must be used to specifiy parameters for nodes (represented as `roslaunch2.node.Node`).
+
+Your Python launch code must be saved in a file with the extension `.pyl` (e. g., `my_launch.pyl`) which should be placed in the `launch` directory of some ROS package (e. g., `my_ros_package`). As shown in the previous example, it can then be launched with:
+```shell
+$ roslaunch2 my_ros_package my_launch.pyl
+```
+
 # Documentation & Tutorials <a name="docs"/>
-You may also want to have a look at the [**documentation**](https://codefinder2.github.io/roslaunch2/) and the [FAQ](https://github.com/CodeFinder2/roslaunch2/blob/master/doc/faq.md).
+You may also want to have a look at the complete API/code [**documentation**](https://codefinder2.github.io/roslaunch2/) and the [FAQ](https://github.com/CodeFinder2/roslaunch2/blob/master/doc/faq.md).
 
 Setting up a [*systemd*](https://wiki.ubuntu.com/systemd) deamon (Ubuntu >= v15.10) for [Pyro](https://pythonhosted.org/Pyro4/) and the roslaunch2 server is described [here](https://github.com/CodeFinder2/roslaunch2/blob/master/config/systemd/README.md). [This guide](https://github.com/CodeFinder2/roslaunch2/blob/master/config/upstart/README.md) describes how to use [*upstart*](http://upstart.ubuntu.com/wiki/) (Ubuntu < v15.10) to automatically run the [Pyro name server](https://pythonhosted.org/Pyro4/nameserver.html) and the roslaunch2 server on boot.
 
 To enable [tab completion support](https://en.wikipedia.org/wiki/Command-line_completion), you need to `source` the file `roslaunch2/config/roslaunch2_auto_completion.bash`.
 
 # License & Citing <a name="cite"/>
-The entire code is **BSD 3-Clause licenced**, see [here](https://github.com/CodeFinder2/roslaunch2/blob/master/LICENSE). Thus, you can modifiy it, use it privately and commercially but you must retain a license and copyright notice when doing so. If you find this package useful, **please cite** the aforementioned book chapter with (yet missing details will be added when  the publication process has been completed, stay tuned):
+The entire code is **BSD 3-Clause licenced**, see [here](https://github.com/CodeFinder2/roslaunch2/blob/master/LICENSE). Thus, you can modifiy it, use it privately and commercially but you must retain a license and copyright notice when doing so. If you find this package useful, **please star this repo and/or cite** the aforementioned book chapter with (yet missing details will be added when the publication process has been completed, stay tuned):
 ```
 @INCOLLECTION{Boeckenkamp2019,
 	author      = {B{\"o}ckenkamp, Adrian},
@@ -84,6 +93,6 @@ The entire code is **BSD 3-Clause licenced**, see [here](https://github.com/Code
 }
 ```
 
-Copyright (c) 2018, Adrian Böckenkamp, Department of Computer Science VII, TU Dortmund University.
+Copyright (c) 2017-2019, Adrian Böckenkamp, Department of Computer Science VII, TU Dortmund University.
 
 All rights reserved.
