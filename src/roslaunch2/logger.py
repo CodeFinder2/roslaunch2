@@ -5,8 +5,6 @@
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
 #    Date: 13/03/2018
 
-# System imports:
-import sys
 termcolor_avail = False
 try:
     import termcolor
@@ -35,6 +33,7 @@ def critical(args, exit_code=1):
     """
     t = 'error: ' + args
     print(termcolor.colored(t, 'red') if termcolor_avail else t)
+    import sys
     sys.exit(exit_code)
 
 
