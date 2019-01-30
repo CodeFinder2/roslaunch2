@@ -106,6 +106,13 @@ def start(launch_obj, dry_run=False, silent=False):
         import sys
         import os
         sys.stdout = open(os.devnull, 'w')
+
+    # Test if launch module correctly defines its main() function:
+    if not isinstance(launch_obj, Launch):
+        critical("Your launch module's main() function must return an instance of roslaunch2.launch.Launch in order to "
+                 "be compatible with roslaunch2.  Please fix your launch module code.")
+        return
+
     content = launch_obj.generate()
     if not dry_run:
         import tempfile
