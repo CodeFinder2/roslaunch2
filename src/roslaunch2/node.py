@@ -52,7 +52,7 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
         if pkg and not node_type:
             node_type = str(self._pkg)
         if not name:
-            name = node_type
+            name = Runnable.make_valid_base_name(node_type)
         if not pkg:
             raise ValueError("pkg='{}' cannot be empty or None.".format(pkg))
         self._node = node_type  # equals the 'type' attribute in XML
@@ -62,6 +62,40 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
         self.ns = None
         self.prefix = None  # equals the 'launch-prefix' attribute in XML
         self.__tag_name = tag_name
+
+    @staticmethod
+    def valid_base_name(name):
+        """
+        Tests whether the given "name" is conformant with the definition of a base name according to
+        http://wiki.ros.org/Names .
+
+        :param cls: Class instance
+        :param name: Name to be tested (str)
+        :return: True if valid, False otherwise
+        """
+        if name.find('~') > -1 or name.find('/') > -1:
+            return False
+        for ch in name:
+            if not ch.isalnum() and ch != '_':
+                return False
+        return True
+
+    @staticmethod
+    def make_valid_base_name(name):
+        """
+        Replaces any invalid characters in the given (base) name with a underscore to make it valid.
+
+        :param cls: Class instance
+        :param name: Name to be fixed (str)
+        :return: Patched base name (str)
+        """
+        res = []
+        for ch in name:
+            if not ch.isalnum() and ch != '_':
+                res.append('_')
+            else:
+                res.append(ch)
+        return ''.join(res)
 
     @property
     def pkg(self):
