@@ -73,7 +73,7 @@ A [minimal working example (MWE)](https://en.wikipedia.org/wiki/Minimal_working_
 
 import roslaunch2.launch
 
-def main():
+def main(**kwargs):
     return roslaunch2.launch.Launch()
 ```
 which just starts a `roscore`.
