@@ -66,6 +66,18 @@ Your Python launch code must be saved in a file with the extension `.pyl` (e. g.
 $ roslaunch2 my_ros_package my_launch.pyl
 ```
 
+A [minimal working example (MWE)](https://en.wikipedia.org/wiki/Minimal_working_example) is therefore given by
+```Python
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import roslaunch2.launch
+
+def main():
+    return roslaunch2.launch.Launch()
+```
+which just starts a `roscore`.
+
 # Documentation & Tutorials <a name="docs"/>
 You may also want to have a look at the complete API/code [**documentation**](https://codefinder2.github.io/roslaunch2/) and the [FAQ](https://github.com/CodeFinder2/roslaunch2/blob/master/doc/faq.md).
 
