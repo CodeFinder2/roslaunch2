@@ -199,6 +199,12 @@ def main(command_line_args=None):
         critical("Launch module '{:s}' not found.".format(args.launchfile))
         return
 
+    # Test for validity:
+    if not hasattr(m, 'main'):
+        critical("Launch module '{:s}' has no main(**kwargs) function!  Please fix your launch module code."
+                 .format(args.launchfile))
+        return
+
     # Roslaunch help text:
     if args.ros_args:
         m.main()
