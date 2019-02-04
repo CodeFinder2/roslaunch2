@@ -79,7 +79,7 @@ def main(**kwargs):
 which just starts a `roscore`.
 
 # Documentation & Tutorials <a name="docs"/>
-You may also want to have a look at the complete API/code [**documentation**](https://codefinder2.github.io/roslaunch2/) and the [FAQ](https://github.com/CodeFinder2/roslaunch2/blob/master/doc/faq.md).
+You may also want to have a look at the complete API/code [**documentation**](https://codefinder2.github.io/roslaunch2/roslaunch2.html) and the [FAQ](https://github.com/CodeFinder2/roslaunch2/blob/master/doc/faq.md).
 
 Setting up a [*systemd*](https://wiki.ubuntu.com/systemd) deamon (Ubuntu >= v15.10) for [Pyro](https://pythonhosted.org/Pyro4/) and the roslaunch2 server is described [here](https://github.com/CodeFinder2/roslaunch2/blob/master/config/systemd/README.md). [This guide](https://github.com/CodeFinder2/roslaunch2/blob/master/config/upstart/README.md) describes how to use [*upstart*](http://upstart.ubuntu.com/wiki/) (Ubuntu < v15.10) to automatically run the [Pyro name server](https://pythonhosted.org/Pyro4/nameserver.html) and the roslaunch2 server on boot.
 
