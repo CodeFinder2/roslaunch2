@@ -86,22 +86,22 @@ Setting up a [*systemd*](https://wiki.ubuntu.com/systemd) deamon (Ubuntu >= v15.
 To enable [tab completion support](https://en.wikipedia.org/wiki/Command-line_completion), you need to `source` the file `roslaunch2/config/roslaunch2_auto_completion.bash`.
 
 # License & Citing <a name="cite"/>
-The entire code is **BSD 3-Clause licenced**, see [here](https://github.com/CodeFinder2/roslaunch2/blob/master/LICENSE). Thus, you can modifiy it, use it privately and commercially but you must retain a license and copyright notice when doing so. If you find this package useful, **please star this repo and/or cite** the aforementioned book chapter with (yet missing details will be added when the publication process has been completed, stay tuned):
+The entire code is **BSD 3-Clause licenced**, see [here](https://github.com/CodeFinder2/roslaunch2/blob/master/LICENSE). Thus, you can modifiy it, use it privately and commercially but you must retain a license and copyright notice when doing so. If you find this package useful, **please star this repo and/or cite** the aforementioned book chapter with:
 ```
-@INCOLLECTION{Boeckenkamp2019,
+@INBOOK{Boeckenkamp2020,
 	author      = {B{\"o}ckenkamp, Adrian},
 	title       = {{roslaunch2: Versatile, Flexible and Dynamic Launch Configurations for the Robot Operating System}},
 	editor      = {Koubaa, Anis},
 	booktitle   = {Robot Operating System (ROS): The Complete Reference},
 	publisher   = {Springer International Publishing},
 	address     = {Heidelberg},
-	year        = 2019,
+	year        = 2020,
 	volume      = 4,
-	pages       = {TODO-TODO},
-	chapter     = {TODO},
-	isbn        = {TODO},
-	doi         = {TODO},
-	url         = {TODO}
+	pages       = {165--181},
+	isbn        = {978-3-030-20190-6},
+	doi         = {10.1007/978-3-030-20190-6_7},
+	url         = {https://doi.org/10.1007/978-3-030-20190-6_7},
+	note        = {https://link.springer.com/chapter/10.1007/978-3-030-20190-6_7}
 }
 ```
 
