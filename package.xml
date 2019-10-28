@@ -19,7 +19,7 @@
   <build_depend>python-catkin-pkg</build_depend>
 
   <exec_depend>python-enum34-pip</exec_depend>
-  <exec_depend version_gte="4.62">python-pyro4-pip</exec_depend>
+  <exec_depend version_gte="4.62">pyro4</exec_depend>
   <exec_depend>python-rospkg</exec_depend>
   <exec_depend>roslaunch</exec_depend>
 </package>
