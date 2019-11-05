@@ -20,7 +20,7 @@ from test import *
 
 import argparse
 
-__version__ = '0.1'
+__version__ = '1.0'
 
 # Define the events in roslaunch2 that may be associated with custom actions:
 on_initialize = Observable()
@@ -83,7 +83,7 @@ def _argument_parser(parents=None):
     parser.add_argument('--no-colors', default=False, action="store_true",
                         help='Do not use colored output during processing')
     parser.add_argument('--version', action='version', version='%(prog)s v{version}, \
-                        (C) Copyright Adrian Böckenkamp, 16/02/2017'.format(version=__version__))
+                        (C) Copyright Adrian Böckenkamp, 05/11/2019'.format(version=__version__))
     parser.add_argument('-d', '--dry-run', default=False, action="store_true",
                         help='Just print the launch file to stdout, do not run roslaunch')
     parser.add_argument('package', nargs='?', help='ROS package name to search for <launchfile>')
