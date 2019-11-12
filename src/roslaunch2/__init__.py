@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 13/03/2018
+#    Date: 12/11/2019
 
 # Import all submodules typically used in launch modules:
 from group import *
@@ -17,6 +17,7 @@ from launch import *
 from node import *
 from environment import *
 from test import *
+from helpers import *
 
 import argparse
 

@@ -64,7 +64,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'roslaunch2'
 # noinspection PyShadowingBuiltins
-copyright = u'2017, Adrian Böckenkamp'
+copyright = u'2019, Adrian Böckenkamp'
 author = u'Adrian Böckenkamp'
 
 # The version info for the project you're documenting, acts as replacement for

@@ -108,6 +108,14 @@ roslaunch2.remote module
     :undoc-members:
     :show-inheritance:
 
+roslaunch2.helpers module
+-------------------------
+
+.. automodule:: roslaunch2.helpers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
