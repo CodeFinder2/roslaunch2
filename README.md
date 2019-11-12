@@ -44,6 +44,7 @@ def main(**kwargs):  # contains the entire code to launch
     pkg = Package('fake_localization', True)
     if pkg and pkg.has_node('fake_localization', True):  # only add if it exists
         n = Node(pkg)
+	Helpers.enable_gdb(n)  # if you want to debug this node
         # Set coodinate frame IDs (on the ROS parameter server):
         n += ServerParameter('global_frame_id', 'map')
         n += ServerParameter('odom_frame_id', tf_join(ns, 'odom'))
