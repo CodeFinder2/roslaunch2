@@ -36,8 +36,8 @@ def anon(length=6):
         """
         return ''.join(random.choice(chars) for _ in range(size))
 
-    if length <= 1:
-        raise NameError("ROS names should be longer than 1 character.")
+    #if length <= 1:
+    #    raise NameError("ROS names should be longer than 1 character.")
     return "{0}{1}".format(id_gen(1, chars=string.ascii_uppercase + string.ascii_lowercase), id_gen(length - 1))
 
 
@@ -117,6 +117,27 @@ def ros_join(left, right, force_global=False):
     else:
         res = clean_name(ROS_NAME_SEP.join([left, right]), ROS_NAME_SEP)
     return ROS_NAME_SEP + res if force_global and not res.startswith(ROS_NAME_SEP) else res
+
+
+def to_ros_base_name(data, replacement_begin=anon(1), replacement_other='_'):
+    """
+    Converts the given data to a valid ROS base (!) name.
+    :param data: string to be converted
+    :param replacement_begin: Replacement string for the beginning (if a replacement is necessary)
+    :param replacement_other: Replacement for subsequent invalid characters (if any)
+    :return: Possibly modified valid ROS base name, given data as input
+    """
+    result = ""
+    if not data[0].isalpha():
+        result = replacement_begin
+    else:
+        result = data[0]
+    for i in range(1, len(data)):
+        if not data[i].isalnum():
+            result += replacement_other
+        else:
+            result += data[i]
+    return result
 
 
 class Observable(object):
