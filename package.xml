@@ -9,10 +9,11 @@
 
   <maintainer email="adrian.boeckenkamp@tu-dortmund.de">Adrian Böckenkamp (TU Dortmund University)</maintainer>
   <author email="adrian.boeckenkamp@tu-dortmund.de">Adrian Böckenkamp (TU Dortmund University)</author>
+  <url type="website">https://github.com/CodeFinder2/roslaunch2</url>
+  <url type="repository">https://github.com/CodeFinder2/roslaunch2</url>
+  <url type="bugtracker">https://github.com/CodeFinder2/roslaunch2/issues</url>
 
   <license>BSD</license>
-
-  <url type="website">https://github.com/CodeFinder2/roslaunch2</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
