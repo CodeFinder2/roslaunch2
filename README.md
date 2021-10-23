@@ -7,7 +7,7 @@
 * [License & Citing](#cite)
 
 # Overview <a name="overview"/>
-roslaunch2 is a (pure Python based) ROS package that facilitates writing **versatile, flexible and dynamic launch configurations for the Robot Operating System (ROS 1) using Python**, both for simulation and real hardware setups, as contrasted with the existing XML based launch file system of ROS, namely [roslaunch](http://wiki.ros.org/roslaunch). Note that roslaunch2 is not (yet) designed and developed for ROS 2 but for ROS 1 only although it may also inspire the development (of the launch system) of ROS 2. It is **compatible with all ROS versions providing roslaunch** which is used as its backend. roslaunch2 has been tested and heavily used on ROS Indigo, Jade, Kinetic, and Lunar; it also supports a “dry-mode” to generate launch files without ROS being installed at all. The **key features** of roslaunch2 are
+roslaunch2 is a (pure Python based) ROS package that facilitates writing **versatile, flexible and dynamic launch configurations for the Robot Operating System (ROS 1) using Python**, both for simulation and real hardware setups, as contrasted with the existing XML based launch file system of ROS, namely [roslaunch](http://wiki.ros.org/roslaunch). Note that roslaunch2 is not (yet) designed and developed for ROS 2 but for ROS 1 only although it may also inspire the development (of the launch system) of ROS 2. It is **compatible with all ROS versions providing roslaunch** which is used as its backend. roslaunch2 has been tested and used on ROS Indigo, Jade, Kinetic, Lunar, Melodic, and Noetic; it also supports a “dry-mode” to generate launch files without ROS being installed at all. The **key features** of roslaunch2 are
 - versatile control structures (conditionals, loops),
 - extended support for launching and querying information remotely,
 - an easy-to-use API for also launching from Python based ROS nodes dynamically, as well as
@@ -106,6 +106,6 @@ The entire code is **BSD 3-Clause licenced**, see [here](https://github.com/Code
 }
 ```
 
-Copyright (c) 2017-2019, Adrian Böckenkamp, Department of Computer Science VII, TU Dortmund University.
+Copyright (c) 2017-2020, Adrian Böckenkamp, Department of Computer Science VII, TU Dortmund University.
 
 All rights reserved.

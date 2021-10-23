@@ -3,21 +3,21 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 12/11/2019
+#    Date: 08/06/2020
 
 # Import all submodules typically used in launch modules:
-from group import *
-from parameter import *
-from machine import *
-from package import *
-from logger import *
-from utils import *
-from remote import *
-from launch import *
-from node import *
-from environment import *
-from test import *
-from helpers import *
+from .group import *
+from .parameter import *
+from .machine import *
+from .package import *
+from .logger import *
+from .utils import *
+from .remote import *
+from .launch import *
+from .node import *
+from .environment import *
+from .test import *
+from .helpers import *
 
 import argparse
 
@@ -172,7 +172,8 @@ def terminate(instance):
 def main(command_line_args=None):
     """
     Defines the core logic (= Python based dynamic launch files) of roslaunch2. It does NOT create any
-    launch modules or the like.
+    launch modules or the like. This function is not meant to be called directly. See `start()` and
+    `start_async()` for more details.
 
     :param command_line_args: List with command line arguments as strings
     :return: None

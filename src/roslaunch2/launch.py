@@ -3,16 +3,16 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 13/03/2018
+#    Date: 08/06/2020
 
 import warnings
 import lxml.etree
 
-import interfaces
-import machine
-import remapable
-import node
-import group
+from . import interfaces
+from . import machine
+from . import remapable
+from . import node
+from . import group
 
 
 class Launch(interfaces.Composable, interfaces.Composer, remapable.Remapable):

@@ -3,20 +3,20 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 13/03/2018
+#    Date: 08/06/2020
 
 import warnings
 import lxml.etree
 import enum
-
-import remapable
-import interfaces
-import package
-import machine
-import parameter
-import environment
 import random
 import string
+
+from . import remapable
+from . import interfaces
+from . import package
+from . import machine
+from . import parameter
+from . import environment
 
 
 class Output(enum.IntEnum):
@@ -151,7 +151,7 @@ class Runnable(remapable.Remapable, interfaces.Composable, interfaces.Composer):
             warnings.warn('{} has been created but never add()ed.'.format(str(self)), Warning, 2)
 
     def __str__(self):
-        return '{:s}@{:s}: {:s}'.format(self.node, self.pkg, self.name)
+        return '{:s}@{:s}: {:s}'.format(str(self.node), str(self.pkg), str(self.name))
 
     def add(self, param):
         """

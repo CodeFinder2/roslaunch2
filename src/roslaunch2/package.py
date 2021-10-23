@@ -3,14 +3,14 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 13/03/2018
+#    Date: 08/06/2020
 
 import rospkg
 import os
 import sys
 import Pyro4
 
-import logger
+from . import logger
 
 
 class Package:
@@ -79,9 +79,8 @@ class Package:
         :param name: Name of ROS package
         :param silent: True if no exceptions should be thrown if the package was not found
         """
-        self.name = name
         try:
-            self.path = Package.__get_pkg_path_cached(name)
+            self.set_name(name)
         except rospkg.ResourceNotFound:
             if not silent:
                 raise
@@ -93,7 +92,7 @@ class Package:
 
         :return: ROS package name
         """
-        return self.name
+        return self.__name
 
     @Pyro4.expose
     def set_name(self, name):
@@ -102,8 +101,8 @@ class Package:
 
         :param name: ROS package name
         """
-        self.name = name
-        self.path = Package.__get_pkg_path_cached(name)
+        self.__name = name
+        self.__path = Package.__get_pkg_path_cached(name)
 
     name = property(get_name, set_name)
 
@@ -114,16 +113,16 @@ class Package:
 
         :return: ROS package path
         """
-        return self.path
+        return self.__path
 
     def _set_path(self, pkg_path):  # not exposed to Pyro!
-        if self.name:
-            self.path = pkg_path
+        if self.__name:
+            self.__path = pkg_path
         else:
-            self.path = None
+            self.__path = None
 
     def __nonzero__(self):
-        return bool(self.path)  # for Python 2.x
+        return bool(self.__path)  # for Python 2.x
 
     def __bool__(self):
         return self.__nonzero__()  # for Python 3.x
@@ -131,7 +130,7 @@ class Package:
     path = property(get_path, _set_path)
 
     def __str__(self):
-        return self.name
+        return self.__name
 
     @staticmethod
     def valid(pkg):
@@ -162,7 +161,7 @@ class Package:
         :param warn: True if a warning about the missing node should be emitted
         :return: True if node exists, False otherwise
         """
-        pkg = os.path.join(self.path, '../..')
+        pkg = os.path.join(self.__path, '../..')
         # Just consider files that are executable:
         if [f for f in Package.get_paths_to_file(pkg, node_name) if os.access(f, os.X_OK)]:
             # if len(res) > 1:
@@ -171,7 +170,7 @@ class Package:
             return True
         else:
             if warn:
-                logger.warning("Node '{}' in package '{}' not found.".format(node_name, self.name))
+                logger.warning("Node '{}' in package '{}' not found.".format(node_name, self.__name))
             return False
 
     @staticmethod
@@ -201,7 +200,7 @@ class Package:
             path_comp += '.pyl'
         mod_path = self.find(path_comp, True)
         if not mod_path:
-            raise ValueError("Launch module '{:s}' in package '{:s}' not found.".format(path_comp, self.name))
+            raise ValueError("Launch module '{:s}' in package '{:s}' not found.".format(path_comp, self.__name))
         m = Package.import_launch_module(mod_path)
         return m.main(**kwargs)
 
@@ -223,7 +222,7 @@ class Package:
         search_path = os.path.dirname(os.path.abspath(module_name))
         if search_path not in sys.path:
             sys.path.append(search_path)
-        if sys.version_info < (3, 3):  # Python 2.x and 3.x where x < 3
+        if sys.version_info < (3, 3):  # Python 2.x and 3.y where x >= 4 and y < 3
             import imp
             return imp.load_source(module_name, full_module_path)
         elif sys.version_info < (3, 4):  # Python 3.3 and 3.4
@@ -231,6 +230,9 @@ class Package:
             return importlib.machinery.SourceFileLoader(module_name, full_module_path).load_module()
         elif sys.version_info >= (3, 5):  # Python 3.5+
             import importlib.util
+            import importlib.machinery
+            # Allow any extenstions (not only .py and .so, and .pyl in particular):
+            importlib.machinery.SOURCE_SUFFIXES.append('')
             spec = importlib.util.spec_from_file_location(module_name, full_module_path)
             m = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(m)
@@ -246,21 +248,21 @@ class Package:
                        case of failure
         :return: first found file (full path) or None if silent==True and nothing found
         """
-        key = ''.join([self.name, path_comp])
+        key = ''.join([self.__name, path_comp])
         if key in Package.__find_cache:
             return Package.__find_cache[key]
         if not path_comp:
-            return self.path
-        dir_path = os.path.join(self.path, path_comp if not path_comp.startswith(os.path.sep) else path_comp[1:])
+            return self.__path
+        dir_path = os.path.join(self.__path, path_comp if not path_comp.startswith(os.path.sep) else path_comp[1:])
         if os.path.isdir(dir_path):
             Package.__find_cache[key] = dir_path
             return dir_path
-        f = Package.get_paths_to_file(self.path, path_comp)
+        f = Package.get_paths_to_file(self.__path, path_comp)
         if len(f) > 1:
             logger.log("Found {} files, unique selection impossible (using first).".format(', '.join(f)))
         if not f:
             if not silent:
-                raise IOError("No files like '{}' found in '{}'.".format(path_comp, self.name))
+                raise IOError("No files like '{}' found in '{}'.".format(path_comp, self.__name))
             else:
                 return None
         Package.__find_cache[key] = f[0]
@@ -285,6 +287,6 @@ class Package:
                 return path
         # Nothing found
         if not silent:
-            raise IOError("None of the queried files found in '{}'.".format(self.name))
+            raise IOError("None of the queried files found in '{}'.".format(self.__name))
         else:
             return None

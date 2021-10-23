@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 26/01/2018
+#    Date: 08/06/2020
 
 import copy
 import lxml.etree
@@ -126,9 +126,9 @@ class Composer(object):
         """
         if environment_variable_dict is None:
             environment_variable_dict = {}
-        from environment import EnvironmentVariable
-        from group import Group
-        from node import Node
+        from .environment import EnvironmentVariable
+        from .group import Group
+        from .node import Node
 
         # Copy dict to not change the argument in higher recursion levels:
         tmp_env_dict = dict(environment_variable_dict)

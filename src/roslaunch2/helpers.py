@@ -3,10 +3,10 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 12/11/2019
+#    Date: 08/06/2020
 
-import logger
-import node
+from . import logger
+from . import node
 
 
 class Helpers:

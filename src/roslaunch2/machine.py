@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 13/03/2018
+#    Date: 08/06/2020
 
 import lxml.etree
 import getpass
@@ -12,9 +12,9 @@ import ipaddress
 import socket
 import enum
 
-import interfaces
-import utils
-import remote
+from . import interfaces
+from . import utils
+from . import remote
 
 
 class Machine(interfaces.GeneratorBase):

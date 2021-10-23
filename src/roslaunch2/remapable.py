@@ -3,11 +3,11 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 13/03/2018
+#    Date: 08/06/2020
 
 from lxml import etree
 
-import interfaces
+from . import interfaces
 
 
 class Remapable(interfaces.GeneratorBase):

@@ -3,10 +3,10 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 13/03/2018
+#    Date: 08/06/2020
 
-import interfaces
-import node
+from . import interfaces
+from . import node
 
 
 class Test(node.Runnable):

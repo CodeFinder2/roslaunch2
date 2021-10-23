@@ -3,18 +3,18 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 13/03/2018
+#    Date: 08/06/2020
 
 import lxml.etree
 import warnings
 import argparse
 import os.path
 import yaml
-
-import interfaces
-import machine
-import logger
 import enum
+
+from . import interfaces
+from . import machine
+from . import logger
 
 
 def load_from_file(path, only_parse_known_args):
@@ -35,7 +35,7 @@ def load_from_file(path, only_parse_known_args):
                 filename = "{:s}.yaml".format(values[0])
             filepath = os.path.join(path, filename)
             try:
-                f = yaml.load(file(filepath, 'r'))
+                f = yaml.safe_load(file(filepath, 'r'))
                 for key, value in f.iteritems():
                     if value is not None:
                         if only_parse_known_args:
@@ -52,17 +52,24 @@ class LaunchParameter(argparse.ArgumentParser):
     """
     Represents a parameter for a launch module. For example, this can influence whether to select simulator A or B.
     These parameters are NOT consumed by ROS nodes (refer to ``ServerParameter`` and ``FileParameter`` in such cases).
+    Such parameters are passed by command line, for example: roslaunch2 my_pkg my_launch.pyl --param foo
+
+    Whats special about this class is that all command line parameters from all (possibly included) launch modules are
+    added so that calling roslaunch2 with the special command line flag "--ros-args" prints all available parameters
+    for the given launch file along with a description of it (like roslaunch does). In order to make this work, you
+    must finally call 'get_args()'.
     """
     launch_parameter_list = []  # Static list collection all LaunchParameter instances.
 
-    def __init__(self, prog=None, description=None, epilog=None, version=None,
+    def __init__(self, prog=None, description=None, epilog=None,
                  parents=None, formatter_class=argparse.HelpFormatter, prefix_chars='-',
                  fromfile_prefix_chars=None, argument_default=None, conflict_handler='resolve'):
         if parents is None:
             parents = []
-        argparse.ArgumentParser.__init__(self, prog, str(), description, epilog, version, parents,
-                                         formatter_class, prefix_chars, fromfile_prefix_chars,
-                                         argument_default, conflict_handler, add_help=False)
+        argparse.ArgumentParser.__init__(self, prog=prog, usage=None, description=description, epilog=epilog,
+                                         parents=parents, formatter_class=formatter_class, prefix_chars=prefix_chars,
+                                         fromfile_prefix_chars=fromfile_prefix_chars, argument_default=argument_default,
+                                         conflict_handler=conflict_handler, add_help=False)
         self.ros_argument_group = self.add_argument_group(title='ROS launch module arguments', description=None)
 
     def add(self, name, help_text, default, short_name=None, **kwargs):
