@@ -51,13 +51,12 @@ class Server:
         plugin_count = 0
         if plugin_dir and os.path.exists(plugin_dir):
             # Hot-patch PYTHONPATH to find . imports:
-            search_path = os.path.dirname(os.path.abspath(plugin_dir))
-            if search_path not in sys.path:
-                sys.path.append(search_path)
+            if plugin_dir not in sys.path:
+                sys.path.append(plugin_dir)
             roslaunch2.logger.log("- Loading plugins from {:s} ...".format(plugin_dir))
             for file in os.listdir(plugin_dir):
                 if file.endswith(".py"):
-                    module = roslaunch2.Package.import_launch_module(file)
+                    module = roslaunch2.Package.import_launch_module(os.path.join(plugin_dir, file))
                     # Get all classes from the module:
                     clsmembers = inspect.getmembers(module, inspect.isclass)
                     for cls in clsmembers:
