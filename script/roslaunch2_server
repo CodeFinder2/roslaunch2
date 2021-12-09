@@ -3,7 +3,7 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 13/04/2018
+#    Date: 09/12/2021
 
 import Pyro4
 import socket
@@ -29,7 +29,7 @@ class Server:
         self.machine_address = Server.get_ip_address()
         self.reg_db = {}
         roslaunch2.logger.log('This is the roslaunch2 PyRO server v{:s}, '
-                              '(C) Copyright by Adrian Böckenkamp 2018.\n'.format(__version__))
+                              '(C) Copyright by Adrian Böckenkamp 2021.\n'.format(__version__))
         Pyro4.config.REQUIRE_EXPOSE = True
 
         if not Server.is_name_server_running():
@@ -64,8 +64,11 @@ class Server:
                     plugin_count += len(clsmembers)
         elif plugin_dir and not os.path.exists(plugin_dir):
             roslaunch2.logger.warning('cannot find plugin directory {:s}'.format(plugin_dir))
+        else:
+            roslaunch2.logger.log('- \'ROSLAUNCH2_PLUGINS\' environment variable not set, skipped plugins')
 
-        roslaunch2.logger.log('- Registered the following types on this machine ({:d} plugin(s)):'.format(plugin_count))
+        roslaunch2.logger.log('- Registered the following types on this machine ({:d} plugin{}):'
+                              .format(plugin_count, '' if plugin_count == 1 else 's'))
         for k in self.reg_db:
             roslaunch2.logger.log('  * {:s} -> {:s}'.format(str(k), str(self.reg_db[k])))
 
