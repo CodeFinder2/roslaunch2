@@ -3,18 +3,18 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 08/06/2020
+#    Date: 12/12/2021
 
 import lxml.etree
 import warnings
 
-from . import interfaces
-from . import remapable
-from . import node
-from . import launch
+import roslaunch2.interfaces
+import roslaunch2.remapable
+import roslaunch2.node
+import roslaunch2.launch
 
 
-class Group(remapable.Remapable, interfaces.Composer, interfaces.Composable):
+class Group(roslaunch2.remapable.Remapable, roslaunch2.interfaces.Composer, roslaunch2.interfaces.Composable):
     """
     For grouping nodes in namespaces, equals <group ns="namespace"> ... </group>.
     """
@@ -28,9 +28,9 @@ class Group(remapable.Remapable, interfaces.Composer, interfaces.Composable):
         :param clear_params: True to clear all parameters in the node's private namespace before launch, False to keep
                them unchanged
         """
-        remapable.Remapable.__init__(self)
-        interfaces.Composer.__init__(self, None)  # everything can be put into a Group
-        interfaces.Composable.__init__(self)
+        roslaunch2.remapable.Remapable.__init__(self)
+        roslaunch2.interfaces.Composer.__init__(self, None)  # everything can be put into a Group
+        roslaunch2.interfaces.Composable.__init__(self)
         self.name = namespace
         self.clear_params = clear_params
         self.ignore_content = ignore_content
@@ -61,9 +61,9 @@ class Group(remapable.Remapable, interfaces.Composer, interfaces.Composable):
         """
         if self.name:  # exclude the group if namespace is empty
             elem = lxml.etree.SubElement(root, 'group')
-            interfaces.GeneratorBase.to_attr(elem, 'ns', self.name)
-            interfaces.GeneratorBase.to_attr(elem, 'clear_params', self.clear_params)
-            remapable.Remapable.generate(self, elem, machines, pkg)
+            roslaunch2.interfaces.GeneratorBase.to_attr(elem, 'ns', self.name)
+            roslaunch2.interfaces.GeneratorBase.to_attr(elem, 'clear_params', self.clear_params)
+            roslaunch2.remapable.Remapable.generate(self, elem, machines, pkg)
         else:
             elem = root
         # Do not ignore the content:
@@ -72,7 +72,7 @@ class Group(remapable.Remapable, interfaces.Composer, interfaces.Composable):
                 # For all nodes or groups in this group, start them on the machine if a machine has been given for this
                 # group and they do not have a machine assigned yet. Treating groups and nodes equally, we can propagate
                 # machines to nodes nested in sub(-sub(-sub(-...)))groups of this one.
-                if self.machine and (isinstance(child, node.Node) or isinstance(child, Group) or
-                   isinstance(child, launch.Launch)) and not child.machine:
+                if self.machine and (isinstance(child, roslaunch2.node.Node) or isinstance(child, Group) or
+                   isinstance(child, roslaunch2.launch.Launch)) and not child.machine:
                     child.start_on(self.machine)
                 child.generate(elem, machines, pkg)

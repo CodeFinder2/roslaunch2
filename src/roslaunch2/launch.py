@@ -3,19 +3,23 @@
 #
 #  Author: Adrian Böckenkamp
 # License: BSD (https://opensource.org/licenses/BSD-3-Clause)
-#    Date: 08/06/2020
+#    Date: 12/12/2021
 
 import warnings
 import lxml.etree
 
-from . import interfaces
-from . import machine
-from . import remapable
-from . import node
-from . import group
+#from . import interfaces
+#from . import machine
+#from . import remapable
+#from . import node
+import roslaunch2.interfaces
+import roslaunch2.machine
+import roslaunch2.remapable
+import roslaunch2.node
+import roslaunch2.group
 
 
-class Launch(interfaces.Composable, interfaces.Composer, remapable.Remapable):
+class Launch(roslaunch2.interfaces.Composable, roslaunch2.interfaces.Composer, roslaunch2.remapable.Remapable):
     """
     Represents the root object of a launch module, similiar to roslaunch's <launch> tag.
     """
@@ -27,9 +31,9 @@ class Launch(interfaces.Composable, interfaces.Composer, remapable.Remapable):
         :param deprecation_message: If not None, the str-converted message is shown as a deprecation warning which may
                be useful to indicate that the launch module has been replaced by another module
         """
-        interfaces.Composable.__init__(self)
-        interfaces.Composer.__init__(self, None)  # everything can be put into Launch
-        remapable.Remapable.__init__(self)
+        roslaunch2.interfaces.Composable.__init__(self)
+        roslaunch2.interfaces.Composer.__init__(self, None)  # everything can be put into Launch
+        roslaunch2.remapable.Remapable.__init__(self)
         self.machine = None
         if deprecation_message:
             warnings.warn(deprecation_message, DeprecationWarning)
@@ -56,7 +60,7 @@ class Launch(interfaces.Composable, interfaces.Composer, remapable.Remapable):
         :param other: Object to be added
         :return: None
         """
-        if isinstance(other, machine.Machine):
+        if isinstance(other, roslaunch2.machine.Machine):
             message = "Machines shouldn't be add()ed explicitly (skipping {})" \
                 .format(repr(other))
             warnings.warn(message, Warning)
@@ -82,9 +86,9 @@ class Launch(interfaces.Composable, interfaces.Composer, remapable.Remapable):
         if first_call:
             root = lxml.etree.Element('launch')
             machines = []
-        remapable.Remapable.generate(self, root, machines, None)
+        roslaunch2.remapable.Remapable.generate(self, root, machines, None)
         for child in self.children:
-            if self.machine and (isinstance(child, node.Node) or isinstance(child, group.Group) or
+            if self.machine and (isinstance(child, roslaunch2.node.Node) or isinstance(child, roslaunch2.group.Group) or
                isinstance(child, Launch)) and not child.machine:  # see comment in group.py
                 child.start_on(self.machine)
             child.generate(root, machines, None)
