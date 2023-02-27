@@ -48,7 +48,7 @@ class Helpers:
         node.prefix = "nice"
 
     @staticmethod
-    def enable_gdb(node, separate_window=True):
+    def enable_gdb(node, separate_window=True, auto_start=True):
         """
         Debug your ROS node using gdb (for roscpp, not rospy). You should compile your code in DEBUG mode (e. g., add
         :code:`-g` flag in gcc). Requires :code:`sudo apt install xterm` if :code:`separate_window=True`.
@@ -59,9 +59,9 @@ class Helpers:
         """
         Helpers.__warn_if_not_empty(node)
         if separate_window:
-            node.prefix = "xterm -e gdb --args"
+            node.prefix = "xterm -e gdb {}--args".format("-ex run " if auto_start else "")
         else:
-            node.prefix = "gdb -ex run --args"
+            node.prefix = "gdb {}--args".format("-ex run " if auto_start else "")
 
     @staticmethod
     def enable_valgrind(node):
