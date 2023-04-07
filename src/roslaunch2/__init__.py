@@ -139,6 +139,7 @@ def start_async(launch_obj, silent=False):
     """
     Call method start() in a separate process and returns without waiting for roslaunch to terminate. If p is the
     returned object, call roslaunch2.terminate(p) to shutdown roslaunch(2) and wait until roslaunch has terminated.
+    You can also wait manually for the process to finish using p.join().
 
     :param launch_obj: Instance of class launch.Launch
     :param silent: Hide roslaunch output
@@ -150,11 +151,27 @@ def start_async(launch_obj, silent=False):
     return p
 
 
-def terminate(instance):
+def start_sync(launch_obj, silent=False):
+    """
+    Call method start() in a separate process and waits for it to terminate. Unlike start(), this still
+    runs roslaunch inside a new process. It may be easier if you have issues with output of the node
+    calling this function.
+
+    :param launch_obj: Instance of class launch.Launch
+    :param silent: Hide roslaunch output
+    """
+    from multiprocessing import Process
+    p = Process(target=start, args=(launch_obj, False, silent))
+    p.start()
+    p.join()
+
+
+def terminate(instance, escalation_timeout=10.0):
     """
     Terminates the given roslaunch2 instance (a multiprocessing.Process instance) and waits until it has exited.
 
     :param instance: Object returned by start_async() to be terminated
+    :param escalation_timeout: Timeout in seconds until calling multiprocessing.Process.terminate() (first, SIGINT is sent)
     :return: None
     """
     if instance is None:
@@ -164,7 +181,7 @@ def terminate(instance):
     import os
     import signal
     os.kill(instance.pid, signal.SIGINT)
-    instance.join(10.0)
+    instance.join(escalation_timeout)
     instance.terminate()
     instance.join()
 
