@@ -109,7 +109,7 @@ class LaunchParameter(argparse.ArgumentParser):
         :param name: command line parameter name and key to retrieve (fallback) default in kwargs
         :param help_text: help text of command line option
         :param default: final default value if neither a command line argument nor the key in kwargs is given
-        :param store: ``True`` to store ``True`` of the flag is set / provided on the command line, ``False`` to store
+        :param store: ``True`` to store ``True`` if the flag is set / provided on the command line, ``False`` to store
                ``False`` if the flag is provided
         :param short_name: Optional string: Short command line parameter name
         :param kwargs: dictionary of parameters for the launch module, possibly containing name
