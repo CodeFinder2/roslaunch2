@@ -151,7 +151,7 @@ def start_async(launch_obj, silent=False):
     return p
 
 
-def start_sync(launch_obj, silent=False):
+def start_sync(launch_obj, silent=False, check_rospy_shutdown=True, timeout=None):
     """
     Call method start() in a separate process and waits for it to terminate. Unlike start(), this still
     runs roslaunch inside a new process. It may be easier if you have issues with output of the node
@@ -159,11 +159,27 @@ def start_sync(launch_obj, silent=False):
 
     :param launch_obj: Instance of class launch.Launch
     :param silent: Hide roslaunch output
+    :param check_rospy_shutdown: True to check for rospy.is_shutdown() every 0.1s; if shutdown is triggered, it terminate()s the launch.
+    :param timeout: Timeout until returning the created multiprocessing.Process object without waiting anymore; None to disable the timeout (default)
     """
     from multiprocessing import Process
     p = Process(target=start, args=(launch_obj, False, silent))
     p.start()
-    p.join()
+    if check_rospy_shutdown:
+        import rospy
+        import time
+        started = time.time()
+        while timeout is None or time.time() - started <= timeout:
+            if not p.is_alive():
+                return None
+            if rospy.is_shutdown():
+                p.terminate()
+                return None
+            time.sleep(.1)  # avoid hogging the CPU
+        return p  # (most probably) still running
+    else:
+        p.join()  # wait for termination
+    return None
 
 
 def terminate(instance, escalation_timeout=10.0):
